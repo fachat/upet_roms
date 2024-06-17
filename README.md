@@ -1,4 +1,23 @@
 
+# 65xx ROM code for the MicroPET 3.x, Ultra-CPU 2.x, and Ulti-PET 1.x
+
+The three boards from the title use a Spartan 6 FPGA, that provides a flexible
+memory mapping. On boot, the FPGA loads a block (256 bytes) from the SPI boot flash ROM
+into the top page of memory for the CPU (in bank0, and the CPU takes it from there).
+
+All three boards use the same basic architecture based on the [Ultra-CPU](), which
+contains the CPU, RAM, FPGA, USB, video output, etc, and uses I/O via the CS/A bus.
+That is why they can use the same code base.
+
+![Micro-PET architecture](images/upet-system-architecture.png)
+
+This repository builds an *spiimg* resp. *spiimg70m* for the boot flash ROM, that 
+contains the initial program loader (IPL), a boot menu, and various ROM images
+to run as Commodore PET machines, as described below.
+
+Note that the *spiimg70m* is now the default with the current FPGA programming
+based on a 70 MHz base clock.
+
 # ROM contents
 
 This folder contains files and code to build a ROM image that can be burned into the 512k ROM on the board, so that it actually boots.
