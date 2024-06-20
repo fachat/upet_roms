@@ -1,11 +1,13 @@
 
 # 65xx ROM code for the MicroPET 3.x, Ultra-CPU 2.x, and Ulti-PET 1.x
 
+This is part of a larger project with multiple boards, with [upet_family](https://github.com/fachat/upet_family) as parent repository.
+
 The three boards from the title use a Spartan 6 FPGA, that provides a flexible
 memory mapping. On boot, the FPGA loads a block (256 bytes) from the SPI boot flash ROM
 into the top page of memory for the CPU (in bank0, and the CPU takes it from there).
 
-All three boards use the same basic architecture based on the [Ultra-CPU](), which
+All three boards use the same basic architecture based on the [Ultra-CPU](https://github.com/fachat/csa_ultracpu), which
 contains the CPU, RAM, FPGA, USB, video output, etc, and uses I/O via the CS/A bus.
 That is why they can use the same code base.
 
