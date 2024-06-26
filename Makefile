@@ -11,6 +11,7 @@ clone: $(REPOS)
 
 # update cloned repos
 update: $(REPOS)
+	git pull
 	for i in $(REPOS); do (cd $$i; git pull); done
 
 ########################################################
