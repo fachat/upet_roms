@@ -1,6 +1,20 @@
 
 all: spiimg spiimg70m loadrom.bin loadrom
 
+########################################################
+# sub-repos
+
+REPOS=cbm-edit-rom cbm-x16dos usb65
+
+# downloads all the repos it depends on
+clone: $(REPOS)
+
+# update cloned repos
+update: $(REPOS)
+	for i in $(REPOS); do (cd $$i; git pull); done
+
+########################################################
+
 EDITROMS=edit40_c64kb.bin edit80_c64kb.bin edit40_grfkb_ext.bin edit80_grfkb_ext.bin edit40_c64kb_ext.bin edit80_c64kb_ext.bin 
 TOOLS=romcheck
 
