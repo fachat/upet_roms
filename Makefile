@@ -1,4 +1,6 @@
 
+BASE=$(shell git remote -v | cut -f 2- | sed -e "s%fachat/.*%fachat%g" | uniq )
+
 all: spiimg spiimg70m loadrom.bin loadrom
 
 ########################################################
@@ -181,7 +183,7 @@ edit80g:
 # Steve's modified/re-created editor ROMs
 
 cbm-edit-rom: 
-	git clone https://github.com/fachat/cbm-edit-rom.git
+	git clone $(BASE)/cbm-edit-rom.git
 	cp cbm-edit-rom/edit.asm cbm-edit-rom/edit.asm.org
 
 ${EDITROMS}: %.bin: %.asm cbm-edit-rom
@@ -202,7 +204,7 @@ edit80_chk.bin: edit80g romcheck
 # SD-Card and DOS
 
 cbm-x16dos: 
-	git clone https://github.com/fachat/cbm-x16dos.git
+	git clone $(BASE)/cbm-x16dos.git
 
 cbm-x16dos/build/UPET/dos.bin: cbm-x16dos
 	(cd $<; make)
@@ -219,7 +221,7 @@ usb65/platforms/upet/petromcomp usb65/platforms/upet/petrom: usb65
 	(cd usb65/platforms/upet; make petromcomp petrom)
 
 usb65:
-	git clone https://github.com/fachat/usb65.git
+	git clone $(BASE)/usb65.git
 	(cd usb65; git checkout upet)
 
 usbcode: usbcode.a65 usb65/platforms/upet/petrom
