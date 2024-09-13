@@ -99,7 +99,7 @@ char8to16: char8to16.c
 	gcc -o char8to16 char8to16.c
 
 iplldr: iplldr.a65
-	xa -w -o $@ $<
+	xa -XMASM -w -o $@ $<
 
 boot: boot.a65 boot_menu.a65 boot_rom1.a65 boot_rom2.a65 boot_rom4.a65 boot_usb.a65 dosromcomp.a65 patch4.a65
 	xa -w -XMASM -P $@.lst -o $@ $<

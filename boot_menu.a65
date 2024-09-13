@@ -308,7 +308,7 @@ c0	lda cols,y
 
 cols	.byt 2<<4,3<<4,4<<4,8<<4,12<<4
 	
-text	.asc "          MICRO-/ULTIMATE-PET           "
+text	.asc "           MICRO-/ULTI-PET              "
 	.asc "            (C) A.FACHAT                "
 	.asc "                                        "
 	.asc "PRESS KEY FOR BOOT OPTION:              "
@@ -323,12 +323,11 @@ text	.asc "          MICRO-/ULTIMATE-PET           "
 	.asc "USE LEFT-SHIFT FOR ORIG ROM             "
 	.asc "                                        "
 	.asc "                                        "
-	.asc "                                        "
-	.asc "                                        "
 	.asc "EXPERIMENTAL USB KBD SUPPORT ON BASIC4  "
 	.asc "IF YOU SELECT OPTION WITH USB KEYBOARD  "
 	.asc "                                        "
-	.asc "SD-CARD SUPPORT (C) 2020 MICHAEL STEIL  "
+	.asc "EDIT ROMS: SJGRAY   USB: A.FACHAT       "
+	.asc "SD/FAT32: MIST64, ZEROBYTEORG           "
 	.asc 0
 
 	.)
