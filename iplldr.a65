@@ -9,18 +9,6 @@
 ;
 ; $00000  IPL code (256 byte) - this code
 ; $00100  Boot code (2k+6*256)
-; $00f00  USB support code (256 byte)
-; $01000  @MON (4k copied to $a000)
-; $02000  charrom (8k)
-; $04000  BASIC2 + EDIT2 + KERNEL2 (16k)
-; $08000  EDIT8 (extended)
-; $09000  BASIC4 + EDIT4(extended) + KERNAL4 (20k)
-; $0e000  EDIT4 (extended, C64 kbd)
-; $0f000  EDIT8 (extended, C64 kbd)
-; $10000  EDIT4 (orig)
-; $11000  EDIT8 (orig)
-; $12000  EDIT4 (bare, C64 kbd)
-; $13000  EDIT8 (bare, C64 kbd)
 
 #include "viccy.i65"
 
@@ -29,6 +17,7 @@
 SPICTRL	=$e808
 SPIDATA	=$e809
 SPIPEEK	=$e80a
+SPIOFF	=$07
 
 ;VIA	=$e840
 ;VIA_PCR	=12
@@ -170,7 +159,7 @@ readloop
 	cpx #$0e00
 	bne readloop
 	
-	lda #0
+	lda #SPIOFF
 	sta SPICTRL	; deselect Flash
 
 	; set ac and index to single byte ...

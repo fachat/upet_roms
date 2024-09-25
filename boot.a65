@@ -35,6 +35,7 @@ VBANK	=$080000
 SPICTRL	=$e808
 SPIDATA	=$e809
 SPIPEEK	=$e80a
+SPIOFF	=$07
 
 VICCY_IRQ=0		; set to 1 to use rasterline instead of VDRIVE ints during boot
 
@@ -132,7 +133,7 @@ jmpboot
 	sta SPIDATA
 	lda #%00101000		; set PWRSV and VRPS
 	sta SPIDATA
-	lda #0
+	lda #SPIOFF
 	sta SPICTRL
 
         ; set X/Y registers to 16 bit ... 
@@ -274,7 +275,7 @@ nok	inx
 	dey
 	bne readloop
 	
-	lda #0
+	lda #SPIOFF
 	sta SPICTRL	; deselect Flash
 	rts
 	.)
