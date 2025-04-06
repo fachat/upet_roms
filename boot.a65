@@ -74,7 +74,6 @@ VIDBLK	=2		; video block address for BANK
 
 ;BOOTCOL	=$15	; dark grey background, light green text
 ;BOOTCOL	=$1f	; dark grey background, white text
-;BOOTCOL	=$50	; black text on light green background
 BOOTCOL	=$05	; black background with light green text
 
 BRDCOL	=0	; border colour = black
@@ -342,8 +341,8 @@ sl	sta VICCY
         .byt 21         ; r38: horizontal position (chars)
         .byt 110        ; r39: vertical position (rasterlines)
 #else
-        .byt 13         ; r38: horizontal position (chars)
-        .byt 59         ; r39: vertical position (rasterlines)
+        .byt 9         ; r38: horizontal position (chars)
+        .byt 79        ; r39: vertical position (rasterlines)
 #endif
         .byt 0          ; r40: alt match
         .byt 0          ; r41: alt raster row
