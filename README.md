@@ -17,8 +17,8 @@ This repository builds an *spiimg* resp. *spiimg70m* for the boot flash ROM, tha
 contains the initial program loader (IPL), a boot menu, and various ROM images
 to run as Commodore PET machines, as described below.
 
-Note that the *spiimg70m* is now the default with the current FPGA programming
-based on a 70 MHz base clock.
+Note that the *spiimg* is now the default with the current FPGA programming
+based on a 54 MHz base clock.
 
 # ROM contents
 

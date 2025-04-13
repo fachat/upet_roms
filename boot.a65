@@ -166,9 +166,15 @@ copy
 	jsr clrscreen_xl
 
 	jsr setup_usb_xl
-
+mloop
 	jsr do_menu_xl
 
+	cmp #%00000100
+	bne doreal
+
+	inc $8000
+	jmp mloop
+doreal
 	; save config byte
 	pha
 
@@ -356,6 +362,7 @@ sl	sta VICCY
 
 
 #include "boot_menu.a65"
+#include "boot_kbd.a65"
 #include "boot_rom1.a65"
 #include "boot_rom2.a65"
 #include "boot_rom4.a65"
