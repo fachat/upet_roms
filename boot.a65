@@ -176,6 +176,11 @@ copy
 
 	jsr irq_uninstall
 
+	; set screen to green-on-black
+	; before we set mode, as 8296 disables col mem access
+	lda #$05
+	jsr setcol_xl
+
 	pla
        ; ----------------------------                                        
        ; In: AC has key in ASCII                                             
@@ -215,10 +220,6 @@ not_b2	; only basic 4 left
 	; switch back to emulation mode
 end
 	sta MCTRL
-
-	; set screen to green-on-black
-	lda #$05
-	jsr setcol_xl
 
 	; set X/Y registers to 8 bit ...
 	sep #%00010000
