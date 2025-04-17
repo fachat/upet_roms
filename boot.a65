@@ -29,6 +29,7 @@
 ; $1c000  SD-Card DOS (16k) to be run in bank 7
 
 #include "viccy.i65"
+#include "tcdefs.i65"
 
 VBANK	=$080000
 
@@ -60,6 +61,8 @@ RUNADDR	=$9000
 shift	=$87ff
 char	=$87fe
 opt	=$87fd
+optkbd	=$87fc
+lastopt	=$87fb
 
 VCTRL   =$e800
 MCTRL   =$e801
@@ -172,7 +175,11 @@ mloop
 	cmp #%00000100
 	bne doreal
 
-	inc $8000
+	jsr do_options_xl
+	lda #0
+	sta opt
+	sta optkbd
+
 	jmp mloop
 doreal
 	; save config byte
@@ -363,16 +370,16 @@ sl	sta VICCY
 
 #include "boot_menu.a65"
 #include "boot_kbd.a65"
+#include "boot_opts.a65"
 #include "boot_rom1.a65"
 #include "boot_rom2.a65"
 #include "boot_rom4.a65"
 #include "boot_usb.a65"
 #include "boot_irq.a65"
 
-	; this is 4k-512 byte max
+	; this is 4k+6p byte max
 	; 1st 256 byte is ipl
-	; 2nd 256 byte is USB companion
 
-	.dsb RUNADDR+14*256-*,$ff
+	.dsb RUNADDR+22*256-*,$ff
 	.)
 

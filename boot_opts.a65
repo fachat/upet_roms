@@ -1,9 +1,8 @@
 
-&do_menu_xl .(
-	;jsr clrscreen_xl
-	lda #BOOTCOL
-	jsr setcol_xl
-	jsr selecttext_xl
+&do_options_xl .(
+	jsr clrscreen_xl
+
+	jsr opttext_xl
 
 	; switches to .xs
 	sep #%00010000
@@ -14,9 +13,6 @@
 
 chkloop	lda opt
 	beq chkloop
-
-	jsr conv_char2opt
-	bcc chkloop		; unknown option
 
 	rep #%00010000
 	.xl
@@ -31,30 +27,7 @@ chkloop	lda opt
 	; screen routines
 	.(
 
-	; back in 16bit land
-	.xl
-
-&clrscreen_xl .(
-	ldx #1999	; clear full 80 column screen (note $87ff is shift flag)
-	lda #$20
-loop	sta $8000,x
-	;sta VBANK+$9000,x
-	dex
-	bpl loop
-
-	rts
-	.)
-
-&setcol_xl .(
-	ldx #1999	; clear full 80 column color screen (note $87ff is shift flag)
-cloop	sta $8800,x
-	;sta VBANK+$d000,x
-	dex
-	bpl cloop
-	rts
-	.)
-
-&selecttext_xl .(
+&opttext_xl .(
 	ldx #0
 outl	lda text,x
 	beq endt
@@ -63,37 +36,14 @@ outl	lda text,x
 	inx
 	bne outl
 endt	
-	; signature color bar 
-	; 5 colours, each 8 chars long
-	; red = 2
-	; light red = 3
-	; blue = 4
-	; green = 8
-	; yellow = 12
-	ldy #0
-	ldx #0
-	sec
-c0	lda cols,y
-	sta $8800+0*40,x
-	sta $8800+24*40,x
-	inx
-	txa
-	and #%00000111
-	bne c0
-	iny
-	cpy #5
-	bcc c0
-
 	rts
 
-cols	.byt 2<<4,3<<4,4<<4,8<<4,12<<4
-	
 text	.asc "           MICRO-/ULTI-PET              "
-	.asc "            (C) A.FACHAT                "
+	.asc "              OPTIONS                   "
 	.asc "                                        "
 	.asc "PRESS KEY FOR BOOT OPTION:              "
 	.asc "                                        "
-	.asc "* BASIC ", "1"+$80, " (NO C64 KBD)                  "
+	.asc "* BASIC 1:                  "
 	.asc "* BASIC ", "2"+$80, " (40 COLUMNS, NO C64 KBD)      "
 	.asc "* BASIC 4, ", "4"+$80, "0 COLUMNS                   "
 	.asc "* BASIC 4, ", "8"+$80, "0 COLUMNS                   "

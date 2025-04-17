@@ -76,9 +76,7 @@ newirq	.(
 #endif
 
 	jsr checkkbd_xs
-	bcc nokey
 	jsr key_pet
-nokey
 
 	lda VCOUNT	; vertical screen interrupt
 	clc

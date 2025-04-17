@@ -2,9 +2,10 @@
 setup_basic4_xl	.(
 
 	; where do we store the extra patch code
-IEEE_PATCH		=$fe20		; IEEE fix for faster CPU clocks
+IEEE_PATCH	=$fe20		; IEEE fix for faster CPU clocks
 SDC_COMPANION	=$fe30		; SD-Card link
 USB_COMPANION	=$df00		; USB link
+USB_CPAGE	=$1f	;$0f	; where USB companion is in flash
 
 	; -----------------------
 	; copy over @MON 

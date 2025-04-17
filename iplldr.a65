@@ -1,14 +1,14 @@
 
 ; The first block of this is loaded by the IPL from the SPI Flash chip into the uppermost
 ; 256 bytes of RAM in bank zero, where the CPU boots from.
-; This boot block then copies the last 2k of this to $8800 on bank0, and jumps
+; This boot block then copies the last 4k of this to $9000 on bank0, and jumps
 ; to it to execute it.
 ; 
 ; Note that this relies on the Flash ROM containing the
 ; PET ROM images to copy from in this order:
 ;
 ; $00000  IPL code (256 byte) - this code
-; $00100  Boot code (2k+6*256)
+; $00100  Boot code (4k+*256)
 
 #include "viccy.i65"
 
@@ -44,6 +44,9 @@ BANK    =$e802
 ;BOOTCOL	=$1f	; dark grey background, white text
 ;BOOTCOL	=$50	; black text on light green background
 ;BOOTCOL	=$05	; black background with light green text
+
+BOOTSTART	=$0100
+BOOTLEN		=$1600
 
 	*=$ff00
 vreset	.(
@@ -144,9 +147,9 @@ spiread
 	sta SPIDATA	; READ command
 	lda #0
 	sta SPIDATA	; bits 23-16
-	lda #>$0100	
+	lda #>BOOTSTART
 	sta SPIDATA	; bits 15-8
-	lda #<$0100
+	lda #<BOOTSTART
 	sta SPIDATA	; bits 7-0
 
 	lda SPIDATA	; trigger shift in of first byte into SR (value read is still invalid)
@@ -156,7 +159,7 @@ readloop
 	lda SPIDATA	; read byte
 	sta RUNADDR,x
 	inx
-	cpx #$0e00
+	cpx #BOOTLEN
 	bne readloop
 	
 	lda #SPIOFF

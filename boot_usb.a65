@@ -9,6 +9,8 @@ tmp	=$0700fd
 &MAP_BAS	=0
 &MAPREG		=BANK
 
+USBPAGE	=$a0
+
 USBBLK  =14             ; bank 7 value for BANK  
 USBBASE =$1000                                   
 
@@ -26,7 +28,7 @@ driver_init	=USBBASE
         lda #MAP_USB 	; for the PET default VICCY base address of $1000 
         sta BANK        ; $e802                                           
 
-        lda #$a0        ; page in flash                                  
+        lda #USBPAGE    ; page in flash                                  
         ldx #USBBASE    ; start in current bank                          
         ldy #$2000      ; transfer len                                   
         jsr flash2direct2_xl                                             

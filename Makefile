@@ -32,9 +32,10 @@ spiimgc: rebuildclean spiimg spiimg70m
 spiimg: zero boot basic1 edit1 kernal1 basic2 edit2g kernal2 chargen_pet16 chargen_pet1_16 basic4 kernal4 edit40g edit80g iplldr $(EDITROMS) apmonax edit80_grfkb_ext_chk.bin edit80_chk.bin usbcode usbcomp dos.bin
 	# ROM images
 	cat iplldr					> $@	# 256b   : IPL loader
-	cat boot					>> $@	# 2k+6*256  : boot code
+	cat boot					>> $@	# 4k+6*256  : boot code
+	cat zero					>> $@	# 4k zero
 	cat usbcomp					>> $@	# 256b	 : 
-	cat apmonax					>> $@	# 4-8k   : @MON monitor (sys40960)
+	#cat apmonax					>> $@	# 4-8k   : @MON monitor (sys40960)
 	# standard character ROM (converted to 16 byte/char)
 	cat chargen_pet16 				>> $@	# 8-16k  : 8k 16bytes/char PET character ROM
 	# BASIC 1
@@ -63,9 +64,10 @@ spiimg: zero boot basic1 edit1 kernal1 basic2 edit2g kernal2 chargen_pet16 charg
 spiimg70m: zero boot70m basic1 edit1 kernal1 basic2 edit2g kernal2 chargen_pet16 chargen_pet1_16 basic4 kernal4 edit40g edit80g iplldr $(EDITROMS) apmonax edit80_grfkb_ext_chk.bin edit80_chk.bin usbcode usbcomp dos.bin
 	# ROM images
 	cat iplldr					> $@		# 256b   : IPL loader
-	cat boot70m					>> $@		# 2k+6*256  : boot code
+	cat boot70m					>> $@		# 4k+6*256  : boot code
+	cat zero					>> $@		# 4k zero
 	cat usbcomp					>> $@		# 256b	 : 
-	cat apmonax					>> $@		# 4-8k   : @MON monitor (sys40960)
+	#cat apmonax					>> $@		# 4-8k   : @MON monitor (sys40960)
 	# standard character ROM (converted to 16 byte/char)
 	cat chargen_pet16 				>> $@		# 8-16k  : 8k 16bytes/char PET character ROM
 	# BASIC 1
@@ -107,10 +109,10 @@ char8to16: char8to16.c
 	gcc -o char8to16 char8to16.c
 
 iplldr: iplldr.a65
-	xa -XMASM -w -o $@ $<
-
-boot: boot.a65 boot_menu.a65 boot_rom1.a65 boot_rom2.a65 boot_rom4.a65 boot_usb.a65 dosromcomp.a65 patch4.a65
 	xa -w -XMASM -P $@.lst -o $@ $<
+
+boot: boot.a65 boot_menu.a65 boot_kbd.a65 boot_opts.a65 boot_rom1.a65 boot_rom2.a65 boot_rom4.a65 boot_usb.a65 dosromcomp.a65 patch4.a65
+	xa -w -XMASM -k -P $@.lst -o $@ $<
 
 boot70m: boot.a65 boot_menu.a65 boot_rom1.a65 boot_rom2.a65 boot_rom4.a65 boot_usb.a65 dosromcomp.a65 patch4.a65
 	xa -w -XMASM -DCLK70M -P $@.lst -o $@ $<
