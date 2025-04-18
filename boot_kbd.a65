@@ -1,4 +1,12 @@
 
+	; opt is
+	; bit 7   - 1=80 cols
+	; bit 6   - 1=C64
+	; bit 5   - 1=8296 ext.
+	; bit 4   - USB kbd support (only BASIC4, only w/ option from USB)
+	; bit 3   - option menu
+	; bit 2/1 - model (01=basic1, 10=basic2, 11=basic4) 
+
 	.xs
 
 	; those are called from the interrupt routine
@@ -66,11 +74,7 @@ checkkbd_xs .(
 	lda $e810
 	and #$F0
 
-	; wait for PIA to be there
-wpia	sta $e810	; write trigger for scoping
-	ldy $e812
-	cpy #$ff
-	bne wpia
+	sta $e810
 
 	; scan
 	ldx #$50
@@ -123,7 +127,6 @@ gotshift
 	;
 conv_pet2char .(
 	pha		; save shift flag	
-
 	lda optkbd	; check detected keyboard
 	beq openkbd
 
@@ -176,15 +179,6 @@ bloopx
 	clc	
 	rts
 
-	; result is
-	; bit 7   - 1=80 cols
-	; bit 6   - 1=C64
-	; bit 5   - 1=8296 ext.
-	; bit 4   - USB kbd support (only BASIC4, only w/ option from USB)
-	; bit 3   - option menu
-	; bit 2/1 - model (01=basic1, 10=basic2, 11=basic4) 
-	; will be shifted right (/2) with ext/base bit in C
-	; must not be all zero (this will be ignored)
 is8296	ldx #"6"		;128+32+6
 	.byt $2c
 is8	ldx #"8"		; 128+6
@@ -208,17 +202,31 @@ nosh	txa
 
 decode_c64
 	dex
+	pla
+	bmi dec_shift64
 	lda ktab_c64,x
 	beq bloopx
-	tax
-	bne addshift
+	sec
+	rts
+dec_shift64
+	lda stab_c64,x
+	beq bloopx
+	sec
+	rts
 
 decode_petn
 	dex
+	pla
+	bmi dec_shiftpet
 	lda ktab_petn,x
 	beq bloopx
-	tax
-	bne addshift
+	sec
+	rts
+dec_shiftpet
+	lda stab_petn,x
+	beq bloopx
+	sec
+	rts
 	
 ktab_c64  .byt "1_", 2 /* control */, "2 ", TC_HT /* C= */, "q", 3 /* stop */  
           .byt "|*;", TC_HOME, 1 /* shift */, "=^^/"                           
@@ -228,6 +236,15 @@ ktab_c64  .byt "1_", 2 /* control */, "2 ", TC_HT /* C= */, "q", 3 /* stop */
           .byt "5rd6cftx"                                                      
           .byt "3wa4zse", 1 /* shift */                                        
           .byt TC_BS, TC_CR, TC_CRGT, 0, 6 /* F1 */, 0, 0, TC_CDWN             
+
+stab_c64  .byt "!", TC_ESC, 2 /* control */, 34," ", 6 /* C= */, "Q", 3 /*stop*/
+          .byt "\\*]", TC_CLR, 1 /* shift */, "=^^?"
+          .byt "+PL_>[@<"
+          .byt ")IJ0MKON"
+          .byt "'YG(BHUV"
+          .byt "%RD&CFTX"
+          .byt "#WA$ZSE", 1 /* shift */
+	  .byt TC_INS, TC_LF, TC_CLFT, 0, 6 /* F1 */, 0, 0, TC_CUP
 
 ;key number is (9-row)*8+(7-col)+1
 ktab_petn .asc "=.",0,3,"< [", TC_HT
@@ -240,6 +257,17 @@ ktab_petn .asc "=.",0,3,"< [", TC_HT
           .asc "97^^outeq"
 	  .asc TC_BS,TC_CDWN,"^@)\\'$":.byt $22   
 	  .asc TC_CRGT,TC_HOME,"~(&%#!"
+
+stab_petn .asc "=.^@",TC_ESC,"< {", TC_HT
+          .asc "-0^@>^@}@^@"
+	  .asc "+","2"+128, "^@?,NVX"
+          .asc "3"+128, "1"+128, TC_LF,";MBCZ"
+	  .asc "*", "5"+128, "^@:KHFS"
+          .asc "6"+128,"4"+128,"^@LJGDA"
+	  .asc "/","8"+128,"^@PIYRW"
+          .asc "9"+128,"7"+128,"^^OUTEQ"
+	  .asc TC_INS,TC_CUP,"^@)\\'$":.byt $22
+          .asc TC_CLFT,TC_CLR,"|(&%#!"
 
 	.)
 

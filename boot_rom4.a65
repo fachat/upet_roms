@@ -9,10 +9,10 @@ USB_CPAGE	=$1f	;$0f	; where USB companion is in flash
 
 	; -----------------------
 	; copy over @MON 
-	lda #$10
-	ldx #$a000
-	ldy #$1000
-	jsr flash2direct_xl
+;	lda #$10
+;	ldx #$a000
+;	ldy #$1000
+;	jsr flash2direct_xl
 	
 	; -----------------------
 	; copy over PET BASIC4 $b000-$dfff

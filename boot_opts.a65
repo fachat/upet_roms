@@ -4,15 +4,20 @@
 
 	jsr opttext_xl
 
+	jsr set_opts_xl
+
 	; switches to .xs
 	sep #%00010000
 	.xs
 
-	lda #0
+doloop	lda #0
 	sta opt
 
 chkloop	lda opt
 	beq chkloop
+
+	jsr do_opt_xs
+	bcc doloop
 
 	rep #%00010000
 	.xl
@@ -26,6 +31,11 @@ chkloop	lda opt
 	; ----------------------------
 	; screen routines
 	.(
+
+; screen position starts line 7, position 11
+; distance every 3 chars
+start	=$8000+40*9+11
+pos	=2
 
 &opttext_xl .(
 	ldx #0
@@ -41,27 +51,292 @@ endt
 text	.asc "           MICRO-/ULTI-PET              "
 	.asc "              OPTIONS                   "
 	.asc "                                        "
-	.asc "PRESS KEY FOR BOOT OPTION:              "
+	.asc "CRSR TO SELECT, SPACE TO CHANGE         "
 	.asc "                                        "
-	.asc "* BASIC 1:                  "
-	.asc "* BASIC ", "2"+$80, " (40 COLUMNS, NO C64 KBD)      "
-	.asc "* BASIC 4, ", "4"+$80, "0 COLUMNS                   "
-	.asc "* BASIC 4, ", "8"+$80, "0 COLUMNS                   "
-	.asc "* BASIC 4, 829", "6"+$80, " (80 COLUMNS)            "
-        .asc "                                        "
-	.asc "EXTENDED/PATCHED ROMS                   "
-	.asc "USE LEFT-SHIFT FOR ORIG ROM             "
-	.asc "USE ", "O"+128, " FOR OPTIONS                       "
-	.asc "                                        "
-	.asc "EXPERIMENTAL USB KBD SUPPORT ON BASIC4  "
-	.asc "IF YOU SELECT OPTION WITH USB KEYBOARD  "
-	.asc "                                        "
-	.asc "EDIT ROMS: SJGRAY   USB: A.FACHAT       "
-	.asc "SD/FAT32: MIST64, ZEROBYTEORG           "
+	.asc "               NORMAL       SHIFTED     "
+	.asc "           1  2  4  6  8  1  2  4  6  8 "
+	.asc "KERNAL                                  "
+	.asc "BASIC                                   "
+	.asc "EDITOR                                  "
+        .asc "SD-CARD                                 "
+        .asc "USB                                     "
+	.asc "SERIAL IEC                              "
+	.asc "RS232                                   "
+	.asc "MONITOR                                 "
+        .asc "SD UNIT                                 "
+	.asc "IEC PRIO                                "
 	.asc 0
+	.)
+
+
+&set_opts_xl .(
+; opts bits are:
+;	bit 7: KERNAL enhancements
+;	bit 6: BASIC enhancements
+;	bit 5: new EDITOR (sjg)
+;	bit 4: enable SD-Card support
+;	bit 3: enable USB support
+;	bit 2: enable serial IEC support
+;	bit 1: enable RS232 support
+;	bit 0: enable 65816 monitor
+;
+	ldx #start
+	stx pos
+	ldx #0
+rowloop	
+	stx row
+	ldy #0
+repopt	ldx row
+	lda opts_mask,y
+	and pow2,x
+	beq nextopt
+	lda opts_vals,y
+	and pow2,x
+	beq setopt
+	lda #"-"
+	.byt $2c
+setopt	lda #"*"
+	.byt $2c
+nextopt	lda #" "
+	ldx pos
+	sta 0,x
+	inx
+	inx
+	inx
+	stx pos
+	iny
+	cpy #10
+	bcc repopt
+	lda pos
+	clc
+	adc #10
+	sta pos
+	lda pos+1
+	adc #0
+	sta pos+1
+	ldx row
+	inx
+	cpx #8
+	bcc rowloop
+
+	sep #%00010000
+	.xs
+	jsr act
+	rep #%00010000
+	.xl
+	rts
+	.)
+
+	.xs
+
+&do_opt_xs .(
+	pha
+	jsr deact
+	pla
+	cmp #TC_CRGT
+	beq right
+	cmp #TC_CLFT
+	beq left
+	cmp #TC_CUP
+	beq up
+	cmp #TC_CDWN
+	beq down2
+	cmp #" "
+	;beq action
+	cmp #"x"
+	beq out
+endo	jsr act
+	clc
+out	rts
+
+down2	jmp down
+
+left 	ldx x
+	beq endo
+	ldy y
+	cpy #8
+	bcs nxleft2
+nxleft	dex
+	lda opts_mask,x
+	and pow2,y
+	bne goleft
+	txa
+	bne nxleft
+	beq endo
+goleft	stx x
+	bne endo
+nxleft2	dex
+	lda opts_mask2,x
+	and pow2-8,y
+	bne goleft
+	txa
+	bne nxleft2
+	beq endo
+
+right 	ldx x
+nxrght	cpx #9
+	bcs endo
+	inx
+	ldy y
+	cpy #8
+	bcs nxrght2
+	lda opts_mask,x
+	and pow2,y
+	beq nxrght
+gorght	stx x
+	bne endo
+nxrght2	lda opts_mask2,x
+	and pow2-8,y
+	bne gorght
+	beq nxrght
+
+up	ldy y
+	beq endo
+nxup	dey
+	ldx x
+	cpy #8
+	bcs nxup2
+	lda opts_mask,x
+	and pow2,y
+	bne goup
+nxup2a	tya
+	bne nxup
+	beq endo
+nxup2	lda opts_mask2,x
+	and pow2-8,y
+	beq nxup2a
+goup	sty y
+	bne endo2
+
+down	ldy y
+nxdown	cpy #10
+	bcs endo2
+	ldx x
+	iny
+	cpy #8
+	bcs nxd2
+	lda opts_mask,x
+	and pow2,y
+	beq nxdown
+godo	sty y
+endo2	jmp endo
+nxd2	lda opts_mask2,x
+	and pow2-8,y
+	bne godo
+	beq nxdown
+
+getpos	; activate an option
+	lda #0
+	sta pos+1
+	lda y
+	asl
+	asl	
+	asl	; by 8
+	sta pos
+	asl pos
+	rol pos+1
+	asl pos
+	rol pos+1 ; by 32
+	clc
+	adc pos
+	sta pos
+	lda #0
+	adc pos+1
+	sta pos+1
+	lda x
+	asl
+	adc x
+	adc pos
+	sta pos
+	lda #0
+	adc pos+1
+	sta pos+1
+	lda #<start-1
+	clc
+	adc pos
+	sta pos
+	lda #>start-1
+	adc pos+1
+	sta pos+1
+	rts
+
+&act	jsr getpos
+	ldy #2
+al	lda (pos),y
+	ora #128
+	sta (pos),y
+	dey
+	bpl al
+	rts
+
+deact	jsr getpos
+	ldy #2
+dl	lda (pos),y
+	and #127
+	sta (pos),y
+	dey
+	bpl dl
+	rts
+
 
 	.)
 
-	.)
+	.xl
 
+	; temp
+x	.byt 0
+y	.byt 0
+row	.word 0
+
+pow2	.byt %10000000
+	.byt %01000000
+	.byt %00100000
+	.byt %00010000
+	.byt %00001000
+	.byt %00000100
+	.byt %00000010
+	.byt %00000001
+
+opts_mask
+	.byt %10000000		; 1
+	.byt %00000000		; 2
+	.byt %11111001		; 4
+	.byt %11111001		; 6
+	.byt %11111001		; 8
+
+	.byt %10000000		; 1
+	.byt %00000000		; 2
+	.byt %11111001		; 4
+	.byt %11111001		; 6
+	.byt %11111001		; 8
+
+opts_mask2
+	.byt %00000000		; 1
+	.byt %00000000		; 2
+	.byt %11000000		; 4
+	.byt %11000000		; 6
+	.byt %11000000		; 8
+
+	.byt %00000000		; 1
+	.byt %00000000		; 2
+	.byt %11000000		; 4
+	.byt %11000000		; 6
+	.byt %11000000		; 8
+
+opts_vals
+	.byt %00000000		; 1
+	.byt %00000000		; 2
+	.byt %00000000		; 4
+	.byt %00000000		; 6
+	.byt %00000000		; 8
+
+	.byt %10000000		; 1
+	.byt %00000000		; 2
+	.byt %11111001		; 4
+	.byt %11111001		; 6
+	.byt %11111001		; 8
+
+
+
+	.)
 
