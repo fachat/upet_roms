@@ -4,11 +4,11 @@
 
 	jsr opttext_xl
 
-	jsr set_opts_xl
-
 	; switches to .xs
 	sep #%00010000
 	.xs
+
+	jsr set_opts_xs
 
 doloop	lda #0
 	sta opt
@@ -68,8 +68,9 @@ text	.asc "           MICRO-/ULTI-PET              "
 	.asc 0
 	.)
 
+	.xs
 
-&set_opts_xl .(
+&set_opts_xs .(
 ; opts bits are:
 ;	bit 7: KERNAL enhancements
 ;	bit 6: BASIC enhancements
@@ -80,54 +81,46 @@ text	.asc "           MICRO-/ULTI-PET              "
 ;	bit 1: enable RS232 support
 ;	bit 0: enable 65816 monitor
 ;
-	ldx #start
-	stx pos
 	ldx #0
-rowloop	
-	stx row
+	stx x
 	ldy #0
-repopt	ldx row
-	lda opts_mask,y
-	and pow2,x
-	beq nextopt
-	lda opts_vals,y
-	and pow2,x
-	beq setopt
-	lda #"-"
-	.byt $2c
-setopt	lda #"*"
-	.byt $2c
-nextopt	lda #" "
-	ldx pos
-	sta 0,x
-	inx
-	inx
-	inx
-	stx pos
-	iny
-	cpy #10
-	bcc repopt
-	lda pos
-	clc
-	adc #10
-	sta pos
-	lda pos+1
-	adc #0
-	sta pos+1
-	ldx row
-	inx
-	cpx #8
+	sty y
+rowloop	
+	jsr getpos
+	ldy y
+	ldx x
+	cpy #8
+	bcs upper
+	lda opts_mask,x
+	and pow2,y
+	bra rl1
+upper	lda opts_mask2,x
+	and pow2-8,y
+rl1	beq nextopt
+
+	cpy #8
+	bne nounit
+	lda unit_vals,x
+	jsr showunit
+	bra nextopt
+nounit	bcs nextopt
+	lda opts_vals,x
+	and pow2,y
+	jsr showopt
+nextopt	inc x
+	ldx x
+	cpx #10
 	bcc rowloop
-
-	sep #%00010000
-	.xs
-	jsr act
-	rep #%00010000
-	.xl
-	rts
+	ldx #0
+	stx x
+	inc y
+	ldy y
+	cpy #10
+	bcc rowloop
+	ldy #0
+	sty y
+	jmp act
 	.)
-
-	.xs
 
 &do_opt_xs .(
 	pha
@@ -142,7 +135,7 @@ nextopt	lda #" "
 	cmp #TC_CDWN
 	beq down2
 	cmp #" "
-	;beq action
+	beq action2
 	cmp #"x"
 	beq out
 endo	jsr act
@@ -150,6 +143,7 @@ endo	jsr act
 out	rts
 
 down2	jmp down
+action2	jmp action
 
 left 	ldx x
 	beq endo
@@ -225,7 +219,7 @@ nxd2	lda opts_mask2,x
 	bne godo
 	beq nxdown
 
-getpos	; activate an option
+&getpos	; activate an option
 	lda #0
 	sta pos+1
 	lda y
@@ -278,7 +272,65 @@ dl	lda (pos),y
 	bpl dl
 	rts
 
+action	ldx x
+	ldy y
+	cpy #8
+	bcs actxtra
+	cpy #8
+	lda opts_vals,x
+	bcs act2
+	eor pow2,y
+	sta opts_vals,x
+	and pow2,y
+	bra act2b
+act2	eor pow2-8,y
+	sta opts_vals,x
+	and pow2-8,y
+act2b	jsr showopt
+	jmp act
+&showopt
+	bne notset
+	lda #"*"
+	.byt $2c
+notset	lda #"-"
+	ldy #1
+	sta (pos),y
+	rts
 
+actxtra	cpy #8
+	bne actprio
+	ldx x
+	lda unit_vals,x
+	cmp #11
+	bne ainc
+	lda #7
+ainc	inc
+	sta unit_vals,x
+	jsr showunit
+	jmp endo
+&showunit
+	ldy #0
+	pha
+	cmp #10
+	bcs tenplus
+	lda #" "
+	sta (pos),y
+	iny
+	pla
+	ora #$30
+	sta (pos),y
+	rts
+tenplus	lda #"1"
+	sta (pos),y
+	iny
+	pla
+	sbc #10
+	ora #$30
+	sta (pos),y
+	rts
+
+actprio clc
+	rts	
 	.)
 
 	.xl
@@ -335,6 +387,19 @@ opts_vals
 	.byt %11111001		; 4
 	.byt %11111001		; 6
 	.byt %11111001		; 8
+
+unit_vals
+	.byt 8			; 1
+	.byt 8			; 2
+	.byt 8			; 4
+	.byt 8			; 6
+	.byt 8			; 8
+
+	.byt 8			; 1
+	.byt 8			; 2
+	.byt 8			; 4
+	.byt 8			; 6
+	.byt 8			; 8
 
 
 
