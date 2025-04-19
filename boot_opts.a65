@@ -1,5 +1,59 @@
 
-&do_options_xl .(
+	.(
+
+; opt0	bits are:
+;	bit 7: copy of EDITOR ROM patch bit
+;	bit 6: 1=80 col, 0=40 col
+;	bit 5: 1=c64 kbd, 0=pet-N kbd
+;	bit 4: 1=8296 memory map, 0= normal
+;	bit 3: 1=USB support enabled from keyboard select
+;	
+; opts1 bits are:
+;	bit 7: KERNAL enhancements
+;	bit 6: BASIC enhancements
+;	bit 5: new EDITOR (sjg)
+;	bit 4: enable 65816 monitor
+;	bit 3: enable SD-Card support
+;	bit 2: SD unit#
+;	bit 1: enable serial IEC support
+;	bit 0: IEC/IEEE prio
+; opts2 bits are:
+;	bit 7: enable RS232 port A support
+;	bit 6: enable RS232 port B support
+;	bit 5: enable USB support (mouse/kbd)
+;
+
+ONCHAR	=81
+OFFCHAR	=87
+
+; to detect a UART 16550 
+
+UART_RXTX       =0               ; DLAB=0 
+UART_IER        =1               ; DLAB=0 
+UART_DLL        =0               ; divisor latch low, DLAB=1 
+UART_DLH        =1               ; divisor latch high, DLAB=1 
+UART_IIR        =2               ; Irq Ident. Reg., read only 
+UART_FCR        =2               ; FIFO Ctrl Reg., write only 
+UART_LCR        =3               ; Line Ctrl Reg 
+UART_MCR        =4               ; Modem Ctrl Reg 
+UART_LSR        =5               ; Line Status Reg 
+UART_MSR        =6               ; Modem Status Reg 
+UART_SCR        =7               ; 'scratchpad', i.e. unused 
+
+&&do_options_init_xl .(
+	; switches to .xs
+	sep #%00010000
+	.xs
+
+	jsr detect_xs
+
+	; switches to .xs
+	rep #%00010000
+	.xl
+	rts
+	.)
+
+&&do_options_xl .(
 	jsr clrscreen_xl
 
 	jsr opttext_xl
@@ -28,13 +82,95 @@ chkloop	lda opt
 	rts
 	.)
 
+	.xs
+	; ----------------------------
+	; detect logic
+detect_xs .(
+	;-- detect UART 1 at $e818
+	.(
+UART	=$e818
+        ldy UART+UART_MCR
+        lda #$10
+        sta UART+UART_MCR
+        lda UART+UART_MSR
+        and #$f0
+        bne nodev
+        lda #$1f
+        sta UART+UART_MCR
+        lda UART+UART_MSR
+        and #$f0
+        cmp #$f0
+        beq dev
+nodev	sty UART+UART_MCR	; restore potential PIA register
+	lda #%01111111
+	jsr clrmask2
+dev	.)
+	.(
+UART	=$e828
+        ldy UART+UART_MCR
+        lda #$10
+        sta UART+UART_MCR
+        lda UART+UART_MSR
+        and #$f0
+        bne nodev
+        lda #$1f
+        sta UART+UART_MCR
+        lda UART+UART_MSR
+        and #$f0
+        cmp #$f0
+        beq dev
+nodev	sty UART+UART_MCR	; restore potential PIA register
+	lda #%10111111
+	jsr clrmask2
+dev	.)
+	; --
+	; detect 2nd VIA
+	.(
+VIA2	=$e850
+	lda VIA2+VIA_PCR
+	and #%00010001
+	sta VIA2+VIA_PCR
+	cmp VIA2+VIA_PCR
+	bne nodev
+	ora #%01100110
+	sta VIA2+VIA_PCR
+	cmp VIA2+VIA_PCR
+	beq dev
+nodev	lda #%11111100
+	jsr clrmask
+dev	.)
+	rts
+
+clrmask	ldx #0
+	tay
+sm1	and opts_mask,x
+	sta opts_mask,x
+	tya
+	inx
+	cpx #10
+	bcc sm1
+	rts
+clrmask2
+	ldx #0
+	tay
+sm2	and opts_mask2,x
+	sta opts_mask2,x
+	tya
+	inx
+	cpx #10
+	bcc sm2
+	rts
+	.)
+
 	; ----------------------------
 	; screen routines
 	.(
 
+	.xl
+
 ; screen position starts line 7, position 11
 ; distance every 3 chars
-start	=$8000+40*9+11
+start	=$8000+40*10+11
 pos	=2
 
 &opttext_xl .(
@@ -51,36 +187,29 @@ endt
 text	.asc "           MICRO-/ULTI-PET              "
 	.asc "              OPTIONS                   "
 	.asc "                                        "
-	.asc "CRSR TO SELECT, SPACE TO CHANGE         "
+	.asc "CRSR TO SELECT, SPC TO CHANGE, X TO EXIT"
 	.asc "                                        "
-	.asc "               NORMAL       SHIFTED     "
+	.asc "           <---NORMAL---><---SHIFTED--->"
 	.asc "           1  2  4  6  8  1  2  4  6  8 "
+	.asc "                                        "
 	.asc "KERNAL                                  "
 	.asc "BASIC                                   "
 	.asc "EDITOR                                  "
-        .asc "SD-CARD                                 "
-        .asc "USB                                     "
-	.asc "SERIAL IEC                              "
-	.asc "RS232                                   "
 	.asc "MONITOR                                 "
+        .asc "SD-CARD                                 "
         .asc "SD UNIT                                 "
+	.asc "SER IEC                                 "
 	.asc "IEC PRIO                                "
+	.asc "RS232 A                                 "
+	.asc "RS232 B                                 "
+        .asc "USB HID                                 "
 	.asc 0
 	.)
 
 	.xs
 
 &set_opts_xs .(
-; opts bits are:
-;	bit 7: KERNAL enhancements
-;	bit 6: BASIC enhancements
-;	bit 5: new EDITOR (sjg)
-;	bit 4: enable SD-Card support
-;	bit 3: enable USB support
-;	bit 2: enable serial IEC support
-;	bit 1: enable RS232 support
-;	bit 0: enable 65816 monitor
-;
+
 	ldx #0
 	stx x
 	ldy #0
@@ -98,15 +227,29 @@ upper	lda opts_mask2,x
 	and pow2-8,y
 rl1	beq nextopt
 
-	cpy #8
-	bne nounit
-	lda unit_vals,x
-	jsr showunit
-	bra nextopt
-nounit	bcs nextopt
+	cpy #5
+	beq unit
+	cpy #7
+	beq prio
+	bcs uppr
+
 	lda opts_vals,x
 	and pow2,y
 	jsr showopt
+	bra nextopt
+uppr	
+	lda opts_vals2,x
+	and pow2-8,y
+	jsr showopt
+	bra nextopt
+unit
+	lda unit_vals,x
+	jsr showunit
+	bra nextopt
+
+prio	lda opts_vals,x
+	and pow2,y
+	jsr showprio
 nextopt	inc x
 	ldx x
 	cpx #10
@@ -115,7 +258,7 @@ nextopt	inc x
 	stx x
 	inc y
 	ldy y
-	cpy #10
+	cpy #11
 	bcc rowloop
 	ldy #0
 	sty y
@@ -274,31 +417,32 @@ dl	lda (pos),y
 
 action	ldx x
 	ldy y
-	cpy #8
-	bcs actxtra
-	cpy #8
-	lda opts_vals,x
+	cpy #5
+	beq actunit
+	cpy #7
+	beq actprio
 	bcs act2
+	lda opts_vals,x
 	eor pow2,y
 	sta opts_vals,x
 	and pow2,y
 	bra act2b
-act2	eor pow2-8,y
-	sta opts_vals,x
+act2	lda opts_vals2,x
+	eor pow2-8,y
+	sta opts_vals2,x
 	and pow2-8,y
 act2b	jsr showopt
 	jmp act
 &showopt
-	bne notset
-	lda #"*"
+	beq notset
+	lda #ONCHAR
 	.byt $2c
-notset	lda #"-"
+notset	lda #OFFCHAR
 	ldy #1
 	sta (pos),y
 	rts
 
-actxtra	cpy #8
-	bne actprio
+actunit
 	ldx x
 	lda unit_vals,x
 	cmp #11
@@ -329,11 +473,98 @@ tenplus	lda #"1"
 	sta (pos),y
 	rts
 
-actprio clc
-	rts	
+actprio
+	ldx x
+	lda opts_vals,x
+	eor pow2,y
+	sta opts_vals,x
+	and pow2,y
+	jsr showprio
+	jmp endo
+&showprio
+	bne prioser
+	lda #"P"
+	.byt $2c
+prioser	lda #"S"
+	and #$bf
+	ldy #1
+	sta (pos),y
+	rts
 	.)
 
 	.xl
+
+        ; ----------------------------
+        ; In: AC has key in ASCII
+        ;
+        ; out:  c=0:    no option
+        ;       c=1:    result is in AC:
+	;
+	; stores selected options in 
+	; opt0, opt1, opt2, and optu
+        ;
+        .xl
+&&conv_char2opt_xl .(
+        ldx #opts-chars-1
+l0      cmp chars,x
+        beq found       ; implicit sec
+        dex
+        bpl l0
+        clc
+        rts
+found   cpx #10
+	bcc notusb
+	txa
+	sbc #5
+	tax
+notusb
+	lda optkbd
+        and #%00101000  ; filter usb and c64 kbd flags
+        ora opts,x
+	sta opt0
+
+	; copy editor ROM bit for easier EDIT rom selection
+	lda opts_vals,x
+	and #%00100000
+	asl
+	asl
+	ora opt0
+	sta opt0
+
+	lda opts_vals,x
+	and opts_mask,x
+	sta opt1
+
+	lda opts_vals2,x
+	and opts_mask2,x
+	sta opt2
+
+	lda unit_vals,x
+	sta optu
+        sec
+        rts
+	.)
+
+chars   .byt "12468"
+        ; shifted keys from pet / c64 kbd
+        .byt "1"+128,"2"+128,"4"+128,"6"+128,"8"+128
+        ; shifted keys from USB
+        .byt "!^"$^^*"
+        .byt "o"
+opts
+        .byt %00000001          ; patched basic1
+        .byt %00000010          ; patched basic2
+        .byt %00000011          ; patched 40 col
+        .byt %01000011          ; patched 8296
+        .byt %01000011          ; patched 80 col
+
+        .byt %00000001          ; unpatched basic1
+        .byt %00000010          ; unpatched basic2
+        .byt %00000011          ; unpatched 40 col
+        .byt %01010011          ; unpatched 8296
+        .byt %01000011          ; unpatched 80 col
+
+        .byt %00000100          ; option menu
 
 	; temp
 x	.byt 0
@@ -349,44 +580,59 @@ pow2	.byt %10000000
 	.byt %00000010
 	.byt %00000001
 
-opts_mask
+	; bits are:
+	
+&opts_mask
 	.byt %10000000		; 1
 	.byt %00000000		; 2
-	.byt %11111001		; 4
-	.byt %11111001		; 6
-	.byt %11111001		; 8
+	.byt %11111111		; 4
+	.byt %11111111		; 6
+	.byt %11111111		; 8
 
 	.byt %10000000		; 1
 	.byt %00000000		; 2
-	.byt %11111001		; 4
-	.byt %11111001		; 6
-	.byt %11111001		; 8
+	.byt %11111111		; 4
+	.byt %11111111		; 6
+	.byt %11111111		; 8
 
-opts_mask2
+&opts_mask2
 	.byt %00000000		; 1
 	.byt %00000000		; 2
-	.byt %11000000		; 4
-	.byt %11000000		; 6
-	.byt %11000000		; 8
+	.byt %11100000		; 4
+	.byt %11100000		; 6
+	.byt %11100000		; 8
 
 	.byt %00000000		; 1
 	.byt %00000000		; 2
-	.byt %11000000		; 4
-	.byt %11000000		; 6
-	.byt %11000000		; 8
+	.byt %11100000		; 4
+	.byt %11100000		; 6
+	.byt %11100000		; 8
 
 opts_vals
+	.byt %10000000		; 1
+	.byt %00000000		; 2
+	.byt %11111100		; 4
+	.byt %11111100		; 6
+	.byt %11111100		; 8
+
 	.byt %00000000		; 1
 	.byt %00000000		; 2
 	.byt %00000000		; 4
 	.byt %00000000		; 6
 	.byt %00000000		; 8
 
-	.byt %10000000		; 1
+opts_vals2
+	.byt %00000000		; 1
 	.byt %00000000		; 2
-	.byt %11111001		; 4
-	.byt %11111001		; 6
-	.byt %11111001		; 8
+	.byt %00100000		; 4
+	.byt %00100000		; 6
+	.byt %00100000		; 8
+
+	.byt %00000000		; 1
+	.byt %00000000		; 2
+	.byt %00000000		; 4
+	.byt %00000000		; 6
+	.byt %00000000		; 8
 
 unit_vals
 	.byt 8			; 1
@@ -401,7 +647,6 @@ unit_vals
 	.byt 8			; 6
 	.byt 8			; 8
 
-
-
+	.)
 	.)
 

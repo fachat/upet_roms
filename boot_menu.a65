@@ -15,8 +15,8 @@
 chkloop	lda opt
 	beq chkloop
 
-	jsr conv_char2opt
-	bcc chkloop		; unknown option
+	;jsr conv_char2opt
+	;bcc chkloop		; unknown option
 
 	rep #%00010000
 	.xl

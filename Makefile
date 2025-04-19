@@ -32,10 +32,9 @@ spiimgc: rebuildclean spiimg spiimg70m
 spiimg: zero boot basic1 edit1 kernal1 basic2 edit2g kernal2 chargen_pet16 chargen_pet1_16 basic4 kernal4 edit40g edit80g iplldr $(EDITROMS) apmonax edit80_grfkb_ext_chk.bin edit80_chk.bin usbcode usbcomp dos.bin
 	# ROM images
 	cat iplldr					> $@	# 256b   : IPL loader
-	cat boot					>> $@	# 4k+6*256  : boot code
-	cat zero					>> $@	# 4k zero
+	cat boot					>> $@	# 2k+6*256  : boot code
+	cat zero					>> $@	# 2k zero
 	cat usbcomp					>> $@	# 256b	 : 
-	#cat apmonax					>> $@	# 4-8k   : @MON monitor (sys40960)
 	# standard character ROM (converted to 16 byte/char)
 	cat chargen_pet16 				>> $@	# 8-16k  : 8k 16bytes/char PET character ROM
 	# BASIC 1

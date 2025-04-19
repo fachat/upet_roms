@@ -34,8 +34,8 @@ key_pet	.(
 sameopt	rts
 nolast	lda #0
 	sta lastopt
-noopt 	lda #0
-	sta opt
+noopt 	;lda #0
+	;sta opt
 	rts
 	.)
 
@@ -268,63 +268,6 @@ stab_petn .asc "=.^@",TC_ESC,"< {", TC_HT
           .asc "9"+128,"7"+128,"^^OUTEQ"
 	  .asc TC_INS,TC_CUP,"^@)\\'$":.byt $22
           .asc TC_CLFT,TC_CLR,"|(&%#!"
-
-	.)
-
-	; ----------------------------
-	; In: AC has key in ASCII
-	;
-	; out: 	c=0:	no option
-	;	c=1:	result is in AC:
-	; bit 7	  - if set, unpatched
-	; bit 6   - 1=80 cols
-	; bit 5   - 1=C64 kbd
-	; bit 4   - 1=8296 ext.
-	; bit 3   - USB kbd support (only BASIC4, only w/ option from USB)
-	; bit 2   - option menu
-	; bit 1/0 - model (01=basic1, 10=basic2, 11=basic4) 
-	;
-&conv_char2opt .(
-	ldx #opts-chars-1
-l0	cmp chars,x
-	beq found	; implicit sec
-	dex
-	bpl l0
-	clc
-	rts
-found	lda optkbd
-	and #%00101000	; filter usb and c64 kbd flags
-	ora opts,x
-	sec
-	rts
-	
-
-chars	.byt "12468"
-	; shifted keys from pet / c64 kbd
-	.byt "1"+128,"2"+128,"4"+128,"6"+128,"8"+128
-	; shifted keys from USB
-	.byt "!^"$^^*"
-	.byt "o"
-opts	
-	.byt %00000001		; patched basic1
-	.byt %00000010		; patched basic2
-	.byt %00000011		; patched 40 col
-	.byt %01000011		; patched 8296
-	.byt %01000011		; patched 80 col
-
-	.byt %10000001		; unpatched basic1
-	.byt %10000010		; unpatched basic2
-	.byt %10000011		; unpatched 40 col
-	.byt %11010011		; unpatched 8296
-	.byt %11000011		; unpatched 80 col
-
-	.byt %10000001		; unpatched basic1
-	.byt %10000010		; unpatched basic2
-	.byt %10000011		; unpatched 40 col
-	.byt %11010011		; unpatched 8296
-	.byt %11000011		; unpatched 80 col
-
-	.byt %00000100		; option menu
 
 	.)
 

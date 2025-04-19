@@ -64,6 +64,11 @@ opt	=$87fd
 optkbd	=$87fc
 lastopt	=$87fb
 
+&opt0	=$87f8
+&opt1	=$87f7
+&opt2	=$87f6
+&optu	=$87f5
+
 VCTRL   =$e800
 MCTRL   =$e801
 BANK    =$e802
@@ -169,10 +174,12 @@ copy
 	jsr clrscreen_xl
 
 	jsr setup_usb_xl
+
+	jsr do_options_init_xl
 mloop
 	jsr do_menu_xl
 
-	cmp #%00000100
+	cmp #"o"
 	bne doreal
 
 	jsr do_options_xl
@@ -182,7 +189,7 @@ mloop
 
 	jmp mloop
 doreal
-	; save config byte
+	; save config char ("1", "2", ..)
 	pha
 
 	jsr usb_uninst
@@ -194,7 +201,17 @@ doreal
 	lda #$05
 	jsr setcol_xl
 
+	; TODO optimize into a single call
+
 	pla
+	; convert selected boot option to config bits (opt0-2,u)
+	jsr conv_char2opt_xl
+
+	; not found - something bad
+	bcs foundopt
+	jmp jmpboot
+foundopt
+
        ; ----------------------------                                        
        ; In: AC has key in ASCII                                             
        ;                                                                     
@@ -209,7 +226,7 @@ doreal
 
 	;----------------------------------------------------
 	; 1= Basic1, 2=Basic2, 3=Basic4
-	pha	
+	lda opt0	
 	and #%00000011	; ROM version
 
 	cmp #1

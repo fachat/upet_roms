@@ -17,6 +17,11 @@
  *	a line from the directory listing - ignoring the PRG
  *	output of the DIRECTORY/CATALOG command.
  *
+ * TODO: 
+ *	- POKE addr, val1 [,val2][,val3]...
+ *	- disable ATN on IEEE break
+ *	- if C64 start address detected, change BASIC start
+ *
  * TODO: shorten code by using long registers
  */
 
@@ -40,18 +45,35 @@ curdev		=$d4	; current device number
 link	.word 0
 
 	.dsb $0410-*
-#else
-opt_install:
+
+	jsr patch_rom4_init
+	jsr patch_kernal4
+	jsr patch_basic4
+	jmp patch_rom4_end
 #endif
+
+	.(
+
+&patch_rom4_init .(
+	sei
+	lda #0		; write-enable all ROMs
+	sta $e801
+	jsr patch_in_code
+	rts
+.)
+
+&patch_rom4_end .(
+	lda #$f0	; write protect all ROMs
+	sta $e801
+	cli
+	rts
+.)
+
+&patch_kernal4 .(	
 	; clear out the jump table from unrelated BASIC jumps
 	; Note that those are referenced in the BASIC token 
 	; list, so we need to patch in address minus 1
-
-
-	sei
-
-	lda #0		; write-enable all ROMs
-	sta $e801
+	jsr patch_in_jmptbl
 
 	; remove the page FF jmp table entries that are only used from
 	; BASIC
@@ -63,6 +85,19 @@ opt_install:
 	; This also frees zeropage location $99/$9a
 	jsr remove_timerfix
 
+	; pass all calls to STOP through FFE1
+	jsr use_jmptable_stop
+
+	; link in check for STOP in IEEE
+	jsr link_ieee_stop
+
+	; add missing ATN disable
+	;jsr disable_atn
+
+	rts
+	.)
+
+&patch_basic4 .(
 	; convenience: remove check for D drive parameters
 	; being 0/1 only.
 	jsr remove_d01_check
@@ -71,23 +106,8 @@ opt_install:
 	; in disk basic commands
 	jsr ignore_after_filename
 
-	; pass all calls to STOP through FFE1
-	jsr use_jmptable_stop
-
-	; patch in extra code
-	jsr patch_in_code
-
-	; link in check for STOP in IEEE
-	jsr link_ieee_stop
-
-	; add missing ATN disable
-	;jsr disable_atn
-
-	lda #$f0	; write protect all ROMs
-	sta $e801
-
-	cli	
 	rts
+	.)
 
 	; --------------------------------------------------------------	
 	; in some cases ATN is active after a STOP, which prevents
@@ -118,13 +138,16 @@ link_ieee_stop .(
 
 	; --------------------------------------------------------------	
 	; patch in extra code
-patch_in_code .(
+&patch_in_code .(
 	ldy #patch1len
 l1	lda patch1code-1,y
 	sta PATCH1-1,y
 	dey
 	bne l1
+	rts
+	.)
 
+patch_in_jmptbl .(
 	ldy #patch2len
 l2	lda patch2code-1,y
 	sta PATCH2-1,y
@@ -610,4 +633,6 @@ patch4code
 	jmp $f563	; OPEN		open a file after using SETLFS/SETNAM
 	patch4len = *-PATCH4
 	*=patch4code + patch4len
+
+	.)
 

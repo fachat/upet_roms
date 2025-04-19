@@ -1,6 +1,5 @@
 
 setup_basic4_xl	.(
-
 	; where do we store the extra patch code
 IEEE_PATCH	=$fe20		; IEEE fix for faster CPU clocks
 SDC_COMPANION	=$fe30		; SD-Card link
@@ -27,7 +26,7 @@ USB_CPAGE	=$1f	;$0f	; where USB companion is in flash
 	ldy #$1000
 	jsr flash2direct_xl
 
-	pla		; bits 7/6/5 have number of editor ROM
+	lda opt0	; bits 7/6/5 have number of editor ROM
 			; bit 7: 1=orig, 0=patched
 			; bit 6: 1=80 col, 0=40 col
 			; bit 5: 1=c64, 0=PET-N kbd
@@ -39,21 +38,24 @@ USB_CPAGE	=$1f	;$0f	; where USB companion is in flash
 			; 101 = C64,   40 col, orig
 			; 110 = PET-N, 80 col, orig
 			; 111 = C64,   80 col, orig
-	pha
 	and #%11100000
 	lsr
 	ldx #$e000
 	ldy #$1000
 	jsr flash2direct2_xl
 
+jmp b4_orig
+	; ------------------
 	; check USB patch
-	pla
-	pha
+	lda opt0		; from keyboard selection
 	and #%00001000
+	bne dousb
+	lda opt2		; from options menu
+	and #%00100000
 	beq nousb
-
+dousb
 	; copy over petromcomp to destination at $dfxx
-	lda #$0f		; page in flash
+	lda #USB_CPAGE		; page in flash
 	ldx #USB_COMPANION	; target in bank 0
 	ldy #$0100		; length
 	jsr flash2direct_xl
@@ -71,23 +73,34 @@ USB_CPAGE	=$1f	;$0f	; where USB companion is in flash
 	; reverse write protect done there
 	lda #0
 	sta $e801
+
+	; ------------------
+	; check SD Card
 nousb	
+	lda opt1
+	and #%00000100
+	bne nosd
+	jsr patch_sdcard4_xl
+nosd
+	; ------------------
 	; check BASIC4 patch
-	pla
-	pha
-	bmi b4_orig
+	; uses kernel, basic, siec patch bits
 	jsr patch_rom4_xl
+
+
+	; ------------------
+	; memory map setup
 b4_orig
 	; check 80 column bit
-	pla
-	pha
+	; TODO move to Viccy on FPGA machines
+	lda opt0
 	and #%01000000
 	beq col40
 	lda #%00000010
 	sta VCTRL
 col40
 	; check 8296 bit
-	pla
+	lda opt0
 	and #%00010000
 	beq not_96
 	; 8296
@@ -98,7 +111,7 @@ not_96	lda #%11100000
 	jmp end
 
 
-patch_rom4_xl .(
+patch_sdcard4_xl .(
 
 	; -------------------------------
 	; SD Card patch
@@ -121,11 +134,32 @@ l	lda $4000-1,x
 
 	jsr sdcard_install
 
-	jsr opt_install
+	rep #%00010000
+	.xl
+	rts
+	.)
+
+patch_rom4_xl .(
+  	; set X/Y registers to 8 bit ...
+        sep #%00010000
+        .xs
+
+	jsr patch_rom4_init
+
+	lda opt1
+	and #%10000000
+	beq nokern
+	jsr patch_kernal4
+nokern
+	lda opt1
+	and #%01000000
+	beq nobasic
+	jsr patch_basic4
+nobasic
+	jsr patch_rom4_end
 
 	rep #%00010000
 	.xl
-
 	; -------------------------------
 	; IEEE speed patch
 
