@@ -44,7 +44,6 @@ USB_CPAGE	=$1f	;$0f	; where USB companion is in flash
 	ldy #$1000
 	jsr flash2direct2_xl
 
-jmp b4_orig
 	; ------------------
 	; check USB patch
 	lda opt0		; from keyboard selection
@@ -79,7 +78,7 @@ dousb
 nousb	
 	lda opt1
 	and #%00000100
-	bne nosd
+	beq nosd
 	jsr patch_sdcard4_xl
 nosd
 	; ------------------
@@ -132,6 +131,7 @@ l	lda $4000-1,x
         sep #%00010000
         .xs
 
+	lda optu
 	jsr sdcard_install
 
 	rep #%00010000

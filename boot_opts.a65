@@ -2,7 +2,7 @@
 	.(
 
 ; opt0	bits are:
-;	bit 7: copy of EDITOR ROM patch bit
+;	bit 7: 1=orig editor - inverted copy of EDITOR ROM patch bit
 ;	bit 6: 1=80 col, 0=40 col
 ;	bit 5: 1=c64 kbd, 0=pet-N kbd
 ;	bit 4: 1=8296 memory map, 0= normal
@@ -523,11 +523,12 @@ notusb
         ora opts,x
 	sta opt0
 
-	; copy editor ROM bit for easier EDIT rom selection
+	; copy inverted editor ROM bit for easier EDIT rom selection
 	lda opts_vals,x
 	and #%00100000
 	asl
 	asl
+	eor #%10000000
 	ora opt0
 	sta opt0
 
