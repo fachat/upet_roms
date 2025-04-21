@@ -237,7 +237,7 @@ usb65:
 usbcode: usbcode.a65 usb65/platforms/upet/petrom
 	xa -o $@ $<
 
-usbcomp: usbcomp.a65 usb65/platforms/upet/petromcomp
+usbcomp: usbcomp.a65 usb65/platforms/upet/petromcomp.a65
 	xa -o $@ $<
 
 ##########################################################################	
