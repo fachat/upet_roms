@@ -47,10 +47,10 @@ USB_CPAGE	=$1f	;$0f	; where USB companion is in flash
 	; ------------------
 	; check USB patch
 	lda opt0		; from keyboard selection
-	and #%00001000
+	and #OPT0_USBKBD
 	bne dousb
 	lda opt2		; from options menu
-	and #%00100000
+	and #OPT2_USBHID
 	beq nousb
 dousb
 	; copy over petromcomp to destination at $dfxx
@@ -77,7 +77,7 @@ dousb
 	; check SD Card
 nousb	
 	lda opt1
-	and #%00000100
+	and #OPT1_SDCARD
 	beq nosd
 	jsr patch_sdcard4_xl
 nosd
@@ -147,12 +147,12 @@ patch_rom4_xl .(
 	jsr patch_rom4_init
 
 	lda opt1
-	and #%10000000
+	and #OPT1_KERNAL
 	beq nokern
 	jsr patch_kernal4
 nokern
 	lda opt1
-	and #%01000000
+	and #OPT1_BASIC
 	beq nobasic
 	jsr patch_basic4
 nobasic

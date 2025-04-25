@@ -153,6 +153,8 @@ openkbd
 	beq is8
 	cpx #26		; 6/6 = "1"
 	beq is1
+	cpx #57		; 2/7 = "9"
+	beq is9
 	cpx #60		; 2/4 = "o" for options
 	beq isopt
 
@@ -162,7 +164,7 @@ openkbd
 	; derived from https://www.keymmodore.com/the-matrix/
 ;	cpx #42		; 4/6 = "4" = Right shift on C64 - clash with N-type "4"
 ;	beq gotshift
-	cpx #22		; 7/2 = "N" = "6" on C64 kbd - 8296 not working
+	cpx #22		; 7/2 = "N" = "6" on C64 kbd 
 	beq is8296
 ;	cpx #24		; 7/0 = "X" = "2" on C64 kbd - no C64 kbd option
 ;	beq is2
@@ -174,6 +176,9 @@ openkbd
 ;	beq is1c64
 	cpx #28		; 6/4 = ";" = "o" on C64 kbd
 	beq isopt
+	cpx #76		; 0/4 = "(" = "9" on C64 kbd
+	beq is9
+is9
 bloopx
 	pla		; get shift from stack and ignore
 	clc	
@@ -229,7 +234,7 @@ dec_shiftpet
 	rts
 	
 ktab_c64  .byt "1_", 2 /* control */, "2 ", TC_HT /* C= */, "q", 3 /* stop */  
-          .byt "|*;", TC_HOME, 1 /* shift */, "=^^/"                           
+          .byt "|*;", TC_HOME, 1 /* shift */, "=","^","/"                           
           .byt "+pl-.:@,"                                                      
           .byt "9ij0mkon"                                                      
           .byt "7yg8bhuv"                                                      
@@ -251,22 +256,22 @@ ktab_petn .asc "=.",0,3,"< [", TC_HT
           .asc "-0",0,">",0,"]@",0
           .asc "+2",0,"?,nvx"                                 
           .asc "31",TC_CR,";mbcz"
-          .asc "*5^@:khfs"                                        
-          .asc "64^@ljgda"
-          .asc "/8^@piyrw"                                        
-          .asc "97^^outeq"
-	  .asc TC_BS,TC_CDWN,"^@)\\'$":.byt $22   
+          .asc "*5",0,":khfs"                                        
+          .asc "64",0,"ljgda"
+          .asc "/8",0,"piyrw"                                        
+          .asc "97","^","outeq"
+	  .asc TC_BS,TC_CDWN,0,")\\'$":.byt $22   
 	  .asc TC_CRGT,TC_HOME,"~(&%#!"
 
-stab_petn .asc "=.^@",TC_ESC,"< {", TC_HT
-          .asc "-0^@>^@}@^@"
-	  .asc "+","2"+128, "^@?,NVX"
+stab_petn .asc "=.",0,TC_ESC,"< {", TC_HT
+          .asc "-0",0,">",0,"}@",0
+	  .asc "+","2"+128, 0,"?,NVX"
           .asc "3"+128, "1"+128, TC_LF,";MBCZ"
-	  .asc "*", "5"+128, "^@:KHFS"
-          .asc "6"+128,"4"+128,"^@LJGDA"
-	  .asc "/","8"+128,"^@PIYRW"
-          .asc "9"+128,"7"+128,"^^OUTEQ"
-	  .asc TC_INS,TC_CUP,"^@)\\'$":.byt $22
+	  .asc "*", "5"+128, 0,":KHFS"
+          .asc "6"+128,"4"+128,0,"LJGDA"
+	  .asc "/","8"+128,0,"PIYRW"
+          .asc "9"+128,"7"+128,"^","OUTEQ"
+	  .asc TC_INS,TC_CUP,0,")\\'$":.byt $22
           .asc TC_CLFT,TC_CLR,"|(&%#!"
 
 	.)

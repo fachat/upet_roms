@@ -1,4 +1,6 @@
 
+	.include "boot_opts.i65"
+
 	.(
 
 ; opt0	bits are:
@@ -102,7 +104,7 @@ UART	=$e818
         cmp #$f0
         beq dev
 nodev	sty UART+UART_MCR	; restore potential PIA register
-	lda #%01111111
+	lda #255-OPT2_SERA
 	jsr clrmask2
 dev	.)
 	.(
@@ -120,7 +122,7 @@ UART	=$e828
         cmp #$f0
         beq dev
 nodev	sty UART+UART_MCR	; restore potential PIA register
-	lda #%10111111
+	lda #255-OPT2_SERB
 	jsr clrmask2
 dev	.)
 	; --
@@ -136,8 +138,10 @@ VIA2	=$e850
 	sta VIA2+VIA_PCR
 	cmp VIA2+VIA_PCR
 	beq dev
-nodev	lda #%11111100
+nodev	lda #255-OPT1_SIEC
 	jsr clrmask
+	lda #255-OPT2_UNITOFF_M
+	jsr clrmask2
 dev	.)
 	rts
 
@@ -147,7 +151,7 @@ sm1	and opts_mask,x
 	sta opts_mask,x
 	tya
 	inx
-	cpx #10
+	cpx #OPT_MAX_X_I
 	bcc sm1
 	rts
 clrmask2
@@ -157,7 +161,7 @@ sm2	and opts_mask2,x
 	sta opts_mask2,x
 	tya
 	inx
-	cpx #10
+	cpx #OPT_MAX_X_I
 	bcc sm2
 	rts
 	.)
@@ -168,9 +172,9 @@ sm2	and opts_mask2,x
 
 	.xl
 
-; screen position starts line 7, position 11
-; distance every 3 chars
-start	=$8000+40*10+11
+; screen position starts line 9, position 12
+; distance every 2 chars
+start	=$8000+40*9+13
 pos	=2
 
 &opttext_xl .(
@@ -189,9 +193,9 @@ text	.asc "           MICRO-/ULTI-PET              "
 	.asc "                                        "
 	.asc "CRSR TO SELECT, SPC TO CHANGE, X TO EXIT"
 	.asc "                                        "
-	.asc "           <---NORMAL---><---SHIFTED--->"
-	.asc "           1  2  4  6  8  1  2  4  6  8 "
-	.asc "                                        "
+	.asc "            <--NORMAL---> <--SHIFTED--> "
+	.asc "             1 2 4 6 8 9   1 2 4 6 8 9  "
+	.asc "SPEED                                   "
 	.asc "KERNAL                                  "
 	.asc "BASIC                                   "
 	.asc "EDITOR                                  "
@@ -199,7 +203,7 @@ text	.asc "           MICRO-/ULTI-PET              "
         .asc "SD-CARD                                 "
         .asc "SD UNIT                                 "
 	.asc "SER IEC                                 "
-	.asc "IEC PRIO                                "
+	.asc "UNIT +10                                "
 	.asc "RS232 A                                 "
 	.asc "RS232 B                                 "
         .asc "USB HID                                 "
@@ -227,9 +231,9 @@ upper	lda opts_mask2,x
 	and pow2-8,y
 rl1	beq nextopt
 
-	cpy #5
+	cpy #OPT1_SDUNIT_I
 	beq unit
-	cpy #7
+	cpy #OPT2_UNITOFF_I
 	beq prio
 	bcs uppr
 
@@ -247,12 +251,12 @@ unit
 	jsr showunit
 	bra nextopt
 
-prio	lda opts_vals,x
-	and pow2,y
+prio	lda opts_vals2,x
+	and pow2-8,y
 	jsr showprio
 nextopt	inc x
 	ldx x
-	cpx #10
+	cpx #OPT_MAX_X_I
 	bcc rowloop
 	ldx #0
 	stx x
@@ -311,7 +315,7 @@ nxleft2	dex
 	beq endo
 
 right 	ldx x
-nxrght	cpx #9
+nxrght	cpx #OPT_MAX_X_I
 	bcs endo
 	inx
 	ldy y
@@ -381,8 +385,10 @@ nxd2	lda opts_mask2,x
 	adc pos+1
 	sta pos+1
 	lda x
-	asl
-	adc x
+	cmp #6
+	bcc @1
+	adc #0
+@1	asl
 	adc pos
 	sta pos
 	lda #0
@@ -398,7 +404,7 @@ nxd2	lda opts_mask2,x
 	rts
 
 &act	jsr getpos
-	ldy #2
+	ldy #1
 al	lda (pos),y
 	ora #128
 	sta (pos),y
@@ -407,7 +413,7 @@ al	lda (pos),y
 	rts
 
 deact	jsr getpos
-	ldy #2
+	ldy #1
 dl	lda (pos),y
 	and #127
 	sta (pos),y
@@ -417,10 +423,11 @@ dl	lda (pos),y
 
 action	ldx x
 	ldy y
-	cpy #5
+	cpy #OPT1_SDUNIT_I
 	beq actunit
-	cpy #7
+	cpy #OPT2_UNITOFF_I
 	beq actprio
+	.assert OPT2_UNITOFF_I == 8, "optimized compare"
 	bcs act2
 	lda opts_vals,x
 	eor pow2,y
@@ -473,12 +480,13 @@ tenplus	lda #"1"
 	sta (pos),y
 	rts
 
+	.assert OPT2_UNITOFF_I > 7, "lookup tables"
 actprio
 	ldx x
-	lda opts_vals,x
-	eor pow2,y
-	sta opts_vals,x
-	and pow2,y
+	lda opts_vals2,x
+	eor pow2-8,y
+	sta opts_vals2,x
+	and pow2-8,y
 	jsr showprio
 	jmp endo
 &showprio
@@ -512,10 +520,10 @@ l0      cmp chars,x
         bpl l0
         clc
         rts
-found   cpx #10
+found   cpx #MAX_KEYS*2
 	bcc notusb
 	txa
-	sbc #5
+	sbc #MAX_KEYS
 	tax
 notusb
 	lda optkbd
@@ -525,7 +533,9 @@ notusb
 
 	; copy inverted editor ROM bit for easier EDIT rom selection
 	lda opts_vals,x
-	and #%00100000
+	and #OPT1_EDITOR
+	.assert OPT1_EDITOR == 16, "bit shift"
+	asl
 	asl
 	asl
 	eor #%10000000
@@ -546,11 +556,13 @@ notusb
         rts
 	.)
 
-chars   .byt "12468"
+MAX_KEYS =6
+
+chars   .byt "124689"
         ; shifted keys from pet / c64 kbd
-        .byt "1"+128,"2"+128,"4"+128,"6"+128,"8"+128
+        .byt "1"+128,"2"+128,"4"+128,"6"+128,"8"+128, "9"+128
         ; shifted keys from USB
-        .byt "!^"$^^*"
+        .byt "!",$22, "$", "^","*","("
         .byt "o"
 opts
         .byt %00000001          ; patched basic1
@@ -584,43 +596,55 @@ pow2	.byt %10000000
 	; bits are:
 	
 &opts_mask
-	.byt %10000000		; 1
-	.byt %00000000		; 2
+	.byt %11000000		; 1
+	.byt %10000000		; 2
 	.byt %11111111		; 4
 	.byt %11111111		; 6
 	.byt %11111111		; 8
 
-	.byt %10000000		; 1
-	.byt %00000000		; 2
+	.byt %11111111		; 9
+
+	.byt %11000000		; 1
+	.byt %10000000		; 2
 	.byt %11111111		; 4
 	.byt %11111111		; 6
 	.byt %11111111		; 8
+
+	.byt %11111111		; 9
 
 &opts_mask2
 	.byt %00000000		; 1
 	.byt %00000000		; 2
-	.byt %11100000		; 4
-	.byt %11100000		; 6
-	.byt %11100000		; 8
+	.byt %11110000		; 4
+	.byt %11110000		; 6
+	.byt %11110000		; 8
+
+	.byt %11100000		; 9
 
 	.byt %00000000		; 1
 	.byt %00000000		; 2
-	.byt %11100000		; 4
-	.byt %11100000		; 6
-	.byt %11100000		; 8
+	.byt %11110000		; 4
+	.byt %11110000		; 6
+	.byt %11110000		; 8
+
+	.byt %11100000		; 9
 
 opts_vals
-	.byt %10000000		; 1
-	.byt %00000000		; 2
-	.byt %11111100		; 4
-	.byt %11111100		; 6
-	.byt %11111100		; 8
+	.byt %11000000		; 1
+	.byt %10000000		; 2
+	.byt %11111111		; 4
+	.byt %11111111		; 6
+	.byt %11111111		; 8
+
+	.byt %11111111		; 9
 
 	.byt %00000000		; 1
 	.byt %00000000		; 2
 	.byt %00000000		; 4
 	.byt %00000000		; 6
 	.byt %00000000		; 8
+
+	.byt %00000000		; 9
 
 opts_vals2
 	.byt %00000000		; 1
@@ -629,11 +653,15 @@ opts_vals2
 	.byt %00100000		; 6
 	.byt %00100000		; 8
 
+	.byt %00100000		; 9
+
 	.byt %00000000		; 1
 	.byt %00000000		; 2
 	.byt %00000000		; 4
 	.byt %00000000		; 6
 	.byt %00000000		; 8
+
+	.byt %00000000		; 9
 
 unit_vals
 	.byt 8			; 1
@@ -642,12 +670,15 @@ unit_vals
 	.byt 8			; 6
 	.byt 8			; 8
 
+	.byt 8			; 9
+
 	.byt 8			; 1
 	.byt 8			; 2
 	.byt 8			; 4
 	.byt 8			; 6
 	.byt 8			; 8
 
+	.byt 8			; 9
 	.)
 	.)
 
