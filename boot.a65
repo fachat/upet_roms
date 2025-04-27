@@ -175,6 +175,8 @@ copy
 
 	jsr setup_usb_xl
 
+	jsr setup_sdcard_xl
+
 	jsr do_options_init_xl
 mloop
 	jsr do_menu_xl
@@ -255,6 +257,15 @@ end
 	sep #%00010000
 	; ... and tell the assembler about it
 	.xs
+
+	lda optu
+	lsr
+	lsr
+	lsr
+	lsr
+	lsr
+	lsr
+	sta SPEED
 
 	; switch to native mode
 	sec
@@ -392,6 +403,7 @@ sl	sta VICCY
 #include "boot_rom2.a65"
 #include "boot_rom4.a65"
 #include "boot_usb.a65"
+#include "boot_sdcard.a65"
 #include "boot_irq.a65"
 
 	; this is 4k+6p byte max

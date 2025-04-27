@@ -28,6 +28,62 @@
 ONCHAR	=81
 OFFCHAR	=87
 
+&&do_options_init_xl .(
+	; switches to .xs
+	sep #%00010000
+	.xs
+
+	; detect hardware, set masks
+	jsr detect_xs
+
+	; switches to .xs
+	rep #%00010000
+	.xl
+	rts
+	.)
+
+&&do_options_xl .(
+	; clear the screen
+	jsr clrscreen_xl
+
+	; display the (empty) options menue
+	jsr opttext_xl
+
+	; switches to .xs
+	sep #%00010000
+	.xs
+
+	; display the current options values
+	jsr set_opts_xs
+
+doloop	lda #0
+	sta opt
+
+	; wait for keyboard input (from interrupt)
+chkloop	lda opt
+	beq chkloop
+
+	; handle keyboard interrupt
+	jsr do_opt_xs
+	bcc doloop
+
+	rep #%00010000
+	.xl
+
+	pha
+	jsr clrscreen_xl
+	pla
+	rts
+	.)
+
+	; ==========================================================
+	; detect hardware and handle option masks
+
+	.xs
+	; ----------------------------
+	; detect logic
+detect_xs .(
+	;-- detect UART 1 at $e818
 ; to detect a UART 16550 
 
 UART_RXTX       =0               ; DLAB=0 
@@ -42,53 +98,6 @@ UART_LSR        =5               ; Line Status Reg
 UART_MSR        =6               ; Modem Status Reg 
 UART_SCR        =7               ; 'scratchpad', i.e. unused 
 
-&&do_options_init_xl .(
-	; switches to .xs
-	sep #%00010000
-	.xs
-
-	jsr detect_xs
-
-	; switches to .xs
-	rep #%00010000
-	.xl
-	rts
-	.)
-
-&&do_options_xl .(
-	jsr clrscreen_xl
-
-	jsr opttext_xl
-
-	; switches to .xs
-	sep #%00010000
-	.xs
-
-	jsr set_opts_xs
-
-doloop	lda #0
-	sta opt
-
-chkloop	lda opt
-	beq chkloop
-
-	jsr do_opt_xs
-	bcc doloop
-
-	rep #%00010000
-	.xl
-
-	pha
-	jsr clrscreen_xl
-	pla
-	rts
-	.)
-
-	.xs
-	; ----------------------------
-	; detect logic
-detect_xs .(
-	;-- detect UART 1 at $e818
 	.(
 UART	=$e818
         ldy UART+UART_MCR
@@ -104,7 +113,7 @@ UART	=$e818
         cmp #$f0
         beq dev
 nodev	sty UART+UART_MCR	; restore potential PIA register
-	lda #255-OPT2_SERA
+	ldy #255-OPT2_SERA
 	jsr clrmask2
 dev	.)
 	.(
@@ -122,7 +131,7 @@ UART	=$e828
         cmp #$f0
         beq dev
 nodev	sty UART+UART_MCR	; restore potential PIA register
-	lda #255-OPT2_SERB
+	ldy #255-OPT2_SERB
 	jsr clrmask2
 dev	.)
 	; --
@@ -138,35 +147,33 @@ VIA2	=$e850
 	sta VIA2+VIA_PCR
 	cmp VIA2+VIA_PCR
 	beq dev
-nodev	lda #255-OPT1_SIEC
+nodev	ldy #255-OPT1_SIEC
 	jsr clrmask
-	lda #255-OPT2_UNITOFF_M
+	ldy #255-OPT2_UNITOFF_M
 	jsr clrmask2
 dev	.)
 	rts
 
 clrmask	ldx #0
-	tay
-sm1	and opts_mask,x
+sm1	tya
+	and opts_mask,x
 	sta opts_mask,x
-	tya
 	inx
 	cpx #OPT_MAX_X_I
 	bcc sm1
 	rts
 clrmask2
 	ldx #0
-	tay
-sm2	and opts_mask2,x
+sm2	tya
+	and opts_mask2,x
 	sta opts_mask2,x
-	tya
 	inx
 	cpx #OPT_MAX_X_I
 	bcc sm2
 	rts
 	.)
 
-	; ----------------------------
+	; ==========================================================
 	; screen routines
 	.(
 
@@ -212,6 +219,9 @@ text	.asc "           MICRO-/ULTI-PET              "
 
 	.xs
 
+	; ----------------------------------------------------------
+	; display all options
+
 &set_opts_xs .(
 
 	ldx #0
@@ -231,6 +241,8 @@ upper	lda opts_mask2,x
 	and pow2-8,y
 rl1	beq nextopt
 
+	cpy #OPT1_SPEED_I
+	beq speed
 	cpy #OPT1_SDUNIT_I
 	beq unit
 	cpy #OPT2_UNITOFF_I
@@ -254,6 +266,12 @@ unit
 prio	lda opts_vals2,x
 	and pow2-8,y
 	jsr showprio
+	bra nextopt
+
+speed	lda unit_vals,x
+	jsr showspeed
+	; bra nextopt	; fallthrough
+
 nextopt	inc x
 	ldx x
 	cpx #OPT_MAX_X_I
@@ -262,111 +280,69 @@ nextopt	inc x
 	stx x
 	inc y
 	ldy y
-	cpy #11
+	cpy #OPT_MAX_Y_I
 	bcc rowloop
 	ldy #0
 	sty y
 	jmp act
 	.)
 
-&do_opt_xs .(
+&showunit .(
+	and #3
+	ora #8
+	ldy #0
 	pha
-	jsr deact
-	pla
-	cmp #TC_CRGT
-	beq right
-	cmp #TC_CLFT
-	beq left
-	cmp #TC_CUP
-	beq up
-	cmp #TC_CDWN
-	beq down2
-	cmp #" "
-	beq action2
-	cmp #"x"
-	beq out
-endo	jsr act
-	clc
-out	rts
-
-down2	jmp down
-action2	jmp action
-
-left 	ldx x
-	beq endo
-	ldy y
-	cpy #8
-	bcs nxleft2
-nxleft	dex
-	lda opts_mask,x
-	and pow2,y
-	bne goleft
-	txa
-	bne nxleft
-	beq endo
-goleft	stx x
-	bne endo
-nxleft2	dex
-	lda opts_mask2,x
-	and pow2-8,y
-	bne goleft
-	txa
-	bne nxleft2
-	beq endo
-
-right 	ldx x
-nxrght	cpx #OPT_MAX_X_I
-	bcs endo
-	inx
-	ldy y
-	cpy #8
-	bcs nxrght2
-	lda opts_mask,x
-	and pow2,y
-	beq nxrght
-gorght	stx x
-	bne endo
-nxrght2	lda opts_mask2,x
-	and pow2-8,y
-	bne gorght
-	beq nxrght
-
-up	ldy y
-	beq endo
-nxup	dey
-	ldx x
-	cpy #8
-	bcs nxup2
-	lda opts_mask,x
-	and pow2,y
-	bne goup
-nxup2a	tya
-	bne nxup
-	beq endo
-nxup2	lda opts_mask2,x
-	and pow2-8,y
-	beq nxup2a
-goup	sty y
-	bne endo2
-
-down	ldy y
-nxdown	cpy #10
-	bcs endo2
-	ldx x
+	cmp #10
+	bcs tenplus
+	lda #" "
+	sta (pos),y
 	iny
-	cpy #8
-	bcs nxd2
-	lda opts_mask,x
-	and pow2,y
-	beq nxdown
-godo	sty y
-endo2	jmp endo
-nxd2	lda opts_mask2,x
-	and pow2-8,y
-	bne godo
-	beq nxdown
+	pla
+	bra tp
+tenplus	lda #"1"
+	sta (pos),y
+	iny
+	pla
+	sbc #10
+tp	ora #$30
+	sta (pos),y
+	rts
+	.)
 
-&getpos	; activate an option
+&showspeed .(
+	asl
+	bcs is4orM
+	asl
+	bcs is2
+	lda #"1"
+	.byt $2c
+is2	lda #"2"
+	.byt $2c
+is4	lda #"4"
+	.byt $2c
+isM	lda #"M"
+	ldy #1
+	sta (pos),y
+	rts
+
+is4orM	asl
+	bcc is4
+	bcs isM
+	.)
+
+&showprio .(
+	beq prioser
+	lda #"P"
+	.byt $2c
+prioser	lda #"S"
+	and #$bf
+	ldy #1
+	sta (pos),y
+	rts
+	.)
+
+	; set pos screen pointer to x/y
+&getpos	.(
 	lda #0
 	sta pos+1
 	lda y
@@ -402,8 +378,11 @@ nxd2	lda opts_mask2,x
 	adc pos+1
 	sta pos+1
 	rts
+	.)
 
-&act	jsr getpos
+	; select an option
+&act	.(
+	jsr getpos
 	ldy #1
 al	lda (pos),y
 	ora #128
@@ -411,8 +390,11 @@ al	lda (pos),y
 	dey
 	bpl al
 	rts
+	.)
 
-deact	jsr getpos
+	; de-select an option
+deact	.(
+	jsr getpos
 	ldy #1
 dl	lda (pos),y
 	and #127
@@ -420,9 +402,118 @@ dl	lda (pos),y
 	dey
 	bpl dl
 	rts
+	.)
+
+	; ----------------------------------------------------------
+	; handle keyboard input on options menu
+
+&do_opt_xs .(
+	pha
+	jsr deact
+	pla
+	cmp #TC_CRGT
+	beq right
+	cmp #TC_CLFT
+	beq left
+	cmp #TC_CUP
+	beq up
+	cmp #TC_CDWN
+	beq down2
+	cmp #" "
+	beq action2
+	cmp #"x"
+	beq out
+endo	jsr act
+	clc
+out	rts
+
+	; --------------------------
+	; handle cursor actions
+
+down2	jmp down
+action2	jmp action
+
+left 	ldx x
+	beq endo
+	ldy y
+	cpy #8
+	bcs nxleft2
+nxleft	dex
+	lda opts_mask,x
+	and pow2,y
+	bne goleft
+	txa
+	bne nxleft
+	beq endo
+goleft	stx x
+	bne endo
+nxleft2	dex
+	lda opts_mask2,x
+	and pow2-8,y
+	bne goleft
+	txa
+	bne nxleft2
+	beq endo
+
+right 	ldx x
+nxrght	cpx #OPT_MAX_X_I-1
+	bcs endo
+	inx
+	ldy y
+	cpy #8
+	bcs nxrght2
+	lda opts_mask,x
+	and pow2,y
+	beq nxrght
+gorght	stx x
+	bne endo
+nxrght2	lda opts_mask2,x
+	and pow2-8,y
+	bne gorght
+	beq nxrght
+
+up	ldy y
+	beq endo
+nxup	dey
+	ldx x
+	cpy #8
+	bcs nxup2
+	lda opts_mask,x
+	and pow2,y
+	bne goup
+nxup2a	tya
+	bne nxup
+	beq endo
+nxup2	lda opts_mask2,x
+	and pow2-8,y
+	beq nxup2a
+goup	sty y
+	bne endo2
+
+down	ldy y
+nxdown	cpy #OPT_MAX_Y_I-1
+	bcs endo2
+	ldx x
+	iny
+	cpy #8
+	bcs nxd2
+	lda opts_mask,x
+	and pow2,y
+	beq nxdown
+godo	sty y
+endo2	jmp endo
+nxd2	lda opts_mask2,x
+	and pow2-8,y
+	bne godo
+	beq nxdown
+
+	; --------------------------
+	; handle actual change
 
 action	ldx x
 	ldy y
+	cpy #OPT1_SPEED_I
+	beq actspeed
 	cpy #OPT1_SDUNIT_I
 	beq actunit
 	cpy #OPT2_UNITOFF_I
@@ -449,55 +540,41 @@ notset	lda #OFFCHAR
 	sta (pos),y
 	rts
 
-actunit
-	ldx x
+actspeed .(
 	lda unit_vals,x
-	cmp #11
-	bne ainc
-	lda #7
-ainc	inc
+	clc
+	adc #64
+	sta unit_vals,x
+	jsr showspeed
+	jmp endo
+	.)
+
+actunit .(
+	lda unit_vals,x
+	and #3
+	inc
+	cmp #4
+	bcc a1
+	lda #0
+a1	pha
+	lda #%11111100
+	and unit_vals,x
+	sta unit_vals,x
+	pla
+	ora unit_vals,x
 	sta unit_vals,x
 	jsr showunit
 	jmp endo
-&showunit
-	ldy #0
-	pha
-	cmp #10
-	bcs tenplus
-	lda #" "
-	sta (pos),y
-	iny
-	pla
-	ora #$30
-	sta (pos),y
-	rts
-tenplus	lda #"1"
-	sta (pos),y
-	iny
-	pla
-	sbc #10
-	ora #$30
-	sta (pos),y
-	rts
+	.)
 
 	.assert OPT2_UNITOFF_I > 7, "lookup tables"
 actprio
-	ldx x
 	lda opts_vals2,x
 	eor pow2-8,y
 	sta opts_vals2,x
 	and pow2-8,y
 	jsr showprio
 	jmp endo
-&showprio
-	bne prioser
-	lda #"P"
-	.byt $2c
-prioser	lda #"S"
-	and #$bf
-	ldy #1
-	sta (pos),y
-	rts
 	.)
 
 	.xl
@@ -563,12 +640,14 @@ chars   .byt "124689"
         .byt "1"+128,"2"+128,"4"+128,"6"+128,"8"+128, "9"+128
         ; shifted keys from USB
         .byt "!",$22, "$", "^","*","("
-        .byt "o"
+        .byt "o" 		; options menu
 opts
         .byt %00000001          ; patched basic1
         .byt %00000010          ; patched basic2
         .byt %00000011          ; patched 40 col
         .byt %01000011          ; patched 8296
+        .byt %01000011          ; patched 80 col
+
         .byt %01000011          ; patched 80 col
 
         .byt %00000001          ; unpatched basic1
@@ -598,19 +677,19 @@ pow2	.byt %10000000
 &opts_mask
 	.byt %11000000		; 1
 	.byt %10000000		; 2
-	.byt %11111111		; 4
-	.byt %11111111		; 6
-	.byt %11111111		; 8
+	.byt %11110111		; 4
+	.byt %11110111		; 6
+	.byt %11110111		; 8
 
-	.byt %11111111		; 9
+	.byt %00000000		; 9
 
 	.byt %11000000		; 1
 	.byt %10000000		; 2
-	.byt %11111111		; 4
-	.byt %11111111		; 6
-	.byt %11111111		; 8
+	.byt %11110111		; 4
+	.byt %11110111		; 6
+	.byt %11110111		; 8
 
-	.byt %11111111		; 9
+	.byt %00000000		; 9
 
 &opts_mask2
 	.byt %00000000		; 1
@@ -619,7 +698,7 @@ pow2	.byt %10000000
 	.byt %11110000		; 6
 	.byt %11110000		; 8
 
-	.byt %11100000		; 9
+	.byt %00000000		; 9
 
 	.byt %00000000		; 1
 	.byt %00000000		; 2
@@ -627,7 +706,7 @@ pow2	.byt %10000000
 	.byt %11110000		; 6
 	.byt %11110000		; 8
 
-	.byt %11100000		; 9
+	.byt %00000000		; 9
 
 opts_vals
 	.byt %11000000		; 1
@@ -664,21 +743,19 @@ opts_vals2
 	.byt %00000000		; 9
 
 unit_vals
-	.byt 8			; 1
-	.byt 8			; 2
-	.byt 8			; 4
-	.byt 8			; 6
-	.byt 8			; 8
+	.byt %00000000		; 1 - 1 MHz, unit 8
+	.byt %00000000		; 2
+	.byt %00000000		; 4
+	.byt %00000000		; 6
+	.byt %00000000		; 8
+	.byt %00000000		; 9
 
-	.byt 8			; 9
-
-	.byt 8			; 1
-	.byt 8			; 2
-	.byt 8			; 4
-	.byt 8			; 6
-	.byt 8			; 8
-
-	.byt 8			; 9
+	.byt %00000000		; 1
+	.byt %00000000		; 2
+	.byt %00000000		; 4
+	.byt %00000000		; 6
+	.byt %00000000		; 8
+	.byt %00000000		; 9
 	.)
 	.)
 

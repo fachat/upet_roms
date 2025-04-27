@@ -13,7 +13,7 @@ That is why they can use the same code base.
 
 ![Micro-PET architecture](images/upet-system-architecture.png)
 
-This repository builds an *spiimg* resp. *spiimg70m* for the boot flash ROM, that 
+This repository builds an *spiimg* for the boot flash ROM, that 
 contains the initial program loader (IPL), a boot menu, and various ROM images
 to run as Commodore PET machines, as described below.
 
@@ -78,9 +78,8 @@ Then follow the various ROM images.
         |    |         8k PET charrom
         |    |         (16 byte per character)
         +----+ $02000
-        |    |         4k @MON in the PET4 variant (without editor extension)
-        +----+ $01000
         |    |         Boot loader, first 256 byte IPL's by CPLD
+        |    |
         +----+ $00000
 
 ## Build
@@ -148,11 +147,7 @@ The follwing features are present:
 
 ### Extended machine language monitor
 
-In the ROM area at $a000 there is the @MON machine language monitor included (with assembler
-and disassembler, and versatile search functions). 
-
-Note that the scrolling editor is (for now) disabled due to incompatibilities with the modified
-editor ROMs.
+TODO:: this will be replaced with a proper 65816 monitor
 
 ## Runtime Memory Map
 
