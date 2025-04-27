@@ -1,0 +1,35 @@
+
+.(
+
+tmp	=$0780ff	; last byte in stack on BLK 15
+
+&MAP_SDC	=SDCBLK
+
+SDCPAGE	=$c0
+
+SDCBLK  =15             ; bank 7 value for BANK  
+SDCBASE =$4000                                   
+
+        ; -----------------------                                        
+        ; copy over SD Card code to RAM                                      
+        ; $1c000-$1dfff in flash img                                     
+        ; copy to USBBASE                                                
+
+	.xl
+&setup_sdcard_xl
+        .(
+        lda #MAP_SDC 	; which RAM bank to use for SDCard support
+        sta BANK        ; $e802                                           
+
+        lda #SDCPAGE    ; page in flash
+        ldx #SDCBASE    ; start in current bank                          
+        ldy #$4000      ; transfer len                                   
+        jsr flash2direct2_xl                                             
+
+        lda #MAP_BAS	; switch back to bank 0
+        sta BANK                                                         
+	rts
+        .)                                                               
+
+.)
+
