@@ -187,6 +187,10 @@ mloop
 	bne doreal
 
 	jsr do_options_xl
+	
+	cmp #"x"
+	bne doreal
+
 	lda #0
 	sta opt
 	sta optkbd
@@ -411,6 +415,6 @@ sl	sta VICCY
 	; this is 4k+6p byte max
 	; 1st 256 byte is ipl
 
-	.dsb RUNADDR+22*256-*,$ff
+	.dsb RUNADDR+30*256-*,$ff
 	.)
 

@@ -46,7 +46,7 @@ BANK    =$e802
 ;BOOTCOL	=$05	; black background with light green text
 
 BOOTSTART	=$0100
-BOOTLEN		=$1600
+BOOTLEN		=$1e00
 
 	*=$ff00
 vreset	.(

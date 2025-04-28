@@ -33,7 +33,6 @@ spiimg: zero boot basic1 edit1 kernal1 basic2 edit2g kernal2 chargen_pet16 charg
 	# ROM images
 	cat iplldr					> $@	# 256b   : IPL loader
 	cat boot					>> $@	# 2k+6*256  : boot code
-	cat zero					>> $@	# 2k zero
 	cat usbcomp					>> $@	# 256b	 : 
 	# standard character ROM (converted to 16 byte/char)
 	cat chargen_pet16 				>> $@	# 8-16k  : 8k 16bytes/char PET character ROM

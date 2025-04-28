@@ -36,7 +36,12 @@ OFFCHAR	=46	;87
 	; detect hardware, set masks
 	jsr detect_xs
 
-	; switches to .xs
+	jsr load_from_eeprom_xs
+	bcc loadok
+
+	jsr load_from_rom_xs
+loadok
+	; switches to .xl
 	rep #%00010000
 	.xl
 	rts
@@ -73,6 +78,108 @@ chkloop	lda opt
 	pha
 	jsr clrscreen_xl
 	pla
+	rts
+	.)
+
+	; ==========================================================
+	; EEPROM routines
+	.xs
+
+load_from_eeprom_xs .(
+	lda #7
+	sta SPICTRL	; deselect any device
+	lda #5
+	sta SPICTRL	; select EEPROM/RTC chip
+
+	lda #3 		; eeprom read
+	sta SPIDATA
+	lda #32		; eeprom start of RAM
+	sta SPIDATA
+	lda #85		; bogus
+	sta SPIDATA
+
+	lda #85
+	sta checksum_dflt
+	sta checksum_dflt+1
+
+	ldy #0
+@1	lda SPIDATA	; read & trigger
+	sta opts_vals,y
+
+	clc
+	adc checksum_dflt
+	sta checksum_dflt
+	bcc @2
+	inc checksum_dflt+1
+@2
+	iny
+	cpy #12*3
+	bcc @1
+
+	;lda 
+	lda #7
+	sta SPICTRL
+
+	lda checksum
+	cmp checksum_dflt
+	bne mismatch
+	lda checksum+1
+	cmp checksum_dflt+1
+	bne mismatch
+	clc
+	rts
+mismatch
+	sec
+	rts
+	.)
+
+save_to_eeprom_xs .(
+	ldy #5		; write 5 pages (8 bytes per page)
+	ldx #0		; byte ind
+pageloop
+	lda #7
+	sta SPICTRL	; deselect any device
+	lda #5
+	sta SPICTRL	; select EEPROM/RTC chip
+	lda #6		; enable write latch EEWREN
+	sta SPIDATA
+	lda #7		; deselect device (activate latch)
+	sta SPICTRL
+	lda #5		; select EEPROM/RTC
+	sta SPICTRL
+
+	lda #2 		; eeprom write
+	sta SPIDATA
+	nop
+	stx SPIDATA
+byteloop
+	lda opts_vals,x	
+	sta SPIDATA
+	inx
+	txa
+	and #7
+	bne byteloop	; write 8 bytes
+
+	lda #7
+	sta SPICTRL	; deselect device
+
+	dey
+	bne pageloop
+
+	clc
+	rts
+mismatch
+	sec
+	rts
+	.)
+
+
+load_from_rom_xs .(
+	ldy #3*12-1
+@1	lda opts_vals_dflt,y
+	sta opts_vals,y
+	dey
+	bpl @1
 	rts
 	.)
 
@@ -419,27 +526,40 @@ line_inv .(
 	pha
 	jsr deact
 	pla
-	cmp #TC_CRGT
-	beq right
-	cmp #TC_CLFT
-	beq left
-	cmp #TC_CUP
-	beq up
-	cmp #TC_CDWN
-	beq down2
-	cmp #" "
-	beq action2
-	cmp #"x"
+
+	ldy #0
+@1	cmp cmds,y
+	beq found
+	iny
+	cpy #cmda-cmds
+	bcc @1
+
+	; compare with actual boot option to directly start from options
+	ldy #0
+@2	cmp chars,y
 	beq out
+	iny
+	cpy #6*3
+	bcc @2
+
 endo	jsr act
 	clc
 out	rts
 
+found	tya
+	asl
+	tax
+	lda cmds,y
+	sec	; for out
+	jmp (cmda,x)
+
+cmds	.byt TC_CRGT, TC_CLFT, TC_CUP, TC_CDWN
+	.byt " ", "x"
+cmda	.word right, left, up, down
+	.word action, out
+
 	; --------------------------
 	; handle cursor actions
-
-down2	jmp down
-action2	jmp action
 
 left 	ldx x
 	beq endo
@@ -481,7 +601,7 @@ nxrght2	lda opts_mask2,x
 	beq nxrght
 
 up	ldy y
-	beq endo
+	beq endo2
 nxup	dey
 	ldx x
 	cpy #8
@@ -491,7 +611,7 @@ nxup	dey
 	bne goup
 nxup2a	tya
 	bne nxup
-	beq endo
+	beq endo2
 nxup2	lda opts_mask2,x
 	and pow2-8,y
 	beq nxup2a
@@ -716,7 +836,11 @@ pow2	.byt %10000000
 
 	.byt %00000000		; 9
 
-opts_vals
+	.)
+
+	; --------------------------
+	; default entries (if not loaded from EEPROM)
+opts_vals_dflt
 	.byt %11000000		; 1
 	.byt %10000000		; 2
 	.byt %11111111		; 4
@@ -733,7 +857,7 @@ opts_vals
 
 	.byt %00000000		; 9
 
-opts_vals2
+opts_vals2_dflt
 	.byt %00000000		; 1
 	.byt %00000000		; 2
 	.byt %00010000		; 4
@@ -750,7 +874,7 @@ opts_vals2
 
 	.byt %00000000		; 9
 
-unit_vals
+unit_vals_dflt
 	.byt %00000000		; 1 - 1 MHz, unit 8
 	.byt %00000000		; 2
 	.byt %00000000		; 4
@@ -764,6 +888,22 @@ unit_vals
 	.byt %00000000		; 6
 	.byt %00000000		; 8
 	.byt %00000000		; 9
-	.)
+
+checksum_dflt
+	.word 0
+
+	; --------------------------
+	; actual config values
+	; TODO: move to real RAM?
+opts_vals
+	.dsb 12
+opts_vals2
+	.dsb 12
+unit_vals
+	.dsb 12
+checksum
+	.word 0
+
+
 	.)
 
