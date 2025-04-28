@@ -26,7 +26,7 @@
 ;
 
 ONCHAR	=81
-OFFCHAR	=87
+OFFCHAR	=46	;87
 
 &&do_options_init_xl .(
 	; switches to .xs
@@ -320,7 +320,7 @@ is2	lda #"2"
 	.byt $2c
 is4	lda #"4"
 	.byt $2c
-isM	lda #"M"
+isM	lda #"M"&$bf
 	ldy #1
 	sta (pos),y
 	rts
@@ -728,11 +728,11 @@ opts_vals
 opts_vals2
 	.byt %00000000		; 1
 	.byt %00000000		; 2
-	.byt %00100000		; 4
-	.byt %00100000		; 6
-	.byt %00100000		; 8
+	.byt %00010000		; 4
+	.byt %00010000		; 6
+	.byt %00010000		; 8
 
-	.byt %00100000		; 9
+	.byt %00010000		; 9
 
 	.byt %00000000		; 1
 	.byt %00000000		; 2
