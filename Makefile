@@ -226,6 +226,7 @@ clean:
 	rm -f iplldr edit80_chk.bin edit80_grfkb_ext_chk.bin kernal4t
 	rm -f romcheck loadrom loadrom.bin boot 
 	rm -f usbcode usbcomp 
+	rm -f dos.bin iplldr.lst 
 
 rebuildclean:
 	rm -f $(EDITROMS)
