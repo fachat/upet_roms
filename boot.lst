@@ -322,13 +322,13 @@ boot.a65
 
   170 A:9068                                    ;----------------------------------------------------
 
-  172 A:9068  20 cc a4                           jsr irq_install
+  172 A:9068  20 d5 a4                           jsr irq_install
 
   174 A:906b  20 71 91                           jsr clrscreen_xl
 
-  176 A:906e  20 22 a4                           jsr setup_usb_xl
+  176 A:906e  20 2b a4                           jsr setup_usb_xl
 
-  178 A:9071  20 b3 a4                           jsr setup_sdcard_xl
+  178 A:9071  20 bc a4                           jsr setup_sdcard_xl
 
   180 A:9074  58                                 cli 
 
@@ -351,7 +351,7 @@ boot.a65
 
   199 A:908e  20 06 df                           jsr usb_uninst
 
-  201 A:9091  20 e2 a4                           jsr irq_uninstall
+  201 A:9091  20 eb a4                           jsr irq_uninstall
 
   203 A:9094                                    ; set screen to green-on-black
   204 A:9094                                    ; before we set mode, as 8296 disables col mem access
@@ -362,7 +362,7 @@ boot.a65
 
   210 A:9099  68                                 pla 
   211 A:909a                                    ; convert selected boot option to config bits (opt0-2,u)
-  212 A:909a  20 54 9d                           jsr conv_char2opt_xl
+  212 A:909a  20 5d 9d                           jsr conv_char2opt_xl
 
   214 A:909d                                    ; not found - something bad
   215 A:909d  b0 03                              bcs foundopt
@@ -389,19 +389,19 @@ boot.a65
   236 A:90a7  c9 01                              cmp #1
   237 A:90a9  d0 03                              bne not_b1
 
-  239 A:90ab  4c 06 9e                           jmp setup_basic1_xl
+  239 A:90ab  4c 0f 9e                           jmp setup_basic1_xl
 
   241 A:90ae                                    ;------------------------
   242 A:90ae  c9 02                    not_b1    cmp #2
   243 A:90b0  d0 03                              bne not_b2
 
-  245 A:90b2  4c 68 9f                           jmp setup_basic2_xl
+  245 A:90b2  4c 71 9f                           jmp setup_basic2_xl
 
   247 A:90b5                                    ;----------------------------------------------------
   248 A:90b5                           not_b2                     ; only basic 4 left
   249 A:90b5                                    ;----------------------------------------------------
 
-  251 A:90b5  4c 78 9f                           jmp setup_basic4_xl
+  251 A:90b5  4c 81 9f                           jmp setup_basic4_xl
 
   253 A:90b8                                    ; -----------------------
   254 A:90b8                                    ; switch back to emulation mode
@@ -1048,7 +1048,7 @@ boot_opts.a65
    64 A:9738  f0 fb                              beq chkloop
 
    66 A:973a                                    ; handle keyboard interrupt
-   67 A:973a  20 08 9c                           jsr do_opt_xs
+   67 A:973a  20 11 9c                           jsr do_opt_xs
    68 A:973d  90 f1                              bcc doloop
 
    70 A:973f  c2 10                              rep #%00010000
@@ -1140,8 +1140,8 @@ boot_opts.a65
 
   157 A:97b3  a2 00                    clrmask   ldx #0
   158 A:97b5  98                       sm1       tya 
-  159 A:97b6  3d ca 9d                           and opts_mask,x
-  160 A:97b9  9d ca 9d                           sta opts_mask,x
+  159 A:97b6  3d d3 9d                           and opts_mask,x
+  160 A:97b9  9d d3 9d                           sta opts_mask,x
   161 A:97bc  e8                                 inx 
   162 A:97bd  e0 0c                              cpx #OPT_MAX_X_I
   163 A:97bf  90 f4                              bcc sm1
@@ -1149,8 +1149,8 @@ boot_opts.a65
   165 A:97c2                           clrmask2  
   166 A:97c2  a2 00                              ldx #0
   167 A:97c4  98                       sm2       tya 
-  168 A:97c5  3d d6 9d                           and opts_mask2,x
-  169 A:97c8  9d d6 9d                           sta opts_mask2,x
+  168 A:97c5  3d df 9d                           and opts_mask2,x
+  169 A:97c8  9d df 9d                           sta opts_mask2,x
   170 A:97cb  e8                                 inx 
   171 A:97cc  e0 0c                              cpx #OPT_MAX_X_I
   172 A:97ce  90 f4                              bcc sm2
@@ -1209,20 +1209,20 @@ boot_opts.a65
   225 A:9adb                           set_opts_xs .( 
 
   227 A:9adb  a2 00                              ldx #0
-  228 A:9add  8e be 9d                           stx x
+  228 A:9add  8e c7 9d                           stx x
   229 A:9ae0  a0 00                              ldy #0
-  230 A:9ae2  8c bf 9d                           sty y
+  230 A:9ae2  8c c8 9d                           sty y
   231 A:9ae5                           rowloop   
   232 A:9ae5  20 a9 9b                           jsr getpos
-  233 A:9ae8  ac bf 9d                           ldy y
-  234 A:9aeb  ae be 9d                           ldx x
+  233 A:9ae8  ac c8 9d                           ldy y
+  234 A:9aeb  ae c7 9d                           ldx x
   235 A:9aee  c0 08                              cpy #8
   236 A:9af0  b0 08                              bcs upper
-  237 A:9af2  bd ca 9d                           lda opts_mask,x
-  238 A:9af5  39 c2 9d                           and pow2,y
+  237 A:9af2  bd d3 9d                           lda opts_mask,x
+  238 A:9af5  39 cb 9d                           and pow2,y
   239 A:9af8  80 06                              bra rl1
-  240 A:9afa  bd d6 9d                 upper     lda opts_mask2,x
-  241 A:9afd  39 ba 9d                           and pow2-8,y
+  240 A:9afa  bd df 9d                 upper     lda opts_mask2,x
+  241 A:9afd  39 c3 9d                           and pow2-8,y
   242 A:9b00  f0 3d                    rl1       beq nextopt
 
   244 A:9b02  c0 00                              cpy #OPT1_SPEED_I
@@ -1233,42 +1233,42 @@ boot_opts.a65
   249 A:9b0c  f0 20                              beq prio
   250 A:9b0e  b0 0b                              bcs uppr
 
-  252 A:9b10  bd e2 9d                           lda opts_vals,x
-  253 A:9b13  39 c2 9d                           and pow2,y
-  254 A:9b16  20 05 9d                           jsr showopt
+  252 A:9b10  bd eb 9d                           lda opts_vals,x
+  253 A:9b13  39 cb 9d                           and pow2,y
+  254 A:9b16  20 0e 9d                           jsr showopt
   255 A:9b19  80 24                              bra nextopt
   256 A:9b1b                           uppr      
-  257 A:9b1b  bd ee 9d                           lda opts_vals2,x
-  258 A:9b1e  39 ba 9d                           and pow2-8,y
-  259 A:9b21  20 05 9d                           jsr showopt
+  257 A:9b1b  bd f7 9d                           lda opts_vals2,x
+  258 A:9b1e  39 c3 9d                           and pow2-8,y
+  259 A:9b21  20 0e 9d                           jsr showopt
   260 A:9b24  80 19                              bra nextopt
   261 A:9b26                           unit      
-  262 A:9b26  bd fa 9d                           lda unit_vals,x
+  262 A:9b26  bd 03 9e                           lda unit_vals,x
   263 A:9b29  20 60 9b                           jsr showunit
   264 A:9b2c  80 11                              bra nextopt
 
-  266 A:9b2e  bd ee 9d                 prio      lda opts_vals2,x
-  267 A:9b31  39 ba 9d                           and pow2-8,y
+  266 A:9b2e  bd f7 9d                 prio      lda opts_vals2,x
+  267 A:9b31  39 c3 9d                           and pow2-8,y
   268 A:9b34  20 9b 9b                           jsr showprio
   269 A:9b37  80 06                              bra nextopt
 
-  271 A:9b39  bd fa 9d                 speed     lda unit_vals,x
+  271 A:9b39  bd 03 9e                 speed     lda unit_vals,x
   272 A:9b3c  20 80 9b                           jsr showspeed
   273 A:9b3f                                    ; bra nextopt ; fallthrough
 
-  275 A:9b3f  ee be 9d                 nextopt   inc x
-  276 A:9b42  ae be 9d                           ldx x
+  275 A:9b3f  ee c7 9d                 nextopt   inc x
+  276 A:9b42  ae c7 9d                           ldx x
   277 A:9b45  e0 0c                              cpx #OPT_MAX_X_I
   278 A:9b47  90 9c                              bcc rowloop
   279 A:9b49  a2 00                              ldx #0
-  280 A:9b4b  8e be 9d                           stx x
-  281 A:9b4e  ee bf 9d                           inc y
-  282 A:9b51  ac bf 9d                           ldy y
+  280 A:9b4b  8e c7 9d                           stx x
+  281 A:9b4e  ee c8 9d                           inc y
+  282 A:9b51  ac c8 9d                           ldy y
   283 A:9b54  c0 0c                              cpy #OPT_MAX_Y_I
   284 A:9b56  90 8d                              bcc rowloop
   285 A:9b58  a0 00                              ldy #0
-  286 A:9b5a  8c bf 9d                           sty y
-  287 A:9b5d  4c ea 9b                           jmp act
+  286 A:9b5a  8c c8 9d                           sty y
+  287 A:9b5d  4c f0 9b                           jmp act
   288 A:9b60                                     .) 
 
   290 A:9b60                           showunit  .( 
@@ -1327,934 +1327,942 @@ boot_opts.a65
 
   344 A:9ba9                                    ; set pos screen pointer to x/y
   345 A:9ba9                           getpos    .( 
-  346 A:9ba9  a9 00                              lda #0
-  347 A:9bab  85 03                              sta pos+1
-  348 A:9bad  ad bf 9d                           lda y
-  349 A:9bb0  0a                                 asl 
-  350 A:9bb1  0a                                 asl 
-  351 A:9bb2  0a                                 asl                    ; by 8
-  352 A:9bb3  85 02                              sta pos
-  353 A:9bb5  06 02                              asl pos
-  354 A:9bb7  26 03                              rol pos+1
-  355 A:9bb9  06 02                              asl pos
-  356 A:9bbb  26 03                              rol pos+1          ; by 32
-  357 A:9bbd  18                                 clc 
-  358 A:9bbe  65 02                              adc pos
-  359 A:9bc0  85 02                              sta pos
-  360 A:9bc2  a9 00                              lda #0
-  361 A:9bc4  65 03                              adc pos+1
-  362 A:9bc6  85 03                              sta pos+1
-  363 A:9bc8  ad be 9d                           lda x
-  364 A:9bcb  c9 06                              cmp #6
-  365 A:9bcd  90 02                              bcc @1
-  366 A:9bcf  69 00                              adc #0
-  367 A:9bd1  0a                       @1        asl 
-  368 A:9bd2  65 02                              adc pos
-  369 A:9bd4  85 02                              sta pos
-  370 A:9bd6  a9 00                              lda #0
-  371 A:9bd8  65 03                              adc pos+1
-  372 A:9bda  85 03                              sta pos+1
-  373 A:9bdc  a9 74                              lda #<start-1
-  374 A:9bde  18                                 clc 
-  375 A:9bdf  65 02                              adc pos
-  376 A:9be1  85 02                              sta pos
-  377 A:9be3  a9 81                              lda #>start-1
-  378 A:9be5  65 03                              adc pos+1
-  379 A:9be7  85 03                              sta pos+1
-  380 A:9be9  60                                 rts 
-  381 A:9bea                                     .) 
+  346 A:9ba9  20 c3 9b                           jsr getpos_l
+  347 A:9bac                           getpos_c  
+  348 A:9bac  ad c7 9d                           lda x
+  349 A:9baf  c9 06                              cmp #6
+  350 A:9bb1  90 02                              bcc @1
+  351 A:9bb3  69 00                              adc #0
+  352 A:9bb5  69 06                    @1        adc #6
+  353 A:9bb7  0a                                 asl 
+  354 A:9bb8  65 02                              adc pos
+  355 A:9bba  85 02                              sta pos
+  356 A:9bbc  a9 00                              lda #0
+  357 A:9bbe  65 03                              adc pos+1
+  358 A:9bc0  85 03                              sta pos+1
+  359 A:9bc2  60                                 rts 
+  360 A:9bc3                           getpos_l  
+  361 A:9bc3  a9 00                              lda #0
+  362 A:9bc5  85 03                              sta pos+1
+  363 A:9bc7  ad c8 9d                           lda y
+  364 A:9bca  0a                                 asl 
+  365 A:9bcb  0a                                 asl 
+  366 A:9bcc  0a                                 asl                    ; by 8
+  367 A:9bcd  85 02                              sta pos
+  368 A:9bcf  06 02                              asl pos
+  369 A:9bd1  26 03                              rol pos+1
+  370 A:9bd3  06 02                              asl pos
+  371 A:9bd5  26 03                              rol pos+1          ; by 32
+  372 A:9bd7  18                                 clc 
+  373 A:9bd8  65 02                              adc pos
+  374 A:9bda  85 02                              sta pos
+  375 A:9bdc  a9 00                              lda #0
+  376 A:9bde  65 03                              adc pos+1
+  377 A:9be0  85 03                              sta pos+1
+  378 A:9be2  a9 68                              lda #<start-13
+  379 A:9be4  18                                 clc 
+  380 A:9be5  65 02                              adc pos
+  381 A:9be7  85 02                              sta pos
+  382 A:9be9  a9 81                              lda #>start-13
+  383 A:9beb  65 03                              adc pos+1
+  384 A:9bed  85 03                              sta pos+1
+  385 A:9bef  60                                 rts 
+  386 A:9bf0                                     .) 
 
-  383 A:9bea                                    ; select an option
-  384 A:9bea                           act       .( 
-  385 A:9bea  20 a9 9b                           jsr getpos
-  386 A:9bed  a0 01                              ldy #1
-  387 A:9bef  b1 02                    al        lda (pos),y
-  388 A:9bf1  09 80                              ora #128
-  389 A:9bf3  91 02                              sta (pos),y
-  390 A:9bf5  88                                 dey 
-  391 A:9bf6  10 f7                              bpl al
-  392 A:9bf8  60                                 rts 
-  393 A:9bf9                                     .) 
+  388 A:9bf0                                    ; de-select an option
+  389 A:9bf0                           deact     
+  390 A:9bf0                                    ; select an option
+  391 A:9bf0                           act       .( 
+  392 A:9bf0  20 c3 9b                           jsr getpos_l
+  393 A:9bf3  20 05 9c                           jsr line_inv
+  394 A:9bf6  20 ac 9b                           jsr getpos_c
+  395 A:9bf9  a0 01                              ldy #1
+  396 A:9bfb  b1 02                    al        lda (pos),y
+  397 A:9bfd                                    ;ora #128
+  398 A:9bfd  29 7f                              and #127
+  399 A:9bff  91 02                              sta (pos),y
+  400 A:9c01  88                                 dey 
+  401 A:9c02  10 f7                              bpl al
+  402 A:9c04  60                                 rts 
+  403 A:9c05                                     .) 
 
-  395 A:9bf9                                    ; de-select an option
-  396 A:9bf9                           deact     .( 
-  397 A:9bf9  20 a9 9b                           jsr getpos
-  398 A:9bfc  a0 01                              ldy #1
-  399 A:9bfe  b1 02                    dl        lda (pos),y
-  400 A:9c00  29 7f                              and #127
-  401 A:9c02  91 02                              sta (pos),y
-  402 A:9c04  88                                 dey 
-  403 A:9c05  10 f7                              bpl dl
-  404 A:9c07  60                                 rts 
-  405 A:9c08                                     .) 
+  405 A:9c05                           line_inv  .( 
+  406 A:9c05  a0 27                              ldy #39
+  407 A:9c07  b1 02                    @1        lda (pos),y
+  408 A:9c09  49 80                              eor #$80
+  409 A:9c0b  91 02                              sta (pos),y
+  410 A:9c0d  88                                 dey 
+  411 A:9c0e  10 f7                              bpl @1
+  412 A:9c10  60                                 rts 
+  413 A:9c11                                     .) 
 
-  407 A:9c08                                    ; ----------------------------------------------------------
-  408 A:9c08                                    ; handle keyboard input on options menu
+  415 A:9c11                                    ; ----------------------------------------------------------
+  416 A:9c11                                    ; handle keyboard input on options menu
 
-  410 A:9c08                           do_opt_xs .( 
-  411 A:9c08  48                                 pha 
-  412 A:9c09  20 f9 9b                           jsr deact
-  413 A:9c0c  68                                 pla 
-  414 A:9c0d  c9 81                              cmp #TC_CRGT
-  415 A:9c0f  f0 4c                              beq right
-  416 A:9c11  c9 80                              cmp #TC_CLFT
-  417 A:9c13  f0 1b                              beq left
-  418 A:9c15  c9 82                              cmp #TC_CUP
-  419 A:9c17  f0 6a                              beq up
-  420 A:9c19  c9 83                              cmp #TC_CDWN
-  421 A:9c1b  f0 0d                              beq down2
-  422 A:9c1d  c9 20                              cmp #" "
-  423 A:9c1f  f0 0c                              beq action2
-  424 A:9c21  c9 78                              cmp #"x"
-  425 A:9c23  f0 04                              beq out
-  426 A:9c25  20 ea 9b                 endo      jsr act
-  427 A:9c28  18                                 clc 
-  428 A:9c29  60                       out       rts 
+  418 A:9c11                           do_opt_xs .( 
+  419 A:9c11  48                                 pha 
+  420 A:9c12  20 f0 9b                           jsr deact
+  421 A:9c15  68                                 pla 
+  422 A:9c16  c9 81                              cmp #TC_CRGT
+  423 A:9c18  f0 4c                              beq right
+  424 A:9c1a  c9 80                              cmp #TC_CLFT
+  425 A:9c1c  f0 1b                              beq left
+  426 A:9c1e  c9 82                              cmp #TC_CUP
+  427 A:9c20  f0 6a                              beq up
+  428 A:9c22  c9 83                              cmp #TC_CDWN
+  429 A:9c24  f0 0d                              beq down2
+  430 A:9c26  c9 20                              cmp #" "
+  431 A:9c28  f0 0c                              beq action2
+  432 A:9c2a  c9 78                              cmp #"x"
+  433 A:9c2c  f0 04                              beq out
+  434 A:9c2e  20 f0 9b                 endo      jsr act
+  435 A:9c31  18                                 clc 
+  436 A:9c32  60                       out       rts 
 
-  430 A:9c2a                                    ; --------------------------
-  431 A:9c2a                                    ; handle cursor actions
+  438 A:9c33                                    ; --------------------------
+  439 A:9c33                                    ; handle cursor actions
 
-  433 A:9c2a  4c aa 9c                 down2     jmp down
-  434 A:9c2d  4c d1 9c                 action2   jmp action
+  441 A:9c33  4c b3 9c                 down2     jmp down
+  442 A:9c36  4c da 9c                 action2   jmp action
 
-  436 A:9c30  ae be 9d                 left      ldx x
-  437 A:9c33  f0 f0                              beq endo
-  438 A:9c35  ac bf 9d                           ldy y
-  439 A:9c38  c0 08                              cpy #8
-  440 A:9c3a  b0 13                              bcs nxleft2
-  441 A:9c3c  ca                       nxleft    dex 
-  442 A:9c3d  bd ca 9d                           lda opts_mask,x
-  443 A:9c40  39 c2 9d                           and pow2,y
-  444 A:9c43  d0 05                              bne goleft
-  445 A:9c45  8a                                 txa 
-  446 A:9c46  d0 f4                              bne nxleft
-  447 A:9c48  f0 db                              beq endo
-  448 A:9c4a  8e be 9d                 goleft    stx x
-  449 A:9c4d  d0 d6                              bne endo
-  450 A:9c4f  ca                       nxleft2   dex 
-  451 A:9c50  bd d6 9d                           lda opts_mask2,x
-  452 A:9c53  39 ba 9d                           and pow2-8,y
-  453 A:9c56  d0 f2                              bne goleft
-  454 A:9c58  8a                                 txa 
-  455 A:9c59  d0 f4                              bne nxleft2
-  456 A:9c5b  f0 c8                              beq endo
+  444 A:9c39  ae c7 9d                 left      ldx x
+  445 A:9c3c  f0 f0                              beq endo
+  446 A:9c3e  ac c8 9d                           ldy y
+  447 A:9c41  c0 08                              cpy #8
+  448 A:9c43  b0 13                              bcs nxleft2
+  449 A:9c45  ca                       nxleft    dex 
+  450 A:9c46  bd d3 9d                           lda opts_mask,x
+  451 A:9c49  39 cb 9d                           and pow2,y
+  452 A:9c4c  d0 05                              bne goleft
+  453 A:9c4e  8a                                 txa 
+  454 A:9c4f  d0 f4                              bne nxleft
+  455 A:9c51  f0 db                              beq endo
+  456 A:9c53  8e c7 9d                 goleft    stx x
+  457 A:9c56  d0 d6                              bne endo
+  458 A:9c58  ca                       nxleft2   dex 
+  459 A:9c59  bd df 9d                           lda opts_mask2,x
+  460 A:9c5c  39 c3 9d                           and pow2-8,y
+  461 A:9c5f  d0 f2                              bne goleft
+  462 A:9c61  8a                                 txa 
+  463 A:9c62  d0 f4                              bne nxleft2
+  464 A:9c64  f0 c8                              beq endo
 
-  458 A:9c5d  ae be 9d                 right     ldx x
-  459 A:9c60  e0 0b                    nxrght    cpx #OPT_MAX_X_I-1
-  460 A:9c62  b0 c1                              bcs endo
-  461 A:9c64  e8                                 inx 
-  462 A:9c65  ac bf 9d                           ldy y
-  463 A:9c68  c0 08                              cpy #8
-  464 A:9c6a  b0 0d                              bcs nxrght2
-  465 A:9c6c  bd ca 9d                           lda opts_mask,x
-  466 A:9c6f  39 c2 9d                           and pow2,y
-  467 A:9c72  f0 ec                              beq nxrght
-  468 A:9c74  8e be 9d                 gorght    stx x
-  469 A:9c77  d0 ac                              bne endo
-  470 A:9c79  bd d6 9d                 nxrght2   lda opts_mask2,x
-  471 A:9c7c  39 ba 9d                           and pow2-8,y
-  472 A:9c7f  d0 f3                              bne gorght
-  473 A:9c81  f0 dd                              beq nxrght
+  466 A:9c66  ae c7 9d                 right     ldx x
+  467 A:9c69  e0 0b                    nxrght    cpx #OPT_MAX_X_I-1
+  468 A:9c6b  b0 c1                              bcs endo
+  469 A:9c6d  e8                                 inx 
+  470 A:9c6e  ac c8 9d                           ldy y
+  471 A:9c71  c0 08                              cpy #8
+  472 A:9c73  b0 0d                              bcs nxrght2
+  473 A:9c75  bd d3 9d                           lda opts_mask,x
+  474 A:9c78  39 cb 9d                           and pow2,y
+  475 A:9c7b  f0 ec                              beq nxrght
+  476 A:9c7d  8e c7 9d                 gorght    stx x
+  477 A:9c80  d0 ac                              bne endo
+  478 A:9c82  bd df 9d                 nxrght2   lda opts_mask2,x
+  479 A:9c85  39 c3 9d                           and pow2-8,y
+  480 A:9c88  d0 f3                              bne gorght
+  481 A:9c8a  f0 dd                              beq nxrght
 
-  475 A:9c83  ac bf 9d                 up        ldy y
-  476 A:9c86  f0 9d                              beq endo
-  477 A:9c88  88                       nxup      dey 
-  478 A:9c89  ae be 9d                           ldx x
-  479 A:9c8c  c0 08                              cpy #8
-  480 A:9c8e  b0 0d                              bcs nxup2
-  481 A:9c90  bd ca 9d                           lda opts_mask,x
-  482 A:9c93  39 c2 9d                           and pow2,y
-  483 A:9c96  d0 0d                              bne goup
-  484 A:9c98  98                       nxup2a    tya 
-  485 A:9c99  d0 ed                              bne nxup
-  486 A:9c9b  f0 88                              beq endo
-  487 A:9c9d  bd d6 9d                 nxup2     lda opts_mask2,x
-  488 A:9ca0  39 ba 9d                           and pow2-8,y
-  489 A:9ca3  f0 f3                              beq nxup2a
-  490 A:9ca5  8c bf 9d                 goup      sty y
-  491 A:9ca8  d0 1a                              bne endo2
+  483 A:9c8c  ac c8 9d                 up        ldy y
+  484 A:9c8f  f0 9d                              beq endo
+  485 A:9c91  88                       nxup      dey 
+  486 A:9c92  ae c7 9d                           ldx x
+  487 A:9c95  c0 08                              cpy #8
+  488 A:9c97  b0 0d                              bcs nxup2
+  489 A:9c99  bd d3 9d                           lda opts_mask,x
+  490 A:9c9c  39 cb 9d                           and pow2,y
+  491 A:9c9f  d0 0d                              bne goup
+  492 A:9ca1  98                       nxup2a    tya 
+  493 A:9ca2  d0 ed                              bne nxup
+  494 A:9ca4  f0 88                              beq endo
+  495 A:9ca6  bd df 9d                 nxup2     lda opts_mask2,x
+  496 A:9ca9  39 c3 9d                           and pow2-8,y
+  497 A:9cac  f0 f3                              beq nxup2a
+  498 A:9cae  8c c8 9d                 goup      sty y
+  499 A:9cb1  d0 1a                              bne endo2
 
-  493 A:9caa  ac bf 9d                 down      ldy y
-  494 A:9cad  c0 0b                    nxdown    cpy #OPT_MAX_Y_I-1
-  495 A:9caf  b0 13                              bcs endo2
-  496 A:9cb1  ae be 9d                           ldx x
-  497 A:9cb4  c8                                 iny 
-  498 A:9cb5  c0 08                              cpy #8
-  499 A:9cb7  b0 0e                              bcs nxd2
-  500 A:9cb9  bd ca 9d                           lda opts_mask,x
-  501 A:9cbc  39 c2 9d                           and pow2,y
-  502 A:9cbf  f0 ec                              beq nxdown
-  503 A:9cc1  8c bf 9d                 godo      sty y
-  504 A:9cc4  4c 25 9c                 endo2     jmp endo
-  505 A:9cc7  bd d6 9d                 nxd2      lda opts_mask2,x
-  506 A:9cca  39 ba 9d                           and pow2-8,y
-  507 A:9ccd  d0 f2                              bne godo
-  508 A:9ccf  f0 dc                              beq nxdown
+  501 A:9cb3  ac c8 9d                 down      ldy y
+  502 A:9cb6  c0 0b                    nxdown    cpy #OPT_MAX_Y_I-1
+  503 A:9cb8  b0 13                              bcs endo2
+  504 A:9cba  ae c7 9d                           ldx x
+  505 A:9cbd  c8                                 iny 
+  506 A:9cbe  c0 08                              cpy #8
+  507 A:9cc0  b0 0e                              bcs nxd2
+  508 A:9cc2  bd d3 9d                           lda opts_mask,x
+  509 A:9cc5  39 cb 9d                           and pow2,y
+  510 A:9cc8  f0 ec                              beq nxdown
+  511 A:9cca  8c c8 9d                 godo      sty y
+  512 A:9ccd  4c 2e 9c                 endo2     jmp endo
+  513 A:9cd0  bd df 9d                 nxd2      lda opts_mask2,x
+  514 A:9cd3  39 c3 9d                           and pow2-8,y
+  515 A:9cd6  d0 f2                              bne godo
+  516 A:9cd8  f0 dc                              beq nxdown
 
-  510 A:9cd1                                    ; --------------------------
-  511 A:9cd1                                    ; handle actual change
+  518 A:9cda                                    ; --------------------------
+  519 A:9cda                                    ; handle actual change
 
-  513 A:9cd1  ae be 9d                 action    ldx x
-  514 A:9cd4  ac bf 9d                           ldy y
-  515 A:9cd7  c0 00                              cpy #OPT1_SPEED_I
-  516 A:9cd9  f0 36                              beq actspeed
-  517 A:9cdb  c0 06                              cpy #OPT1_SDUNIT_I
-  518 A:9cdd  f0 41                              beq actunit
-  519 A:9cdf  c0 08                              cpy #OPT2_UNITOFF_I
-  520 A:9ce1  f0 5f                              beq actprio
-  521 A:9ce3                                     .assert OPT2_UNITOFF_I=8,"optimized compare"
-  522 A:9ce3  b0 0e                              bcs act2
-  523 A:9ce5  bd e2 9d                           lda opts_vals,x
-  524 A:9ce8  59 c2 9d                           eor pow2,y
-  525 A:9ceb  9d e2 9d                           sta opts_vals,x
-  526 A:9cee  39 c2 9d                           and pow2,y
-  527 A:9cf1  80 0c                              bra act2b
-  528 A:9cf3  bd ee 9d                 act2      lda opts_vals2,x
-  529 A:9cf6  59 ba 9d                           eor pow2-8,y
-  530 A:9cf9  9d ee 9d                           sta opts_vals2,x
-  531 A:9cfc  39 ba 9d                           and pow2-8,y
-  532 A:9cff  20 05 9d                 act2b     jsr showopt
-  533 A:9d02  4c ea 9b                           jmp act
-  534 A:9d05                           showopt   
-  535 A:9d05  f0 03                              beq notset
-  536 A:9d07  a9 51                              lda #ONCHAR
-  537 A:9d09  2c                                 .byt $2c
-  538 A:9d0a  a9 2e                    notset    lda #OFFCHAR
-  539 A:9d0c  a0 01                              ldy #1
-  540 A:9d0e  91 02                              sta (pos),y
-  541 A:9d10  60                                 rts 
+  521 A:9cda  ae c7 9d                 action    ldx x
+  522 A:9cdd  ac c8 9d                           ldy y
+  523 A:9ce0  c0 00                              cpy #OPT1_SPEED_I
+  524 A:9ce2  f0 36                              beq actspeed
+  525 A:9ce4  c0 06                              cpy #OPT1_SDUNIT_I
+  526 A:9ce6  f0 41                              beq actunit
+  527 A:9ce8  c0 08                              cpy #OPT2_UNITOFF_I
+  528 A:9cea  f0 5f                              beq actprio
+  529 A:9cec                                     .assert OPT2_UNITOFF_I=8,"optimized compare"
+  530 A:9cec  b0 0e                              bcs act2
+  531 A:9cee  bd eb 9d                           lda opts_vals,x
+  532 A:9cf1  59 cb 9d                           eor pow2,y
+  533 A:9cf4  9d eb 9d                           sta opts_vals,x
+  534 A:9cf7  39 cb 9d                           and pow2,y
+  535 A:9cfa  80 0c                              bra act2b
+  536 A:9cfc  bd f7 9d                 act2      lda opts_vals2,x
+  537 A:9cff  59 c3 9d                           eor pow2-8,y
+  538 A:9d02  9d f7 9d                           sta opts_vals2,x
+  539 A:9d05  39 c3 9d                           and pow2-8,y
+  540 A:9d08  20 0e 9d                 act2b     jsr showopt
+  541 A:9d0b  4c f0 9b                           jmp act
+  542 A:9d0e                           showopt   
+  543 A:9d0e  f0 03                              beq notset
+  544 A:9d10  a9 51                              lda #ONCHAR
+  545 A:9d12  2c                                 .byt $2c
+  546 A:9d13  a9 2e                    notset    lda #OFFCHAR
+  547 A:9d15  a0 01                              ldy #1
+  548 A:9d17  91 02                              sta (pos),y
+  549 A:9d19  60                                 rts 
 
-  543 A:9d11                           actspeed  .( 
-  544 A:9d11  bd fa 9d                           lda unit_vals,x
-  545 A:9d14  18                                 clc 
-  546 A:9d15  69 40                              adc #64
-  547 A:9d17  9d fa 9d                           sta unit_vals,x
-  548 A:9d1a  20 80 9b                           jsr showspeed
-  549 A:9d1d  4c 25 9c                           jmp endo
-  550 A:9d20                                     .) 
+  551 A:9d1a                           actspeed  .( 
+  552 A:9d1a  bd 03 9e                           lda unit_vals,x
+  553 A:9d1d  18                                 clc 
+  554 A:9d1e  69 40                              adc #64
+  555 A:9d20  9d 03 9e                           sta unit_vals,x
+  556 A:9d23  20 80 9b                           jsr showspeed
+  557 A:9d26  4c 2e 9c                           jmp endo
+  558 A:9d29                                     .) 
 
-  552 A:9d20                           actunit   .( 
-  553 A:9d20  bd fa 9d                           lda unit_vals,x
-  554 A:9d23  29 03                              and #3
-  555 A:9d25  1a                                 inc 
-  556 A:9d26  c9 04                              cmp #4
-  557 A:9d28  90 02                              bcc a1
-  558 A:9d2a  a9 00                              lda #0
-  559 A:9d2c  48                       a1        pha 
-  560 A:9d2d  a9 fc                              lda #%11111100
-  561 A:9d2f  3d fa 9d                           and unit_vals,x
-  562 A:9d32  9d fa 9d                           sta unit_vals,x
-  563 A:9d35  68                                 pla 
-  564 A:9d36  1d fa 9d                           ora unit_vals,x
-  565 A:9d39  9d fa 9d                           sta unit_vals,x
-  566 A:9d3c  20 60 9b                           jsr showunit
-  567 A:9d3f  4c 25 9c                           jmp endo
-  568 A:9d42                                     .) 
+  560 A:9d29                           actunit   .( 
+  561 A:9d29  bd 03 9e                           lda unit_vals,x
+  562 A:9d2c  29 03                              and #3
+  563 A:9d2e  1a                                 inc 
+  564 A:9d2f  c9 04                              cmp #4
+  565 A:9d31  90 02                              bcc a1
+  566 A:9d33  a9 00                              lda #0
+  567 A:9d35  48                       a1        pha 
+  568 A:9d36  a9 fc                              lda #%11111100
+  569 A:9d38  3d 03 9e                           and unit_vals,x
+  570 A:9d3b  9d 03 9e                           sta unit_vals,x
+  571 A:9d3e  68                                 pla 
+  572 A:9d3f  1d 03 9e                           ora unit_vals,x
+  573 A:9d42  9d 03 9e                           sta unit_vals,x
+  574 A:9d45  20 60 9b                           jsr showunit
+  575 A:9d48  4c 2e 9c                           jmp endo
+  576 A:9d4b                                     .) 
 
-  570 A:9d42                                     .assert OPT2_UNITOFF_I>7,"lookup tables"
-  571 A:9d42                           actprio   
-  572 A:9d42  bd ee 9d                           lda opts_vals2,x
-  573 A:9d45  59 ba 9d                           eor pow2-8,y
-  574 A:9d48  9d ee 9d                           sta opts_vals2,x
-  575 A:9d4b  39 ba 9d                           and pow2-8,y
-  576 A:9d4e  20 9b 9b                           jsr showprio
-  577 A:9d51  4c 25 9c                           jmp endo
-  578 A:9d54                                     .) 
+  578 A:9d4b                                     .assert OPT2_UNITOFF_I>7,"lookup tables"
+  579 A:9d4b                           actprio   
+  580 A:9d4b  bd f7 9d                           lda opts_vals2,x
+  581 A:9d4e  59 c3 9d                           eor pow2-8,y
+  582 A:9d51  9d f7 9d                           sta opts_vals2,x
+  583 A:9d54  39 c3 9d                           and pow2-8,y
+  584 A:9d57  20 9b 9b                           jsr showprio
+  585 A:9d5a  4c 2e 9c                           jmp endo
+  586 A:9d5d                                     .) 
 
-  580 A:9d54                                     .xl 
+  588 A:9d5d                                     .xl 
 
-  582 A:9d54                                    ; ----------------------------
-  583 A:9d54                                    ; In: AC has key in ASCII
-  584 A:9d54                                    ;
-  585 A:9d54                                    ; out:  c=0:    no option
-  586 A:9d54                                    ;       c=1:    result is in AC:
-  587 A:9d54                                    ;
-  588 A:9d54                                    ; stores selected options in 
-  589 A:9d54                                    ; opt0, opt1, opt2, and optu
-  590 A:9d54                                    ;
-  591 A:9d54                                     .xl 
-  592 A:9d54                           conv_char2opt_xl .( 
-  593 A:9d54  a2 12 00                           ldx #opts-chars-1
-  594 A:9d57  dd 9f 9d                 l0        cmp chars,x
-  595 A:9d5a  f0 05                              beq found                ; implicit sec
-  596 A:9d5c  ca                                 dex 
-  597 A:9d5d  10 f8                              bpl l0
-  598 A:9d5f  18                                 clc 
-  599 A:9d60  60                                 rts 
-  600 A:9d61  e0 0c 00                 found     cpx #MAX_KEYS*2
-  601 A:9d64  90 04                              bcc notusb
-  602 A:9d66  8a                                 txa 
-  603 A:9d67  e9 06                              sbc #MAX_KEYS
-  604 A:9d69  aa                                 tax 
-  605 A:9d6a                           notusb    
-  606 A:9d6a  ad fc 87                           lda optkbd
-  607 A:9d6d  29 28                              and #%00101000             ; filter usb and c64 kbd flags
-  608 A:9d6f  1d b2 9d                           ora opts,x
-  609 A:9d72  8d f8 87                           sta opt0
+  590 A:9d5d                                    ; ----------------------------
+  591 A:9d5d                                    ; In: AC has key in ASCII
+  592 A:9d5d                                    ;
+  593 A:9d5d                                    ; out:  c=0:    no option
+  594 A:9d5d                                    ;       c=1:    result is in AC:
+  595 A:9d5d                                    ;
+  596 A:9d5d                                    ; stores selected options in 
+  597 A:9d5d                                    ; opt0, opt1, opt2, and optu
+  598 A:9d5d                                    ;
+  599 A:9d5d                                     .xl 
+  600 A:9d5d                           conv_char2opt_xl .( 
+  601 A:9d5d  a2 12 00                           ldx #opts-chars-1
+  602 A:9d60  dd a8 9d                 l0        cmp chars,x
+  603 A:9d63  f0 05                              beq found                ; implicit sec
+  604 A:9d65  ca                                 dex 
+  605 A:9d66  10 f8                              bpl l0
+  606 A:9d68  18                                 clc 
+  607 A:9d69  60                                 rts 
+  608 A:9d6a  e0 0c 00                 found     cpx #MAX_KEYS*2
+  609 A:9d6d  90 04                              bcc notusb
+  610 A:9d6f  8a                                 txa 
+  611 A:9d70  e9 06                              sbc #MAX_KEYS
+  612 A:9d72  aa                                 tax 
+  613 A:9d73                           notusb    
+  614 A:9d73  ad fc 87                           lda optkbd
+  615 A:9d76  29 28                              and #%00101000             ; filter usb and c64 kbd flags
+  616 A:9d78  1d bb 9d                           ora opts,x
+  617 A:9d7b  8d f8 87                           sta opt0
 
-  611 A:9d75                                    ; copy inverted editor ROM bit for easier EDIT rom selection
-  612 A:9d75  bd e2 9d                           lda opts_vals,x
-  613 A:9d78  29 10                              and #OPT1_EDITOR
-  614 A:9d7a                                     .assert OPT1_EDITOR=16,"bit shift"
-  615 A:9d7a  0a                                 asl 
-  616 A:9d7b  0a                                 asl 
-  617 A:9d7c  0a                                 asl 
-  618 A:9d7d  49 80                              eor #%10000000
-  619 A:9d7f  0d f8 87                           ora opt0
-  620 A:9d82  8d f8 87                           sta opt0
+  619 A:9d7e                                    ; copy inverted editor ROM bit for easier EDIT rom selection
+  620 A:9d7e  bd eb 9d                           lda opts_vals,x
+  621 A:9d81  29 10                              and #OPT1_EDITOR
+  622 A:9d83                                     .assert OPT1_EDITOR=16,"bit shift"
+  623 A:9d83  0a                                 asl 
+  624 A:9d84  0a                                 asl 
+  625 A:9d85  0a                                 asl 
+  626 A:9d86  49 80                              eor #%10000000
+  627 A:9d88  0d f8 87                           ora opt0
+  628 A:9d8b  8d f8 87                           sta opt0
 
-  622 A:9d85  bd e2 9d                           lda opts_vals,x
-  623 A:9d88  3d ca 9d                           and opts_mask,x
-  624 A:9d8b  8d f7 87                           sta opt1
+  630 A:9d8e  bd eb 9d                           lda opts_vals,x
+  631 A:9d91  3d d3 9d                           and opts_mask,x
+  632 A:9d94  8d f7 87                           sta opt1
 
-  626 A:9d8e  bd ee 9d                           lda opts_vals2,x
-  627 A:9d91  3d d6 9d                           and opts_mask2,x
-  628 A:9d94  8d f6 87                           sta opt2
+  634 A:9d97  bd f7 9d                           lda opts_vals2,x
+  635 A:9d9a  3d df 9d                           and opts_mask2,x
+  636 A:9d9d  8d f6 87                           sta opt2
 
-  630 A:9d97  bd fa 9d                           lda unit_vals,x
-  631 A:9d9a  8d f5 87                           sta optu
-  632 A:9d9d  38                                 sec 
-  633 A:9d9e  60                                 rts 
-  634 A:9d9f                                     .) 
+  638 A:9da0  bd 03 9e                           lda unit_vals,x
+  639 A:9da3  8d f5 87                           sta optu
+  640 A:9da6  38                                 sec 
+  641 A:9da7  60                                 rts 
+  642 A:9da8                                     .) 
 
-  636 A:9d9f                                    MAX_KEYS=6
+  644 A:9da8                                    MAX_KEYS=6
 
-  638 A:9d9f  31 32 34 36 38 39        chars     .byt "124689"
-  639 A:9da5                                    ; shifted keys from pet / c64 kbd
-  640 A:9da5  b1 b2 b4 b6 b8 b9                  .byt "1"+128,"2"+128,"4"+128,"6"+128,"8"+128,"9"+128
-  641 A:9dab                                    ; shifted keys from USB
-  642 A:9dab  21 22 24 5e 2a 28                  .byt "!",$22,"$","^","*","("
-  643 A:9db1  6f                                 .byt "o"              ; options menu
-  644 A:9db2                           opts      
-  645 A:9db2  01                                 .byt %00000001              ; patched basic1
-  646 A:9db3  02                                 .byt %00000010              ; patched basic2
-  647 A:9db4  03                                 .byt %00000011              ; patched 40 col
-  648 A:9db5  43                                 .byt %01000011              ; patched 8296
-  649 A:9db6  43                                 .byt %01000011              ; patched 80 col
+  646 A:9da8  31 32 34 36 38 39        chars     .byt "124689"
+  647 A:9dae                                    ; shifted keys from pet / c64 kbd
+  648 A:9dae  b1 b2 b4 b6 b8 b9                  .byt "1"+128,"2"+128,"4"+128,"6"+128,"8"+128,"9"+128
+  649 A:9db4                                    ; shifted keys from USB
+  650 A:9db4  21 22 24 5e 2a 28                  .byt "!",$22,"$","^","*","("
+  651 A:9dba  6f                                 .byt "o"              ; options menu
+  652 A:9dbb                           opts      
+  653 A:9dbb  01                                 .byt %00000001              ; patched basic1
+  654 A:9dbc  02                                 .byt %00000010              ; patched basic2
+  655 A:9dbd  03                                 .byt %00000011              ; patched 40 col
+  656 A:9dbe  43                                 .byt %01000011              ; patched 8296
+  657 A:9dbf  43                                 .byt %01000011              ; patched 80 col
 
-  651 A:9db7  43                                 .byt %01000011              ; patched 80 col
+  659 A:9dc0  43                                 .byt %01000011              ; patched 80 col
 
-  653 A:9db8  01                                 .byt %00000001              ; unpatched basic1
-  654 A:9db9  02                                 .byt %00000010              ; unpatched basic2
-  655 A:9dba  03                                 .byt %00000011              ; unpatched 40 col
-  656 A:9dbb  53                                 .byt %01010011              ; unpatched 8296
-  657 A:9dbc  43                                 .byt %01000011              ; unpatched 80 col
+  661 A:9dc1  01                                 .byt %00000001              ; unpatched basic1
+  662 A:9dc2  02                                 .byt %00000010              ; unpatched basic2
+  663 A:9dc3  03                                 .byt %00000011              ; unpatched 40 col
+  664 A:9dc4  53                                 .byt %01010011              ; unpatched 8296
+  665 A:9dc5  43                                 .byt %01000011              ; unpatched 80 col
 
-  659 A:9dbd  04                                 .byt %00000100              ; option menu
+  667 A:9dc6  04                                 .byt %00000100              ; option menu
 
-  661 A:9dbe                                    ; temp
-  662 A:9dbe  00                       x         .byt 0
-  663 A:9dbf  00                       y         .byt 0
-  664 A:9dc0  00 00                    row       .word 0
+  669 A:9dc7                                    ; temp
+  670 A:9dc7  00                       x         .byt 0
+  671 A:9dc8  00                       y         .byt 0
+  672 A:9dc9  00 00                    row       .word 0
 
-  666 A:9dc2  80                       pow2      .byt %10000000
-  667 A:9dc3  40                                 .byt %01000000
-  668 A:9dc4  20                                 .byt %00100000
-  669 A:9dc5  10                                 .byt %00010000
-  670 A:9dc6  08                                 .byt %00001000
-  671 A:9dc7  04                                 .byt %00000100
-  672 A:9dc8  02                                 .byt %00000010
-  673 A:9dc9  01                                 .byt %00000001
+  674 A:9dcb  80                       pow2      .byt %10000000
+  675 A:9dcc  40                                 .byt %01000000
+  676 A:9dcd  20                                 .byt %00100000
+  677 A:9dce  10                                 .byt %00010000
+  678 A:9dcf  08                                 .byt %00001000
+  679 A:9dd0  04                                 .byt %00000100
+  680 A:9dd1  02                                 .byt %00000010
+  681 A:9dd2  01                                 .byt %00000001
 
-  675 A:9dca                                    ; bits are:
+  683 A:9dd3                                    ; bits are:
 
-  677 A:9dca                           opts_mask 
-  678 A:9dca  c0                                 .byt %11000000              ; 1
-  679 A:9dcb  80                                 .byt %10000000              ; 2
-  680 A:9dcc  f7                                 .byt %11110111              ; 4
-  681 A:9dcd  f7                                 .byt %11110111              ; 6
-  682 A:9dce  f7                                 .byt %11110111              ; 8
+  685 A:9dd3                           opts_mask 
+  686 A:9dd3  c0                                 .byt %11000000              ; 1
+  687 A:9dd4  80                                 .byt %10000000              ; 2
+  688 A:9dd5  f7                                 .byt %11110111              ; 4
+  689 A:9dd6  f7                                 .byt %11110111              ; 6
+  690 A:9dd7  f7                                 .byt %11110111              ; 8
 
-  684 A:9dcf  00                                 .byt %00000000              ; 9
+  692 A:9dd8  00                                 .byt %00000000              ; 9
 
-  686 A:9dd0  c0                                 .byt %11000000              ; 1
-  687 A:9dd1  80                                 .byt %10000000              ; 2
-  688 A:9dd2  f7                                 .byt %11110111              ; 4
-  689 A:9dd3  f7                                 .byt %11110111              ; 6
-  690 A:9dd4  f7                                 .byt %11110111              ; 8
+  694 A:9dd9  c0                                 .byt %11000000              ; 1
+  695 A:9dda  80                                 .byt %10000000              ; 2
+  696 A:9ddb  f7                                 .byt %11110111              ; 4
+  697 A:9ddc  f7                                 .byt %11110111              ; 6
+  698 A:9ddd  f7                                 .byt %11110111              ; 8
 
-  692 A:9dd5  00                                 .byt %00000000              ; 9
+  700 A:9dde  00                                 .byt %00000000              ; 9
 
-  694 A:9dd6                           opts_mask2 
-  695 A:9dd6  00                                 .byt %00000000              ; 1
-  696 A:9dd7  00                                 .byt %00000000              ; 2
-  697 A:9dd8  f0                                 .byt %11110000              ; 4
-  698 A:9dd9  f0                                 .byt %11110000              ; 6
-  699 A:9dda  f0                                 .byt %11110000              ; 8
+  702 A:9ddf                           opts_mask2 
+  703 A:9ddf  00                                 .byt %00000000              ; 1
+  704 A:9de0  00                                 .byt %00000000              ; 2
+  705 A:9de1  f0                                 .byt %11110000              ; 4
+  706 A:9de2  f0                                 .byt %11110000              ; 6
+  707 A:9de3  f0                                 .byt %11110000              ; 8
 
-  701 A:9ddb  00                                 .byt %00000000              ; 9
+  709 A:9de4  00                                 .byt %00000000              ; 9
 
-  703 A:9ddc  00                                 .byt %00000000              ; 1
-  704 A:9ddd  00                                 .byt %00000000              ; 2
-  705 A:9dde  f0                                 .byt %11110000              ; 4
-  706 A:9ddf  f0                                 .byt %11110000              ; 6
-  707 A:9de0  f0                                 .byt %11110000              ; 8
+  711 A:9de5  00                                 .byt %00000000              ; 1
+  712 A:9de6  00                                 .byt %00000000              ; 2
+  713 A:9de7  f0                                 .byt %11110000              ; 4
+  714 A:9de8  f0                                 .byt %11110000              ; 6
+  715 A:9de9  f0                                 .byt %11110000              ; 8
 
-  709 A:9de1  00                                 .byt %00000000              ; 9
+  717 A:9dea  00                                 .byt %00000000              ; 9
 
-  711 A:9de2                           opts_vals 
-  712 A:9de2  c0                                 .byt %11000000              ; 1
-  713 A:9de3  80                                 .byt %10000000              ; 2
-  714 A:9de4  ff                                 .byt %11111111              ; 4
-  715 A:9de5  ff                                 .byt %11111111              ; 6
-  716 A:9de6  ff                                 .byt %11111111              ; 8
+  719 A:9deb                           opts_vals 
+  720 A:9deb  c0                                 .byt %11000000              ; 1
+  721 A:9dec  80                                 .byt %10000000              ; 2
+  722 A:9ded  ff                                 .byt %11111111              ; 4
+  723 A:9dee  ff                                 .byt %11111111              ; 6
+  724 A:9def  ff                                 .byt %11111111              ; 8
 
-  718 A:9de7  ff                                 .byt %11111111              ; 9
+  726 A:9df0  ff                                 .byt %11111111              ; 9
 
-  720 A:9de8  00                                 .byt %00000000              ; 1
-  721 A:9de9  00                                 .byt %00000000              ; 2
-  722 A:9dea  00                                 .byt %00000000              ; 4
-  723 A:9deb  00                                 .byt %00000000              ; 6
-  724 A:9dec  00                                 .byt %00000000              ; 8
+  728 A:9df1  00                                 .byt %00000000              ; 1
+  729 A:9df2  00                                 .byt %00000000              ; 2
+  730 A:9df3  00                                 .byt %00000000              ; 4
+  731 A:9df4  00                                 .byt %00000000              ; 6
+  732 A:9df5  00                                 .byt %00000000              ; 8
 
-  726 A:9ded  00                                 .byt %00000000              ; 9
+  734 A:9df6  00                                 .byt %00000000              ; 9
 
-  728 A:9dee                           opts_vals2 
-  729 A:9dee  00                                 .byt %00000000              ; 1
-  730 A:9def  00                                 .byt %00000000              ; 2
-  731 A:9df0  10                                 .byt %00010000              ; 4
-  732 A:9df1  10                                 .byt %00010000              ; 6
-  733 A:9df2  10                                 .byt %00010000              ; 8
+  736 A:9df7                           opts_vals2 
+  737 A:9df7  00                                 .byt %00000000              ; 1
+  738 A:9df8  00                                 .byt %00000000              ; 2
+  739 A:9df9  10                                 .byt %00010000              ; 4
+  740 A:9dfa  10                                 .byt %00010000              ; 6
+  741 A:9dfb  10                                 .byt %00010000              ; 8
 
-  735 A:9df3  10                                 .byt %00010000              ; 9
+  743 A:9dfc  10                                 .byt %00010000              ; 9
 
-  737 A:9df4  00                                 .byt %00000000              ; 1
-  738 A:9df5  00                                 .byt %00000000              ; 2
-  739 A:9df6  00                                 .byt %00000000              ; 4
-  740 A:9df7  00                                 .byt %00000000              ; 6
-  741 A:9df8  00                                 .byt %00000000              ; 8
+  745 A:9dfd  00                                 .byt %00000000              ; 1
+  746 A:9dfe  00                                 .byt %00000000              ; 2
+  747 A:9dff  00                                 .byt %00000000              ; 4
+  748 A:9e00  00                                 .byt %00000000              ; 6
+  749 A:9e01  00                                 .byt %00000000              ; 8
 
-  743 A:9df9  00                                 .byt %00000000              ; 9
+  751 A:9e02  00                                 .byt %00000000              ; 9
 
-  745 A:9dfa                           unit_vals 
-  746 A:9dfa  00                                 .byt %00000000              ; 1 - 1 MHz, unit 8
-  747 A:9dfb  00                                 .byt %00000000              ; 2
-  748 A:9dfc  00                                 .byt %00000000              ; 4
-  749 A:9dfd  00                                 .byt %00000000              ; 6
-  750 A:9dfe  00                                 .byt %00000000              ; 8
-  751 A:9dff  00                                 .byt %00000000              ; 9
+  753 A:9e03                           unit_vals 
+  754 A:9e03  00                                 .byt %00000000              ; 1 - 1 MHz, unit 8
+  755 A:9e04  00                                 .byt %00000000              ; 2
+  756 A:9e05  00                                 .byt %00000000              ; 4
+  757 A:9e06  00                                 .byt %00000000              ; 6
+  758 A:9e07  00                                 .byt %00000000              ; 8
+  759 A:9e08  00                                 .byt %00000000              ; 9
 
-  753 A:9e00  00                                 .byt %00000000              ; 1
-  754 A:9e01  00                                 .byt %00000000              ; 2
-  755 A:9e02  00                                 .byt %00000000              ; 4
-  756 A:9e03  00                                 .byt %00000000              ; 6
-  757 A:9e04  00                                 .byt %00000000              ; 8
-  758 A:9e05  00                                 .byt %00000000              ; 9
-  759 A:9e06                                     .) 
-  760 A:9e06                                     .) 
+  761 A:9e09  00                                 .byt %00000000              ; 1
+  762 A:9e0a  00                                 .byt %00000000              ; 2
+  763 A:9e0b  00                                 .byt %00000000              ; 4
+  764 A:9e0c  00                                 .byt %00000000              ; 6
+  765 A:9e0d  00                                 .byt %00000000              ; 8
+  766 A:9e0e  00                                 .byt %00000000              ; 9
+  767 A:9e0f                                     .) 
+  768 A:9e0f                                     .) 
 
 boot_rom1.a65
 
 
-    2 A:9e06                           setup_basic1_xl .( 
-    3 A:9e06                                    ; -----------------------
-    4 A:9e06                                    ; copy over BASIC 1 charrom to RAM
-    5 A:9e06                                    ; $14000-$15fff in flash img
+    2 A:9e0f                           setup_basic1_xl .( 
+    3 A:9e0f                                    ; -----------------------
+    4 A:9e0f                                    ; copy over BASIC 1 charrom to RAM
+    5 A:9e0f                                    ; $14000-$15fff in flash img
 
-    7 A:9e06  a9 80                              lda #$80
-    8 A:9e08  a2 00 c0                           ldx #$c000
-    9 A:9e0b  a0 00 20                           ldy #$2000
-   10 A:9e0e  20 d0 90                           jsr flash2direct2_xl
+    7 A:9e0f  a9 80                              lda #$80
+    8 A:9e11  a2 00 c0                           ldx #$c000
+    9 A:9e14  a0 00 20                           ldy #$2000
+   10 A:9e17  20 d0 90                           jsr flash2direct2_xl
 
-   12 A:9e11                                    ; now copy from bank 0 to target location
-   13 A:9e11  a2 00 00                           ldx #0
-   14 A:9e14                           copy      
-   15 A:9e14  bd 00 c0                           lda $c000,x            ; location in test ROM bank
-   16 A:9e17  9f 00 00 08                        sta VBANK,x              ; location in RAM - uppermost RAM bank
-   17 A:9e1b  e8                                 inx 
-   18 A:9e1c  e0 00 20                           cpx #$2000
-   19 A:9e1f  d0 f3                              bne copy
+   12 A:9e1a                                    ; now copy from bank 0 to target location
+   13 A:9e1a  a2 00 00                           ldx #0
+   14 A:9e1d                           copy      
+   15 A:9e1d  bd 00 c0                           lda $c000,x            ; location in test ROM bank
+   16 A:9e20  9f 00 00 08                        sta VBANK,x              ; location in RAM - uppermost RAM bank
+   17 A:9e24  e8                                 inx 
+   18 A:9e25  e0 00 20                           cpx #$2000
+   19 A:9e28  d0 f3                              bne copy
 
-   21 A:9e21                                    ;------------------------
-   22 A:9e21                                    ; BASIC 1
-   23 A:9e21  a9 40                              lda #$40             ; source page in Flash
-   24 A:9e23  a2 00 c0                           ldx #$c000             ; target addr
-   25 A:9e26  a0 00 40                           ldy #$4000             ; len
-   26 A:9e29  20 ce 90                           jsr flash2direct_xl
+   21 A:9e2a                                    ;------------------------
+   22 A:9e2a                                    ; BASIC 1
+   23 A:9e2a  a9 40                              lda #$40             ; source page in Flash
+   24 A:9e2c  a2 00 c0                           ldx #$c000             ; target addr
+   25 A:9e2f  a0 00 40                           ldy #$4000             ; len
+   26 A:9e32  20 ce 90                           jsr flash2direct_xl
 
-   28 A:9e2c  ad f7 87                           lda opt1
-   29 A:9e2f  10 03                              bpl b1_orig                ; check KERNEL patch
+   28 A:9e35  ad f7 87                           lda opt1
+   29 A:9e38  10 03                              bpl b1_orig                ; check KERNEL patch
 
-   31 A:9e31                                    ; apply BASIC1 patch like in VICE
-   32 A:9e31  20 39 9e                           jsr patch_rom1_xl
-   33 A:9e34                           b1_orig   
-   34 A:9e34  a9 80                              lda #%10000000             ; write protect $c000-$ffff
-   35 A:9e36  4c b8 90                           jmp end
+   31 A:9e3a                                    ; apply BASIC1 patch like in VICE
+   32 A:9e3a  20 42 9e                           jsr patch_rom1_xl
+   33 A:9e3d                           b1_orig   
+   34 A:9e3d  a9 80                              lda #%10000000             ; write protect $c000-$ffff
+   35 A:9e3f  4c b8 90                           jmp end
 
-   38 A:9e39                                    PATCH=$ef00
+   38 A:9e42                                    PATCH=$ef00
 
-   40 A:9e39                           patch_rom1_xl 
+   40 A:9e42                           patch_rom1_xl 
 
-   42 A:9e39                                    ; transferred over from VICE
-   43 A:9e39  a9 ea                              lda #$ea             ; NOP
-   44 A:9e3b  8d 71 f4                           sta $f471
-   45 A:9e3e  8d 72 f4                           sta $f472
-   46 A:9e41  8d 80 f1                           sta $f180
-   47 A:9e44  8d 81 f1                           sta $f181
-   48 A:9e47  a9 f8                              lda #$f8
-   49 A:9e49  8d ef f3                           sta $f3ef
-   50 A:9e4c  a9 f7                              lda #$f7
-   51 A:9e4e  8d f3 f3                           sta $f3f3
+   42 A:9e42                                    ; transferred over from VICE
+   43 A:9e42  a9 ea                              lda #$ea             ; NOP
+   44 A:9e44  8d 71 f4                           sta $f471
+   45 A:9e47  8d 72 f4                           sta $f472
+   46 A:9e4a  8d 80 f1                           sta $f180
+   47 A:9e4d  8d 81 f1                           sta $f181
+   48 A:9e50  a9 f8                              lda #$f8
+   49 A:9e52  8d ef f3                           sta $f3ef
+   50 A:9e55  a9 f7                              lda #$f7
+   51 A:9e57  8d f3 f3                           sta $f3f3
 
-   53 A:9e51                                    ; patch area start
-   54 A:9e51  a2 00 ef                           ldx #PATCH
+   53 A:9e5a                                    ; patch area start
+   54 A:9e5a  a2 00 ef                           ldx #PATCH
 
-   56 A:9e54                                    ; jmp to first patch
-   57 A:9e54  8a                                 txa 
-   58 A:9e55  8d 70 f3                           sta $f370
-   59 A:9e58  a9 ef                              lda #>PATCH
-   60 A:9e5a  8d 71 f3                           sta $f371
+   56 A:9e5d                                    ; jmp to first patch
+   57 A:9e5d  8a                                 txa 
+   58 A:9e5e  8d 70 f3                           sta $f370
+   59 A:9e61  a9 ef                              lda #>PATCH
+   60 A:9e63  8d 71 f3                           sta $f371
 
-   62 A:9e5d  a0 00 00                           ldy #0
-   63 A:9e60  b9 08 9f                 pl0       lda PATCH_0,y
-   64 A:9e63  95 00                              sta 0,x
-   65 A:9e65  e8                                 inx 
-   66 A:9e66  c8                                 iny 
-   67 A:9e67  c0 05 00                           cpy #5
-   68 A:9e6a  d0 f4                              bne pl0
+   62 A:9e66  a0 00 00                           ldy #0
+   63 A:9e69  b9 11 9f                 pl0       lda PATCH_0,y
+   64 A:9e6c  95 00                              sta 0,x
+   65 A:9e6e  e8                                 inx 
+   66 A:9e6f  c8                                 iny 
+   67 A:9e70  c0 05 00                           cpy #5
+   68 A:9e73  d0 f4                              bne pl0
 
-   70 A:9e6c                                    ; jump to second patch
-   71 A:9e6c  8a                                 txa 
-   72 A:9e6d  8d 79 f3                           sta $f379
-   73 A:9e70  a9 ef                              lda #>PATCH
-   74 A:9e72  8d 7a f3                           sta $f37a
+   70 A:9e75                                    ; jump to second patch
+   71 A:9e75  8a                                 txa 
+   72 A:9e76  8d 79 f3                           sta $f379
+   73 A:9e79  a9 ef                              lda #>PATCH
+   74 A:9e7b  8d 7a f3                           sta $f37a
 
-   76 A:9e75  a0 00 00                           ldy #0
-   77 A:9e78  b9 0d 9f                 pl1       lda PATCH_1,y
-   78 A:9e7b  95 00                              sta 0,x
-   79 A:9e7d  e8                                 inx 
-   80 A:9e7e  c8                                 iny 
-   81 A:9e7f  c0 13 00                           cpy #19
-   82 A:9e82  d0 f4                              bne pl1
+   76 A:9e7e  a0 00 00                           ldy #0
+   77 A:9e81  b9 16 9f                 pl1       lda PATCH_1,y
+   78 A:9e84  95 00                              sta 0,x
+   79 A:9e86  e8                                 inx 
+   80 A:9e87  c8                                 iny 
+   81 A:9e88  c0 13 00                           cpy #19
+   82 A:9e8b  d0 f4                              bne pl1
 
-   84 A:9e84                                    ; JSR to third patch
-   85 A:9e84  a9 20                              lda #$20
-   86 A:9e86  8d cc f3                           sta $f3cc
-   87 A:9e89  8a                                 txa 
-   88 A:9e8a  8d cd f3                           sta $f3cd
-   89 A:9e8d  a9 ef                              lda #>PATCH
-   90 A:9e8f  8d ce f3                           sta $f3ce
+   84 A:9e8d                                    ; JSR to third patch
+   85 A:9e8d  a9 20                              lda #$20
+   86 A:9e8f  8d cc f3                           sta $f3cc
+   87 A:9e92  8a                                 txa 
+   88 A:9e93  8d cd f3                           sta $f3cd
+   89 A:9e96  a9 ef                              lda #>PATCH
+   90 A:9e98  8d ce f3                           sta $f3ce
 
-   92 A:9e92  a0 00 00                           ldy #0
-   93 A:9e95  b9 20 9f                 pl2       lda PATCH_2,y
-   94 A:9e98  95 00                              sta 0,x
-   95 A:9e9a  e8                                 inx 
-   96 A:9e9b  c8                                 iny 
-   97 A:9e9c  c0 0a 00                           cpy #10
-   98 A:9e9f  d0 f4                              bne pl2
+   92 A:9e9b  a0 00 00                           ldy #0
+   93 A:9e9e  b9 29 9f                 pl2       lda PATCH_2,y
+   94 A:9ea1  95 00                              sta 0,x
+   95 A:9ea3  e8                                 inx 
+   96 A:9ea4  c8                                 iny 
+   97 A:9ea5  c0 0a 00                           cpy #10
+   98 A:9ea8  d0 f4                              bne pl2
 
-  100 A:9ea1                                    ; jmp to fourth patch
-  101 A:9ea1  8a                                 txa 
-  102 A:9ea2  8d c1 f6                           sta $f6c1
-  103 A:9ea5  a9 ef                              lda #>PATCH
-  104 A:9ea7  8d c2 f6                           sta $f6c2
+  100 A:9eaa                                    ; jmp to fourth patch
+  101 A:9eaa  8a                                 txa 
+  102 A:9eab  8d c1 f6                           sta $f6c1
+  103 A:9eae  a9 ef                              lda #>PATCH
+  104 A:9eb0  8d c2 f6                           sta $f6c2
 
-  106 A:9eaa  a0 00 00                           ldy #0
-  107 A:9ead  b9 2a 9f                 pl3       lda PATCH_3,y
-  108 A:9eb0  95 00                              sta 0,x
-  109 A:9eb2  e8                                 inx 
-  110 A:9eb3  c8                                 iny 
-  111 A:9eb4  c0 05 00                           cpy #5
-  112 A:9eb7  d0 f4                              bne pl3
+  106 A:9eb3  a0 00 00                           ldy #0
+  107 A:9eb6  b9 33 9f                 pl3       lda PATCH_3,y
+  108 A:9eb9  95 00                              sta 0,x
+  109 A:9ebb  e8                                 inx 
+  110 A:9ebc  c8                                 iny 
+  111 A:9ebd  c0 05 00                           cpy #5
+  112 A:9ec0  d0 f4                              bne pl3
 
-  114 A:9eb9                                    ; jump to fifth patch
-  115 A:9eb9  8a                                 txa 
-  116 A:9eba  8d c7 f6                           sta $f6c7
-  117 A:9ebd  a9 ef                              lda #>PATCH
-  118 A:9ebf  8d c8 f6                           sta $f6c8
+  114 A:9ec2                                    ; jump to fifth patch
+  115 A:9ec2  8a                                 txa 
+  116 A:9ec3  8d c7 f6                           sta $f6c7
+  117 A:9ec6  a9 ef                              lda #>PATCH
+  118 A:9ec8  8d c8 f6                           sta $f6c8
 
-  120 A:9ec2  a0 00 00                           ldy #0
-  121 A:9ec5  b9 2f 9f                 pl4       lda PATCH_4,y
-  122 A:9ec8  95 00                              sta 0,x
-  123 A:9eca  e8                                 inx 
-  124 A:9ecb  c8                                 iny 
-  125 A:9ecc  c0 12 00                           cpy #18
-  126 A:9ecf  d0 f4                              bne pl4
+  120 A:9ecb  a0 00 00                           ldy #0
+  121 A:9ece  b9 38 9f                 pl4       lda PATCH_4,y
+  122 A:9ed1  95 00                              sta 0,x
+  123 A:9ed3  e8                                 inx 
+  124 A:9ed4  c8                                 iny 
+  125 A:9ed5  c0 12 00                           cpy #18
+  126 A:9ed8  d0 f4                              bne pl4
 
-  128 A:9ed1                                    ; insert sixth patch
-  129 A:9ed1  a0 00 00                           ldy #0
-  130 A:9ed4  b9 41 9f                 pl5       lda PATCH_5,y
-  131 A:9ed7  99 81 f3                           sta $f381,y
-  132 A:9eda  c8                                 iny 
-  133 A:9edb  c0 08 00                           cpy #8
-  134 A:9ede  d0 f4                              bne pl5
+  128 A:9eda                                    ; insert sixth patch
+  129 A:9eda  a0 00 00                           ldy #0
+  130 A:9edd  b9 4a 9f                 pl5       lda PATCH_5,y
+  131 A:9ee0  99 81 f3                           sta $f381,y
+  132 A:9ee3  c8                                 iny 
+  133 A:9ee4  c0 08 00                           cpy #8
+  134 A:9ee7  d0 f4                              bne pl5
 
-  136 A:9ee0                                    ; jump to seventh patch
-  137 A:9ee0  8a                                 txa 
-  138 A:9ee1  8d f4 f6                           sta $f6f4
-  139 A:9ee4  a9 ef                              lda #>PATCH
-  140 A:9ee6  8d f5 f6                           sta $f6f5
+  136 A:9ee9                                    ; jump to seventh patch
+  137 A:9ee9  8a                                 txa 
+  138 A:9eea  8d f4 f6                           sta $f6f4
+  139 A:9eed  a9 ef                              lda #>PATCH
+  140 A:9eef  8d f5 f6                           sta $f6f5
 
-  142 A:9ee9  a0 00 00                           ldy #0
-  143 A:9eec  b9 49 9f                 pl6       lda PATCH_6,y
-  144 A:9eef  95 00                              sta 0,x
-  145 A:9ef1  e8                                 inx 
-  146 A:9ef2  c8                                 iny 
-  147 A:9ef3  c0 06 00                           cpy #6
-  148 A:9ef6  d0 f4                              bne pl6
+  142 A:9ef2  a0 00 00                           ldy #0
+  143 A:9ef5  b9 52 9f                 pl6       lda PATCH_6,y
+  144 A:9ef8  95 00                              sta 0,x
+  145 A:9efa  e8                                 inx 
+  146 A:9efb  c8                                 iny 
+  147 A:9efc  c0 06 00                           cpy #6
+  148 A:9eff  d0 f4                              bne pl6
 
-  150 A:9ef8                                    ; insert marker
-  151 A:9ef8  a0 00 00                           ldy #0
-  152 A:9efb  98                                 tya                    ; fill B with zero, so cmp work?
-  153 A:9efc  b9 4f 9f                 plm       lda MARK,y
-  154 A:9eff  95 00                              sta 0,x
-  155 A:9f01  e8                                 inx 
-  156 A:9f02  c8                                 iny 
-  157 A:9f03  c9 00                              cmp #0
-  158 A:9f05  d0 f5                              bne plm
+  150 A:9f01                                    ; insert marker
+  151 A:9f01  a0 00 00                           ldy #0
+  152 A:9f04  98                                 tya                    ; fill B with zero, so cmp work?
+  153 A:9f05  b9 58 9f                 plm       lda MARK,y
+  154 A:9f08  95 00                              sta 0,x
+  155 A:9f0a  e8                                 inx 
+  156 A:9f0b  c8                                 iny 
+  157 A:9f0c  c9 00                              cmp #0
+  158 A:9f0e  d0 f5                              bne plm
 
-  160 A:9f07  60                                 rts 
+  160 A:9f10  60                                 rts 
 
-  162 A:9f08  a9 60 85 f0 60           PATCH_0   .byt $a9,$60,$85,$f0,$60
-  163 A:9f0d  20 b6 f0 a5 f0 20 5b ... PATCH_1   .byt $20,$b6,$f0,$a5,$f0,$20,$5b,$f1,$20,$87,$f1,$85,$f7,$20,$87,$f1,$85,$f8,$60
-  164 A:9f20  20 7a f1 20 e6 f6 ad ... PATCH_2   .byt $20,$7a,$f1,$20,$e6,$f6,$ad,$0b,$02,$60
-  165 A:9f2a  a9 61 85 f0 60           PATCH_3   .byt $a9,$61,$85,$f0,$60
-  166 A:9f2f  20 ba f0 a5 f0 20 2c ... PATCH_4   .byt $20,$ba,$f0,$a5,$f0,$20,$2c,$f1,$a5,$f7,$20,$67,$f1,$a5,$f8,$4c,$67,$f1
-  167 A:9f41  ae 0c 02 70 46 20 87 f1  PATCH_5   .byt $ae,$0c,$02,$70,$46,$20,$87,$f1
-  168 A:9f49  20 2c f1 4c 7e f1        PATCH_6   .byt $20,$2c,$f1,$4c,$7e,$f1
+  162 A:9f11  a9 60 85 f0 60           PATCH_0   .byt $a9,$60,$85,$f0,$60
+  163 A:9f16  20 b6 f0 a5 f0 20 5b ... PATCH_1   .byt $20,$b6,$f0,$a5,$f0,$20,$5b,$f1,$20,$87,$f1,$85,$f7,$20,$87,$f1,$85,$f8,$60
+  164 A:9f29  20 7a f1 20 e6 f6 ad ... PATCH_2   .byt $20,$7a,$f1,$20,$e6,$f6,$ad,$0b,$02,$60
+  165 A:9f33  a9 61 85 f0 60           PATCH_3   .byt $a9,$61,$85,$f0,$60
+  166 A:9f38  20 ba f0 a5 f0 20 2c ... PATCH_4   .byt $20,$ba,$f0,$a5,$f0,$20,$2c,$f1,$a5,$f7,$20,$67,$f1,$a5,$f8,$4c,$67,$f1
+  167 A:9f4a  ae 0c 02 70 46 20 87 f1  PATCH_5   .byt $ae,$0c,$02,$70,$46,$20,$87,$f1
+  168 A:9f52  20 2c f1 4c 7e f1        PATCH_6   .byt $20,$2c,$f1,$4c,$7e,$f1
 
-  170 A:9f4f  42 41 53 49 43 31 20 ... MARK      .asc "BASIC1 PATCH FOR IEEE488",0
-  171 A:9f68                                     .) 
+  170 A:9f58  42 41 53 49 43 31 20 ... MARK      .asc "BASIC1 PATCH FOR IEEE488",0
+  171 A:9f71                                     .) 
 
 boot_rom2.a65
 
 
-    3 A:9f68                                    ;------------------------
-    4 A:9f68                                    ; upgrade ROMs with BASIC2
-    5 A:9f68                           setup_basic2_xl .( 
-    6 A:9f68                                    ; copy over PET ROM into low RAM
-    7 A:9f68                                    ; $4000-$7fff in bootimg to $c000-$ffff in RAM
+    3 A:9f71                                    ;------------------------
+    4 A:9f71                                    ; upgrade ROMs with BASIC2
+    5 A:9f71                           setup_basic2_xl .( 
+    6 A:9f71                                    ; copy over PET ROM into low RAM
+    7 A:9f71                                    ; $4000-$7fff in bootimg to $c000-$ffff in RAM
 
-    9 A:9f68  a9 80                              lda #$80
-   10 A:9f6a  a2 00 c0                           ldx #$c000
-   11 A:9f6d  a0 00 40                           ldy #$4000
-   12 A:9f70  20 ce 90                           jsr flash2direct_xl
+    9 A:9f71  a9 80                              lda #$80
+   10 A:9f73  a2 00 c0                           ldx #$c000
+   11 A:9f76  a0 00 40                           ldy #$4000
+   12 A:9f79  20 ce 90                           jsr flash2direct_xl
 
-   14 A:9f73  a9 80                              lda #%10000000             ; write protect $c000-$ffff
-   15 A:9f75  4c b8 90                           jmp end
-   16 A:9f78                                     .) 
+   14 A:9f7c  a9 80                              lda #%10000000             ; write protect $c000-$ffff
+   15 A:9f7e  4c b8 90                           jmp end
+   16 A:9f81                                     .) 
 
 boot_rom4.a65
 
 
-    2 A:9f78                           setup_basic4_xl .( 
-    3 A:9f78                                    ; where do we store the extra patch code
-    4 A:9f78                                    IEEE_PATCH=$fe20           ; IEEE fix for faster CPU clocks
-    5 A:9f78                                    SDC_COMPANION=$fe30           ; SD-Card link
-    6 A:9f78                                    USB_COMPANION=$df00           ; USB link
-    7 A:9f78                                    USB_CPAGE=$1f           ;$0f ; where USB companion is in flash
+    2 A:9f81                           setup_basic4_xl .( 
+    3 A:9f81                                    ; where do we store the extra patch code
+    4 A:9f81                                    IEEE_PATCH=$fe20           ; IEEE fix for faster CPU clocks
+    5 A:9f81                                    SDC_COMPANION=$fe30           ; SD-Card link
+    6 A:9f81                                    USB_COMPANION=$df00           ; USB link
+    7 A:9f81                                    USB_CPAGE=$1f           ;$0f ; where USB companion is in flash
 
-    9 A:9f78                                    ; -----------------------
-   10 A:9f78                                    ; copy over PET BASIC4 $b000-$dfff
-   11 A:9f78  a9 c0                              lda #$c0
-   12 A:9f7a  a2 00 b0                           ldx #$b000
-   13 A:9f7d  a0 00 30                           ldy #$3000
-   14 A:9f80  20 ce 90                           jsr flash2direct_xl
+    9 A:9f81                                    ; -----------------------
+   10 A:9f81                                    ; copy over PET BASIC4 $b000-$dfff
+   11 A:9f81  a9 c0                              lda #$c0
+   12 A:9f83  a2 00 b0                           ldx #$b000
+   13 A:9f86  a0 00 30                           ldy #$3000
+   14 A:9f89  20 ce 90                           jsr flash2direct_xl
 
-   16 A:9f83                                    ; copy over PET KERNEL4 $f000-$ffff
-   17 A:9f83  a9 f0                              lda #$f0
-   18 A:9f85  a2 00 f0                           ldx #$f000
-   19 A:9f88  a0 00 10                           ldy #$1000
-   20 A:9f8b  20 ce 90                           jsr flash2direct_xl
+   16 A:9f8c                                    ; copy over PET KERNEL4 $f000-$ffff
+   17 A:9f8c  a9 f0                              lda #$f0
+   18 A:9f8e  a2 00 f0                           ldx #$f000
+   19 A:9f91  a0 00 10                           ldy #$1000
+   20 A:9f94  20 ce 90                           jsr flash2direct_xl
 
-   22 A:9f8e  ad f8 87                           lda opt0                ; bits 7/6/5 have number of editor ROM
-   23 A:9f91                                    ; bit 7: 1=orig, 0=patched
-   24 A:9f91                                    ; bit 6: 1=80 col, 0=40 col
-   25 A:9f91                                    ; bit 5: 1=c64, 0=PET-N kbd
-   26 A:9f91                                    ; 000 = PET-N, 40 col, patched
-   27 A:9f91                                    ; 001 = C64,   40 col, patched
-   28 A:9f91                                    ; 010 = PET-N, 80 col, patched
-   29 A:9f91                                    ; 011 = C64,   80 col, patched
-   30 A:9f91                                    ; 100 = PET-N, 40 col, orig
-   31 A:9f91                                    ; 101 = C64,   40 col, orig
-   32 A:9f91                                    ; 110 = PET-N, 80 col, orig
-   33 A:9f91                                    ; 111 = C64,   80 col, orig
-   34 A:9f91  29 e0                              and #%11100000
-   35 A:9f93  4a                                 lsr 
-   36 A:9f94  a2 00 e0                           ldx #$e000
-   37 A:9f97  a0 00 10                           ldy #$1000
-   38 A:9f9a  20 d0 90                           jsr flash2direct2_xl
+   22 A:9f97  ad f8 87                           lda opt0                ; bits 7/6/5 have number of editor ROM
+   23 A:9f9a                                    ; bit 7: 1=orig, 0=patched
+   24 A:9f9a                                    ; bit 6: 1=80 col, 0=40 col
+   25 A:9f9a                                    ; bit 5: 1=c64, 0=PET-N kbd
+   26 A:9f9a                                    ; 000 = PET-N, 40 col, patched
+   27 A:9f9a                                    ; 001 = C64,   40 col, patched
+   28 A:9f9a                                    ; 010 = PET-N, 80 col, patched
+   29 A:9f9a                                    ; 011 = C64,   80 col, patched
+   30 A:9f9a                                    ; 100 = PET-N, 40 col, orig
+   31 A:9f9a                                    ; 101 = C64,   40 col, orig
+   32 A:9f9a                                    ; 110 = PET-N, 80 col, orig
+   33 A:9f9a                                    ; 111 = C64,   80 col, orig
+   34 A:9f9a  29 e0                              and #%11100000
+   35 A:9f9c  4a                                 lsr 
+   36 A:9f9d  a2 00 e0                           ldx #$e000
+   37 A:9fa0  a0 00 10                           ldy #$1000
+   38 A:9fa3  20 d0 90                           jsr flash2direct2_xl
 
-   40 A:9f9d                                    ; ------------------
-   41 A:9f9d                                    ; check USB patch
-   42 A:9f9d  ad f8 87                           lda opt0                ; from keyboard selection
-   43 A:9fa0  29 08                              and #OPT0_USBKBD
-   44 A:9fa2  d0 07                              bne dousb
-   45 A:9fa4  ad f6 87                           lda opt2                ; from options menu
-   46 A:9fa7  29 10                              and #OPT2_USBHID
-   47 A:9fa9  f0 17                              beq nousb
-   48 A:9fab                           dousb     
-   49 A:9fab                                    ; copy over petromcomp to destination at $dfxx
-   50 A:9fab  a9 1f                              lda #USB_CPAGE               ; page in flash
-   51 A:9fad  a2 00 df                           ldx #USB_COMPANION               ; target in bank 0
-   52 A:9fb0  a0 00 01                           ldy #$0100             ; length
-   53 A:9fb3  20 ce 90                           jsr flash2direct_xl
+   40 A:9fa6                                    ; ------------------
+   41 A:9fa6                                    ; check USB patch
+   42 A:9fa6  ad f8 87                           lda opt0                ; from keyboard selection
+   43 A:9fa9  29 08                              and #OPT0_USBKBD
+   44 A:9fab  d0 07                              bne dousb
+   45 A:9fad  ad f6 87                           lda opt2                ; from options menu
+   46 A:9fb0  29 10                              and #OPT2_USBHID
+   47 A:9fb2  f0 17                              beq nousb
+   48 A:9fb4                           dousb     
+   49 A:9fb4                                    ; copy over petromcomp to destination at $dfxx
+   50 A:9fb4  a9 1f                              lda #USB_CPAGE               ; page in flash
+   51 A:9fb6  a2 00 df                           ldx #USB_COMPANION               ; target in bank 0
+   52 A:9fb9  a0 00 01                           ldy #$0100             ; length
+   53 A:9fbc  20 ce 90                           jsr flash2direct_xl
 
-   55 A:9fb6                                    ; set X/Y registers to 8 bit ...
-   56 A:9fb6  e2 10                              sep #%00010000
-   57 A:9fb8                                     .xs 
+   55 A:9fbf                                    ; set X/Y registers to 8 bit ...
+   56 A:9fbf  e2 10                              sep #%00010000
+   57 A:9fc1                                     .xs 
 
-   59 A:9fb8                                    ; install it into the ROM
-   60 A:9fb8  20 03 df                           jsr $df03
+   59 A:9fc1                                    ; install it into the ROM
+   60 A:9fc1  20 03 df                           jsr $df03
 
-   62 A:9fbb  c2 10                              rep #%00010000
-   63 A:9fbd                                     .xl 
+   62 A:9fc4  c2 10                              rep #%00010000
+   63 A:9fc6                                     .xl 
 
-   65 A:9fbd                                    ; reverse write protect done there
-   66 A:9fbd  a9 00                              lda #0
-   67 A:9fbf  8d 01 e8                           sta $e801
+   65 A:9fc6                                    ; reverse write protect done there
+   66 A:9fc6  a9 00                              lda #0
+   67 A:9fc8  8d 01 e8                           sta $e801
 
-   69 A:9fc2                                    ; ------------------
-   70 A:9fc2                                    ; check SD Card
-   71 A:9fc2                           nousb     
-   72 A:9fc2  ad f7 87                           lda opt1
-   73 A:9fc5  29 04                              and #OPT1_SDCARD
-   74 A:9fc7  f0 03                              beq nosd
-   75 A:9fc9  20 ea 9f                           jsr patch_sdcard4_xl
-   76 A:9fcc                           nosd      
-   77 A:9fcc                                    ; ------------------
-   78 A:9fcc                                    ; check BASIC4 patch
-   79 A:9fcc                                    ; uses kernel, basic, siec patch bits
-   80 A:9fcc  20 f9 9f                           jsr patch_rom4_xl
+   69 A:9fcb                                    ; ------------------
+   70 A:9fcb                                    ; check SD Card
+   71 A:9fcb                           nousb     
+   72 A:9fcb  ad f7 87                           lda opt1
+   73 A:9fce  29 04                              and #OPT1_SDCARD
+   74 A:9fd0  f0 03                              beq nosd
+   75 A:9fd2  20 f3 9f                           jsr patch_sdcard4_xl
+   76 A:9fd5                           nosd      
+   77 A:9fd5                                    ; ------------------
+   78 A:9fd5                                    ; check BASIC4 patch
+   79 A:9fd5                                    ; uses kernel, basic, siec patch bits
+   80 A:9fd5  20 02 a0                           jsr patch_rom4_xl
 
-   83 A:9fcf                                    ; ------------------
-   84 A:9fcf                                    ; memory map setup
-   85 A:9fcf                           b4_orig   
-   86 A:9fcf                                    ; check 80 column bit
-   87 A:9fcf                                    ; TODO move to Viccy on FPGA machines
-   88 A:9fcf  ad f8 87                           lda opt0
-   89 A:9fd2  29 40                              and #%01000000
-   90 A:9fd4  f0 05                              beq col40
-   91 A:9fd6  a9 02                              lda #%00000010
-   92 A:9fd8  8d 00 e8                           sta VCTRL
-   93 A:9fdb                           col40     
-   94 A:9fdb                                    ; check 8296 bit
-   95 A:9fdb  ad f8 87                           lda opt0
-   96 A:9fde  29 10                              and #%00010000
-   97 A:9fe0  f0 03                              beq not_96
-   98 A:9fe2                                    ; 8296
-   99 A:9fe2  a9 e8                              lda #%11101000
-  100 A:9fe4  2c                                 .byt $2c
-  101 A:9fe5  a9 e0                    not_96    lda #%11100000
+   83 A:9fd8                                    ; ------------------
+   84 A:9fd8                                    ; memory map setup
+   85 A:9fd8                           b4_orig   
+   86 A:9fd8                                    ; check 80 column bit
+   87 A:9fd8                                    ; TODO move to Viccy on FPGA machines
+   88 A:9fd8  ad f8 87                           lda opt0
+   89 A:9fdb  29 40                              and #%01000000
+   90 A:9fdd  f0 05                              beq col40
+   91 A:9fdf  a9 02                              lda #%00000010
+   92 A:9fe1  8d 00 e8                           sta VCTRL
+   93 A:9fe4                           col40     
+   94 A:9fe4                                    ; check 8296 bit
+   95 A:9fe4  ad f8 87                           lda opt0
+   96 A:9fe7  29 10                              and #%00010000
+   97 A:9fe9  f0 03                              beq not_96
+   98 A:9feb                                    ; 8296
+   99 A:9feb  a9 e8                              lda #%11101000
+  100 A:9fed  2c                                 .byt $2c
+  101 A:9fee  a9 e0                    not_96    lda #%11100000
 
-  103 A:9fe7  4c b8 90                           jmp end
+  103 A:9ff0  4c b8 90                           jmp end
 
-  106 A:9fea                           patch_sdcard4_xl .( 
+  106 A:9ff3                           patch_sdcard4_xl .( 
 
-  108 A:9fea                                    ; -------------------------------
-  109 A:9fea                                    ; SD Card patch
+  108 A:9ff3                                    ; -------------------------------
+  109 A:9ff3                                    ; SD Card patch
 
-  111 A:9fea                                    ; set X/Y registers to 8 bit ...
-  112 A:9fea  e2 10                              sep #%00010000
-  113 A:9fec                                     .xs 
+  111 A:9ff3                                    ; set X/Y registers to 8 bit ...
+  112 A:9ff3  e2 10                              sep #%00010000
+  113 A:9ff5                                     .xs 
 
-  115 A:9fec  ad f5 87                           lda optu
-  116 A:9fef  29 03                              and #3
-  117 A:9ff1  09 08                              ora #8
-  118 A:9ff3  20 4a a0                           jsr sdcard_install
+  115 A:9ff5  ad f5 87                           lda optu
+  116 A:9ff8  29 03                              and #3
+  117 A:9ffa  09 08                              ora #8
+  118 A:9ffc  20 53 a0                           jsr sdcard_install
 
-  120 A:9ff6  c2 10                              rep #%00010000
-  121 A:9ff8                                     .xl 
-  122 A:9ff8  60                                 rts 
-  123 A:9ff9                                     .) 
+  120 A:9fff  c2 10                              rep #%00010000
+  121 A:a001                                     .xl 
+  122 A:a001  60                                 rts 
+  123 A:a002                                     .) 
 
-  125 A:9ff9                           patch_rom4_xl .( 
-  126 A:9ff9                                    ; set X/Y registers to 8 bit ...
-  127 A:9ff9  e2 10                              sep #%00010000
-  128 A:9ffb                                     .xs 
+  125 A:a002                           patch_rom4_xl .( 
+  126 A:a002                                    ; set X/Y registers to 8 bit ...
+  127 A:a002  e2 10                              sep #%00010000
+  128 A:a004                                     .xs 
 
-  130 A:9ffb  20 b2 a1                           jsr patch_rom4_init
+  130 A:a004  20 bb a1                           jsr patch_rom4_init
 
-  132 A:9ffe  ad f7 87                           lda opt1
-  133 A:a001  29 40                              and #OPT1_KERNAL
-  134 A:a003  f0 03                              beq nokern
-  135 A:a005  20 c3 a1                           jsr patch_kernal4
-  136 A:a008                           nokern    
-  137 A:a008  ad f7 87                           lda opt1
-  138 A:a00b  29 20                              and #OPT1_BASIC
-  139 A:a00d  f0 03                              beq nobasic
-  140 A:a00f  20 d3 a1                           jsr patch_basic4
-  141 A:a012                           nobasic   
-  142 A:a012  20 bc a1                           jsr patch_rom4_end
+  132 A:a007  ad f7 87                           lda opt1
+  133 A:a00a  29 40                              and #OPT1_KERNAL
+  134 A:a00c  f0 03                              beq nokern
+  135 A:a00e  20 cc a1                           jsr patch_kernal4
+  136 A:a011                           nokern    
+  137 A:a011  ad f7 87                           lda opt1
+  138 A:a014  29 20                              and #OPT1_BASIC
+  139 A:a016  f0 03                              beq nobasic
+  140 A:a018  20 dc a1                           jsr patch_basic4
+  141 A:a01b                           nobasic   
+  142 A:a01b  20 c5 a1                           jsr patch_rom4_end
 
-  144 A:a015  c2 10                              rep #%00010000
-  145 A:a017                                     .xl 
-  146 A:a017                                    ; -------------------------------
-  147 A:a017                                    ; IEEE speed patch
+  144 A:a01e  c2 10                              rep #%00010000
+  145 A:a020                                     .xl 
+  146 A:a020                                    ; -------------------------------
+  147 A:a020                                    ; IEEE speed patch
 
-  149 A:a017                                    ; patch target area start
-  150 A:a017  a2 20 fe                           ldx #IEEE_PATCH
+  149 A:a020                                    ; patch target area start
+  150 A:a020  a2 20 fe                           ldx #IEEE_PATCH
 
-  152 A:a01a                                    ; from http:
-  153 A:a01a  a9 4c                              lda #$4c
-  154 A:a01c  cd d8 f0                           cmp $f0d8              ; is already patched with JMP (e.g. SDCard)
-  155 A:a01f  d0 06                              bne nopatch
+  152 A:a023                                    ; from http:
+  153 A:a023  a9 4c                              lda #$4c
+  154 A:a025  cd d8 f0                           cmp $f0d8              ; is already patched with JMP (e.g. SDCard)
+  155 A:a028  d0 06                              bne nopatch
 
-  157 A:a021  ac d9 f0                           ldy $f0d9              ; XR/YR is 16 bit, copy over current JMP target to
-  158 A:a024  8c 48 a0                           sty jmptarget                ; patch JMP target
+  157 A:a02a  ac d9 f0                           ldy $f0d9              ; XR/YR is 16 bit, copy over current JMP target to
+  158 A:a02d  8c 51 a0                           sty jmptarget                ; patch JMP target
 
-  160 A:a027  8d d8 f0                 nopatch   sta $f0d8           ; JMP
-  161 A:a02a  8e d9 f0                           stx $f0d9              ; 16 bit address
+  160 A:a030  8d d8 f0                 nopatch   sta $f0d8           ; JMP
+  161 A:a033  8e d9 f0                           stx $f0d9              ; 16 bit address
 
-  163 A:a02d  a0 00 00                           ldy #0
-  164 A:a030  b9 3d a0                 pl0       lda PATCH4_0,y
-  165 A:a033  95 00                              sta 0,x
-  166 A:a035  e8                                 inx 
-  167 A:a036  c8                                 iny 
-  168 A:a037  c0 0c 00                           cpy #12
-  169 A:a03a  d0 f4                              bne pl0
+  163 A:a036  a0 00 00                           ldy #0
+  164 A:a039  b9 46 a0                 pl0       lda PATCH4_0,y
+  165 A:a03c  95 00                              sta 0,x
+  166 A:a03e  e8                                 inx 
+  167 A:a03f  c8                                 iny 
+  168 A:a040  c0 0c 00                           cpy #12
+  169 A:a043  d0 f4                              bne pl0
 
-  171 A:a03c  60                                 rts 
+  171 A:a045  60                                 rts 
 
-  173 A:a03d                                    ; this patch code is in itself all relative,
-  174 A:a03d                                    ; so not address calculations are needed
-  175 A:a03d                           PATCH4_0  .( 
-  176 A:a03d  a9 04                              lda #4
-  177 A:a03f  38                       l1        sec 
-  178 A:a040  e9 01                              sbc #1
-  179 A:a042  d0 fb                              bne l1
-  180 A:a044  ad 40 e8                           lda $e840
-  181 A:a047                                    jmptarget=*+1
-  182 A:a047  4c db f0                           jmp $f0db
-  183 A:a04a                                     .) 
+  173 A:a046                                    ; this patch code is in itself all relative,
+  174 A:a046                                    ; so not address calculations are needed
+  175 A:a046                           PATCH4_0  .( 
+  176 A:a046  a9 04                              lda #4
+  177 A:a048  38                       l1        sec 
+  178 A:a049  e9 01                              sbc #1
+  179 A:a04b  d0 fb                              bne l1
+  180 A:a04d  ad 40 e8                           lda $e840
+  181 A:a050                                    jmptarget=*+1
+  182 A:a050  4c db f0                           jmp $f0db
+  183 A:a053                                     .) 
 
-  185 A:a04a                                     .)                    ; end patch_rom4_xl
+  185 A:a053                                     .)                    ; end patch_rom4_xl
 
-  187 A:a04a                                     .xs 
+  187 A:a053                                     .xs 
 
-  189 A:a04a                                    ; --------------------------------------------------------
-  190 A:a04a                                    ; This installs the patches to link the CMDR-DOS into the
-  191 A:a04a                                    ; PET BASIC 4 ROM. It requires that the DOS "rom.bin" is
-  192 A:a04a                                    ; loaded into the bank 7 (14 as value for $e802) at $4000.
-  193 A:a04a                                    ; Also, it must run in the upper half of bank 0, as it
-  194 A:a04a                                    ; switches the lower half to bank 7, to run the dos_init.
-  195 A:a04a                                    ; 
-  196 A:a04a                                    ; It also requires the value of "SDC_COMPANION" to be set
-  197 A:a04a                                    ; to the place in the ROM where to copy the link code.
+  189 A:a053                                    ; --------------------------------------------------------
+  190 A:a053                                    ; This installs the patches to link the CMDR-DOS into the
+  191 A:a053                                    ; PET BASIC 4 ROM. It requires that the DOS "rom.bin" is
+  192 A:a053                                    ; loaded into the bank 7 (14 as value for $e802) at $4000.
+  193 A:a053                                    ; Also, it must run in the upper half of bank 0, as it
+  194 A:a053                                    ; switches the lower half to bank 7, to run the dos_init.
+  195 A:a053                                    ; 
+  196 A:a053                                    ; It also requires the value of "SDC_COMPANION" to be set
+  197 A:a053                                    ; to the place in the ROM where to copy the link code.
 
-  199 A:a04a                                     .( 
+  199 A:a053                                     .( 
 
-  201 A:a04a                                    ; address of the DOS in DOSBANK
-  202 A:a04a                                    DOS=$4000
+  201 A:a053                                    ; address of the DOS in DOSBANK
+  202 A:a053                                    DOS=$4000
 
-  204 A:a04a                                    ; DOS jumptable
-  205 A:a04a                                    dos_seclstn=DOS+3*0
-  206 A:a04a                                    dos_sectlk=DOS+3*1
-  207 A:a04a                                    dos_iecin=DOS+3*2
-  208 A:a04a                                    dos_iecout=DOS+3*3
-  209 A:a04a                                    dos_untlk=DOS+3*4 ; note: currently no-op
-  210 A:a04a                                    dos_unlsn=DOS+3*5
-  211 A:a04a                                    dos_listn=DOS+3*6
-  212 A:a04a                                    dos_talk=DOS+3*7 ; note: currently same as listn
+  204 A:a053                                    ; DOS jumptable
+  205 A:a053                                    dos_seclstn=DOS+3*0
+  206 A:a053                                    dos_sectlk=DOS+3*1
+  207 A:a053                                    dos_iecin=DOS+3*2
+  208 A:a053                                    dos_iecout=DOS+3*3
+  209 A:a053                                    dos_untlk=DOS+3*4 ; note: currently no-op
+  210 A:a053                                    dos_unlsn=DOS+3*5
+  211 A:a053                                    dos_listn=DOS+3*6
+  212 A:a053                                    dos_talk=DOS+3*7 ; note: currently same as listn
 
-  214 A:a04a                                    dos_init=DOS+3*8
+  214 A:a053                                    dos_init=DOS+3*8
 
-  216 A:a04a                                    ; banking
+  216 A:a053                                    ; banking
 
-  219 A:a04a                                     .assert BANK=$e802,"BANK register incorrectly defined"
+  219 A:a053                                     .assert BANK=$e802,"BANK register incorrectly defined"
 
-  225 A:a04a                                    DOSBANK=15           ; DOS runs in memory mapped from $078000-$07ffff
-  226 A:a04a                                    BASBANK=0           ; BASIC runs in bank 0
+  225 A:a053                                    DOSBANK=15           ; DOS runs in memory mapped from $078000-$07ffff
+  226 A:a053                                    BASBANK=0           ; BASIC runs in bank 0
 
-  228 A:a04a                                    ; variables in BASIC address space
+  228 A:a053                                    ; variables in BASIC address space
 
-  230 A:a04a                                    flags=$03fe           ; for testing for now
+  230 A:a053                                    flags=$03fe           ; for testing for now
 
-  232 A:a04a                                    curdev=$d4           ; current device (unit) number
-  233 A:a04a                                    cursec=$d3           ; current secondary address
+  232 A:a053                                    curdev=$d4           ; current device (unit) number
+  233 A:a053                                    cursec=$d3           ; current secondary address
 
-  235 A:a04a                                    status=$96           ; IEEE status
+  235 A:a053                                    status=$96           ; IEEE status
 
-  237 A:a04a                                    ; DOS bank vars
+  237 A:a053                                    ; DOS bank vars
 
-  239 A:a04a                                    dos_status=$0287           ; from dos inc/banks.inc
+  239 A:a053                                    dos_status=$0287           ; from dos inc/banks.inc
 
-  241 A:a04a                                    ; constants (flags) - checked for with BVx/BPL/BMI
+  241 A:a053                                    ; constants (flags) - checked for with BVx/BPL/BMI
 
-  243 A:a04a                                    DOS_TALK=$80
-  244 A:a04a                                    DOS_LISTEN=$40
+  243 A:a053                                    DOS_TALK=$80
+  244 A:a053                                    DOS_LISTEN=$40
 
-  246 A:a04a                                    ; install the patch and binding
+  246 A:a053                                    ; install the patch and binding
 
-  248 A:a04a                           sdcard_install .( 
-  249 A:a04a  48                                 pha 
+  248 A:a053                           sdcard_install .( 
+  249 A:a053  48                                 pha 
 
-  251 A:a04b  a9 60                              lda #%01100000
-  252 A:a04d  8d 01 e8                           sta $e801              ; make ROM writable
+  251 A:a054  a9 60                              lda #%01100000
+  252 A:a056  8d 01 e8                           sta $e801              ; make ROM writable
 
-  254 A:a050                                    ; copy over the patch into ROM
-  255 A:a050  a2 eb                              ldx #rompatch_end-rompatch_start
-  256 A:a052  bd c6 a0                 l0        lda PATCH-1,x
-  257 A:a055  9d 2f fe                           sta SDC_COMPANION-1,x
-  258 A:a058  ca                                 dex 
-  259 A:a059  d0 f7                              bne l0
+  254 A:a059                                    ; copy over the patch into ROM
+  255 A:a059  a2 eb                              ldx #rompatch_end-rompatch_start
+  256 A:a05b  bd cf a0                 l0        lda PATCH-1,x
+  257 A:a05e  9d 2f fe                           sta SDC_COMPANION-1,x
+  258 A:a061  ca                                 dex 
+  259 A:a062  d0 f7                              bne l0
 
-  261 A:a05b  a9 4c                              lda #$4c             ; JMP
-  262 A:a05d  a2 30                              ldx #<talk_listn_unlstn
-  263 A:a05f  a0 fe                              ldy #>talk_listn_unlstn
-  264 A:a061  8d d8 f0                           sta $f0d8              ; note this is called for TALK, LISTEN and UNLISTEN
-  265 A:a064  8e d9 f0                           stx $f0d9              ; with either $20, $40, or $3F in A (and PHA'd)
-  266 A:a067  8c da f0                           sty $f0da
+  261 A:a064  a9 4c                              lda #$4c             ; JMP
+  262 A:a066  a2 30                              ldx #<talk_listn_unlstn
+  263 A:a068  a0 fe                              ldy #>talk_listn_unlstn
+  264 A:a06a  8d d8 f0                           sta $f0d8              ; note this is called for TALK, LISTEN and UNLISTEN
+  265 A:a06d  8e d9 f0                           stx $f0d9              ; with either $20, $40, or $3F in A (and PHA'd)
+  266 A:a070  8c da f0                           sty $f0da
 
-  268 A:a06a  a2 d1                              ldx #<seclstn
-  269 A:a06c  a0 fe                              ldy #>seclstn
-  270 A:a06e  8d 45 f1                           sta $f145
-  271 A:a071  8e 46 f1                           stx $f146
-  272 A:a074  8c 47 f1                           sty $f147
+  268 A:a073  a2 d1                              ldx #<seclstn
+  269 A:a075  a0 fe                              ldy #>seclstn
+  270 A:a077  8d 45 f1                           sta $f145
+  271 A:a07a  8e 46 f1                           stx $f146
+  272 A:a07d  8c 47 f1                           sty $f147
 
-  274 A:a077  a2 c4                              ldx #<untlk
-  275 A:a079  a0 fe                              ldy #>untlk
-  276 A:a07b  8d ae f1                           sta $f1ae
-  277 A:a07e  8e af f1                           stx $f1af
-  278 A:a081  8c b0 f1                           sty $f1b0
+  274 A:a080  a2 c4                              ldx #<untlk
+  275 A:a082  a0 fe                              ldy #>untlk
+  276 A:a084  8d ae f1                           sta $f1ae
+  277 A:a087  8e af f1                           stx $f1af
+  278 A:a08a  8c b0 f1                           sty $f1b0
 
-  280 A:a084  a2 f1                              ldx #<iecin
-  281 A:a086  a0 fe                              ldy #>iecin
-  282 A:a088  8d c2 f1                           sta $f1c2
-  283 A:a08b  8e c3 f1                           stx $f1c3
-  284 A:a08e  8c c4 f1                           sty $f1c4
+  280 A:a08d  a2 f1                              ldx #<iecin
+  281 A:a08f  a0 fe                              ldy #>iecin
+  282 A:a091  8d c2 f1                           sta $f1c2
+  283 A:a094  8e c3 f1                           stx $f1c3
+  284 A:a097  8c c4 f1                           sty $f1c4
 
-  286 A:a091  a2 7d                              ldx #<sectlk
-  287 A:a093  a0 fe                              ldy #>sectlk
-  288 A:a095  8d 95 f1                           sta $f195
-  289 A:a098  8e 96 f1                           stx $f196
-  290 A:a09b  8c 97 f1                           sty $f197
+  286 A:a09a  a2 7d                              ldx #<sectlk
+  287 A:a09c  a0 fe                              ldy #>sectlk
+  288 A:a09e  8d 95 f1                           sta $f195
+  289 A:a0a1  8e 96 f1                           stx $f196
+  290 A:a0a4  8c 97 f1                           sty $f197
 
-  292 A:a09e  a2 9b                              ldx #<iecout
-  293 A:a0a0  a0 fe                              ldy #>iecout
-  294 A:a0a2  8d 9e f1                           sta $f19e
-  295 A:a0a5  8e 9f f1                           stx $f19f
-  296 A:a0a8  8c a0 f1                           sty $f1a0
-  297 A:a0ab  a9 ea                              lda #$ea             ; NOP
-  298 A:a0ad  8d a1 f1                           sta $f1a1
+  292 A:a0a7  a2 9b                              ldx #<iecout
+  293 A:a0a9  a0 fe                              ldy #>iecout
+  294 A:a0ab  8d 9e f1                           sta $f19e
+  295 A:a0ae  8e 9f f1                           stx $f19f
+  296 A:a0b1  8c a0 f1                           sty $f1a0
+  297 A:a0b4  a9 ea                              lda #$ea             ; NOP
+  298 A:a0b6  8d a1 f1                           sta $f1a1
 
-  300 A:a0b0  a9 e0                              lda #%11100000
-  301 A:a0b2  8d 01 e8                           sta $e801              ; write protect ROM
+  300 A:a0b9  a9 e0                              lda #%11100000
+  301 A:a0bb  8d 01 e8                           sta $e801              ; write protect ROM
 
-  303 A:a0b5                                    ; init the DOS
+  303 A:a0be                                    ; init the DOS
 
-  305 A:a0b5  68                                 pla                    ; dos unit
+  305 A:a0be  68                                 pla                    ; dos unit
 
-  307 A:a0b6  08                                 php 
-  308 A:a0b7  78                                 sei 
-  309 A:a0b8  a2 0f                              ldx #DOSBANK
-  310 A:a0ba  8e 02 e8                           stx BANK
-  311 A:a0bd  20 18 40                           jsr dos_init
-  312 A:a0c0  a9 00                              lda #BASBANK
-  313 A:a0c2  8d 02 e8                           sta BANK
-  314 A:a0c5  28                                 plp 
-  315 A:a0c6  60                                 rts 
-  316 A:a0c7                                     .) 
+  307 A:a0bf  08                                 php 
+  308 A:a0c0  78                                 sei 
+  309 A:a0c1  a2 0f                              ldx #DOSBANK
+  310 A:a0c3  8e 02 e8                           stx BANK
+  311 A:a0c6  20 18 40                           jsr dos_init
+  312 A:a0c9  a9 00                              lda #BASBANK
+  313 A:a0cb  8d 02 e8                           sta BANK
+  314 A:a0ce  28                                 plp 
+  315 A:a0cf  60                                 rts 
+  316 A:a0d0                                     .) 
 
-  318 A:a0c7                                    ; -------------------------------------------------------
-  319 A:a0c7                                    ; the following code is copied into the ROM and called
-  320 A:a0c7                                    ; from the patches into the IEEE code
+  318 A:a0d0                                    ; -------------------------------------------------------
+  319 A:a0d0                                    ; the following code is copied into the ROM and called
+  320 A:a0d0                                    ; from the patches into the IEEE code
 
-  322 A:a0c7                           PATCH     
-  322 A:a0c7                                    
-  323 A:a0c7                                    ; assemble for ROM address
+  322 A:a0d0                           PATCH     
+  322 A:a0d0                                    
+  323 A:a0d0                                    ; assemble for ROM address
 
-  325 A:a0c7                                     *= SDC_COMPANION
+  325 A:a0d0                                     *= SDC_COMPANION
   326 A:fe30                           rompatch_start 
   326 A:fe30                                    
 
@@ -2426,428 +2434,428 @@ boot_rom4.a65
   493 A:ff1b                                    ; fix up PC 
   494 A:ff1b                                     *= PATCH+(rompatch_end-rompatch_start)
 
-  496 A:a1b2                                     .) 
+  496 A:a1bb                                     .) 
 
 patch4.a65
 
 
-   28 A:a1b2                                    PATCH1=$fd60           ; extra code
-   29 A:a1b2                                    PATCH1END=$ff80
-   30 A:a1b2                                    PATCH2=$ffed           ; jmp table 1
-   31 A:a1b2                                    PATCH3=$ffd5           ; jmp table 2
-   32 A:a1b2                                    PATCH4=$ff81           ; jmp table 3
-
-   34 A:a1b2                                    IOBASE=$e800
-
-   36 A:a1b2                                    curdev=$d4           ; current device number
-
-   38 A:a1b2                                    CHRGOT=$76
-   39 A:a1b2                                    CHRGET=$70
-   40 A:a1b2                                    EVALBYTE=$c8d4
-
-   59 A:a1b2                                     .( 
-
-   61 A:a1b2                           patch_rom4_init .( 
-   62 A:a1b2  78                                 sei 
-   63 A:a1b3  a9 00                              lda #0             ; write-enable all ROMs
-   64 A:a1b5  8d 01 e8                           sta $e801
-   65 A:a1b8  20 ed a1                           jsr patch_in_code
-   66 A:a1bb  60                                 rts 
-   67 A:a1bc                                     .) 
-
-   69 A:a1bc                           patch_rom4_end .( 
-   70 A:a1bc  a9 f0                              lda #$f0             ; write protect all ROMs
-   71 A:a1be  8d 01 e8                           sta $e801
-   72 A:a1c1  58                                 cli 
-   73 A:a1c2  60                                 rts 
-   74 A:a1c3                                     .) 
-
-   76 A:a1c3                           patch_kernal4 .( 
-   77 A:a1c3                                    ; clear out the jump table from unrelated BASIC jumps
-   78 A:a1c3                                    ; Note that those are referenced in the BASIC token 
-   79 A:a1c3                                    ; list, so we need to patch in address minus 1
-   80 A:a1c3  20 f9 a1                           jsr patch_in_jmptbl
-
-   82 A:a1c6                                    ; remove the page FF jmp table entries that are only used from
-   83 A:a1c6                                    ; BASIC
-   84 A:a1c6  20 6b a2                           jsr free_dosjmps
-
-   86 A:a1c9                                    ; remove a timer adjustment seemingly left over from 
-   87 A:a1c9                                    ; BASIC1/2 where the 16640 screen cycle clock was adjusted
-   88 A:a1c9                                    ; to be closer to 60 Hz.
-   89 A:a1c9                                    ; This also frees zeropage location $99/$9a
-   90 A:a1c9  20 5e a2                           jsr remove_timerfix
-
-   92 A:a1cc                                    ; pass all calls to STOP through FFE1
-   93 A:a1cc  20 1b a2                           jsr use_jmptable_stop
-
-   95 A:a1cf                                    ; link in check for STOP in IEEE
-   96 A:a1cf  20 dd a1                           jsr link_ieee_stop
-
-   98 A:a1d2                                    ; add missing ATN disable
-   99 A:a1d2                                    ;jsr disable_atn
-
-  101 A:a1d2  60                                 rts 
-  102 A:a1d3                                     .) 
-
-  104 A:a1d3                           patch_basic4 .( 
-  105 A:a1d3                                    ; convenience: remove check for D drive parameters
-  106 A:a1d3                                    ; being 0/1 only.
-  107 A:a1d3  20 53 a2                           jsr remove_d01_check
-
-  109 A:a1d6                                    ; convenience: ignore extra characters after filename
-  110 A:a1d6                                    ; in disk basic commands
-  111 A:a1d6  20 48 a2                           jsr ignore_after_filename
-
-  113 A:a1d9                                    ; convenience: allow consecutive bytes in POKE command
-  114 A:a1d9  20 38 a2                           jsr set_poke
-  115 A:a1dc  60                                 rts 
-  116 A:a1dd                                     .) 
-
-  118 A:a1dd                                    ; -------------------------------------------------------------- 
-  119 A:a1dd                                    ; in some cases ATN is active after a STOP, which prevents
-  120 A:a1dd                                    ; USB from being used
-  121 A:a1dd                                    ;disable_atn .(
-  122 A:a1dd                                    ; lda #$20 ; JSR
-  123 A:a1dd                                    ; ldx #<lf2b8
-  124 A:a1dd                                    ; ldy #>lf2b8
-  125 A:a1dd                                    ; sta $f2b8
-  126 A:a1dd                                    ; stx $f2b9
-  127 A:a1dd                                    ; sty $f2ba
-  128 A:a1dd                                    ; lda #$ea ; NOP
-  129 A:a1dd                                    ; sta $f2bb
-  130 A:a1dd                                    ; rts
-  131 A:a1dd                                    ; .)
-
-  133 A:a1dd                                    ; -------------------------------------------------------------- 
-  134 A:a1dd                                    ; link in check for STOP in IEEE
-  135 A:a1dd                           link_ieee_stop .( 
-  136 A:a1dd  a2 20                              ldx #$20             ; JSR
-  137 A:a1df  a9 68                              lda #<lf11e
-  138 A:a1e1  a0 fd                              ldy #>lf11e
-  139 A:a1e3  8e 1e f1                           stx $f11e
-  140 A:a1e6  8d 1f f1                           sta $f11f
-  141 A:a1e9  8c 20 f1                           sty $f120
-  142 A:a1ec  60                                 rts 
-  143 A:a1ed                                     .) 
-
-  145 A:a1ed                                    ; -------------------------------------------------------------- 
-  146 A:a1ed                                    ; patch in extra code
-  147 A:a1ed                           patch_in_code .( 
-  148 A:a1ed  a0 80                              ldy #patch1len
-  149 A:a1ef  b9 47 a3                 l1        lda patch1code-1,y
-  150 A:a1f2  99 5f fd                           sta PATCH1-1,y
-  151 A:a1f5  88                                 dey 
-  152 A:a1f6  d0 f7                              bne l1
-  153 A:a1f8  60                                 rts 
-  154 A:a1f9                                     .) 
-
-  156 A:a1f9                           patch_in_jmptbl .( 
-  157 A:a1f9  a0 09                              ldy #patch2len
-  158 A:a1fb  b9 c7 a3                 l2        lda patch2code-1,y
-  159 A:a1fe  99 ec ff                           sta PATCH2-1,y
-  160 A:a201  88                                 dey 
-  161 A:a202  d0 f7                              bne l2
-
-  163 A:a204  a0 0c                              ldy #patch3len
-  164 A:a206  b9 d0 a3                 l3        lda patch3code-1,y
-  165 A:a209  99 d4 ff                           sta PATCH3-1,y
-  166 A:a20c  88                                 dey 
-  167 A:a20d  d0 f7                              bne l3
-
-  169 A:a20f  a0 45                              ldy #patch4len
-  170 A:a211  b9 dc a3                 l4        lda patch4code-1,y
-  171 A:a214  99 80 ff                           sta PATCH4-1,y
-  172 A:a217  88                                 dey 
-  173 A:a218  d0 f7                              bne l4
-
-  175 A:a21a  60                                 rts 
-  176 A:a21b                                     .) 
-
-  178 A:a21b                                    ; -------------------------------------------------------------- 
-  179 A:a21b                                    ; pass all calls to STOP through FFE1
-  180 A:a21b                           use_jmptable_stop .( 
-  181 A:a21b  a9 e1                              lda #<$ffe1
-  182 A:a21d  a0 ff                              ldy #>$ffe1
-
-  184 A:a21f  8d 57 f1                           sta $f157
-  185 A:a222  8c 58 f1                           sty $f158
-
-  187 A:a225  8d 61 f1                           sta $f161
-  188 A:a228  8c 62 f1                           sty $f162
-
-  190 A:a22b  8d 96 f3                           sta $f396
-  191 A:a22e  8c 97 f3                           sty $f397
-
-  193 A:a231  8d 22 f7                           sta $f722
-  194 A:a234  8c 23 f7                           sty $f723
-
-  196 A:a237  60                                 rts 
-  197 A:a238                                     .) 
-
-  199 A:a238                                    ; -------------------------------------------------------------- 
-  200 A:a238                                    ; convenience: consecutive bytes in POKE
-  201 A:a238                           set_poke  .( 
-  202 A:a238  a9 4c                              lda #$4c
-  203 A:a23a  8d 60 c9                           sta $c960
-  204 A:a23d  a9 c4                              lda #<XPOKE
-  205 A:a23f  8d 61 c9                           sta $c961
-  206 A:a242  a9 fd                              lda #>XPOKE
-  207 A:a244  8d 62 c9                           sta $c962
-  208 A:a247  60                                 rts 
-  209 A:a248                                     .) 
-
-  211 A:a248                                    ; -------------------------------------------------------------- 
-  212 A:a248                                    ; convenience: ignore extra characters after filename
-  213 A:a248                                    ; in disk basic commands
-  214 A:a248                           ignore_after_filename .( 
-
-  216 A:a248                                    ; change the JMP at $ddb3 from syntax error to end of line handling
-  217 A:a248                                    EOL=$dd03
-  218 A:a248  a9 03                              lda #<EOL
-  219 A:a24a  8d b4 dd                           sta $ddb4
-  220 A:a24d  a9 dd                              lda #>EOL
-  221 A:a24f  8d b5 dd                           sta $ddb5
-  222 A:a252  60                                 rts 
-  223 A:a253                                     .) 
-
-  225 A:a253                                    ; -------------------------------------------------------------- 
-  226 A:a253                                    ; convenience: remove check for D drive parameters
-  227 A:a253                                    ; being 0/1 only.
-  228 A:a253                           remove_d01_check .( 
-
-  230 A:a253                                    ; remove the check and branch at $dd1f-dd23
-  231 A:a253  a9 ea                              lda #$ea             ; NOP
-  232 A:a255  a0 04                              ldy #$dd23-$dd1f
-  233 A:a257  99 1e dd                 l         sta $dd1e,y
-  234 A:a25a  88                                 dey 
-  235 A:a25b  d0 fa                              bne l
-  236 A:a25d  60                                 rts 
-  237 A:a25e                                     .) 
-
-  239 A:a25e                                    ; -------------------------------------------------------------- 
-  240 A:a25e                                    ; remove a timer adjustment seemingly left over from 
-  241 A:a25e                                    ; BASIC1/2 where the 16640 screen cycle clock was adjusted
-  242 A:a25e                                    ; to be closer to 60 Hz.
-  243 A:a25e                                    ; This also frees zeropage location $99/$9a
-  244 A:a25e                           remove_timerfix .( 
-
-  246 A:a25e                                    ; remove the counter code on $f768-$f779
-  247 A:a25e  a9 ea                              lda #$ea             ; NOP
-  248 A:a260  a0 12                              ldy #$f77a-$f768
-  249 A:a262                           l1                         ; sta $f767,y
-  250 A:a262  88                                 dey 
-  251 A:a263  d0 fd                              bne l1
-
-  253 A:a265                                    ; also remove the counter reset at $f799-$f7a0
-  254 A:a265  a0 07                              ldy #$f7a0-$f799
-  255 A:a267                           l2                         ; sta $f798,y
-  256 A:a267  88                                 dey 
-  257 A:a268  d0 fd                              bne l2
-  258 A:a26a  60                                 rts 
-  259 A:a26b                                     .) 
-
-  261 A:a26b                                    ; -------------------------------------------------------------- 
-  262 A:a26b                                    ; remove the page FF jmp table entries that are only used from
-  263 A:a26b                                    ; BASIC
-
-  265 A:a26b                           free_dosjmps .( 
-
-  267 A:a26b                                    TOKADDR=$b000
-
-  269 A:a26b                                    ; ------------------
-  270 A:a26b                                    ; $48-$65 can actually be updated as/from a table
-
-  272 A:a26b                                    ; CONCAT
-  273 A:a26b                                    ; FF93 JMP DAC7
-  274 A:a26b                                    CONCAT=$dac7
-  275 A:a26b  a9 c6                              lda #<CONCAT-1
-  276 A:a26d  8d 48 b0                           sta TOKADDR+$48
-  277 A:a270  a9 da                              lda #>CONCAT-1
-  278 A:a272  8d 49 b0                           sta TOKADDR+$49
-
-  280 A:a275                                    ; DOPEN
-  281 A:a275                                    ; FF95 JMP D942
-  282 A:a275                                    DOPEN=$d942
-  283 A:a275  a9 41                              lda #<DOPEN-1
-  284 A:a277  8d 4a b0                           sta TOKADDR+$4a
-  285 A:a27a  a9 d9                              lda #>DOPEN-1
-  286 A:a27c  8d 4b b0                           sta TOKADDR+$4b
-
-  288 A:a27f                                    ; DCLOSE
-  289 A:a27f                                    ; FF99 JMP DA07
-  290 A:a27f                                    DCLOSE=$da07
-  291 A:a27f  a9 06                              lda #<DCLOSE-1
-  292 A:a281  8d 4c b0                           sta TOKADDR+$4c
-  293 A:a284  a9 da                              lda #>DCLOSE-1
-  294 A:a286  8d 4d b0                           sta TOKADDR+$4d
-
-  296 A:a289                                    ; RECORD
-  297 A:a289                                    ; FF9C JMP D7AF
-  298 A:a289                                    RECORD=$d7af
-  299 A:a289  a9 ae                              lda #<RECORD-1
-  300 A:a28b  8d 4e b0                           sta TOKADDR+$4e
-  301 A:a28e  a9 d7                              lda #>RECORD-1
-  302 A:a290  8d 4f b0                           sta TOKADDR+$4f
-
-  304 A:a293                                    ; HEADER
-  305 A:a293                                    ; FF9F JMP D9D2
-  306 A:a293                                    HEADER=$d9d2
-  307 A:a293  a9 d1                              lda #<HEADER-1
-  308 A:a295  8d 50 b0                           sta TOKADDR+$50
-  309 A:a298  a9 d9                              lda #>HEADER-1
-  310 A:a29a  8d 51 b0                           sta TOKADDR+$51
-
-  312 A:a29d                                    ; COLLECT
-  313 A:a29d                                    ; FFA2 JMP DA65
-  314 A:a29d                                    COLLECT=$da65
-  315 A:a29d  a9 64                              lda #<COLLECT-1
-  316 A:a29f  8d 52 b0                           sta TOKADDR+$52
-  317 A:a2a2  a9 da                              lda #>COLLECT-1
-  318 A:a2a4  8d 53 b0                           sta TOKADDR+$53
-
-  320 A:a2a7                                    ; BACKUP
-  321 A:a2a7                                    ; FFA5 JMP DA7E
-  322 A:a2a7                                    BACKUP=$da7e
-  323 A:a2a7  a9 7d                              lda #<BACKUP-1
-  324 A:a2a9  8d 54 b0                           sta TOKADDR+$54
-  325 A:a2ac  a9 da                              lda #>BACKUP-1
-  326 A:a2ae  8d 55 b0                           sta TOKADDR+$55
-
-  328 A:a2b1                                    ; COPY
-  329 A:a2b1                                    ; FFA8 JMP DAA7
-  330 A:a2b1                                    COPY=$daa7
-  331 A:a2b1  a9 a6                              lda #<COPY-1
-  332 A:a2b3  8d 56 b0                           sta TOKADDR+$56
-  333 A:a2b6  a9 da                              lda #>COPY-1
-  334 A:a2b8  8d 57 b0                           sta TOKADDR+$57
-
-  336 A:a2bb                                    ; APPEND
-  337 A:a2bb                                    ; FFAB JMP D977
-  338 A:a2bb                                    APPEND=$d977
-  339 A:a2bb  a9 76                              lda #<APPEND-1
-  340 A:a2bd  8d 58 b0                           sta TOKADDR+$58
-  341 A:a2c0  a9 d9                              lda #>APPEND-1
-  342 A:a2c2  8d 59 b0                           sta TOKADDR+$59
-
-  344 A:a2c5                                    ; DSAVE
-  345 A:a2c5                                    ; FFAE JMP DB0D
-  346 A:a2c5                                    DSAVE=$db0d
-  347 A:a2c5  a9 0c                              lda #<DSAVE-1
-  348 A:a2c7  8d 5a b0                           sta TOKADDR+$5a
-  349 A:a2ca  a9 db                              lda #>DSAVE-1
-  350 A:a2cc  8d 5b b0                           sta TOKADDR+$5b
-
-  352 A:a2cf                                    ; DLOAD
-  353 A:a2cf                                    ; FFB1 JMP DB3A
-  354 A:a2cf                                    DLOAD=$db3a
-  355 A:a2cf  a9 39                              lda #<DLOAD-1
-  356 A:a2d1  8d 5c b0                           sta TOKADDR+$5c
-  357 A:a2d4  a9 db                              lda #>DLOAD-1
-  358 A:a2d6  8d 5d b0                           sta TOKADDR+$5d
-
-  360 A:a2d9                                    ; DIRECTORY
-  361 A:a2d9                                    ; FFB4 JMP D873
-  362 A:a2d9                                    DIRECTORY=$d873
-  363 A:a2d9                                    ; CATALOG
-  364 A:a2d9  a9 72                              lda #<DIRECTORY-1
-  365 A:a2db  8d 5e b0                           sta TOKADDR+$5e
-  366 A:a2de  a9 d8                              lda #>DIRECTORY-1
-  367 A:a2e0  8d 5f b0                           sta TOKADDR+$5f
-  368 A:a2e3                                    ; DIRECTORY
-  369 A:a2e3  a9 72                              lda #<DIRECTORY-1
-  370 A:a2e5  8d 64 b0                           sta TOKADDR+$64
-  371 A:a2e8  a9 d8                              lda #>DIRECTORY-1
-  372 A:a2ea  8d 65 b0                           sta TOKADDR+$65
-
-  374 A:a2ed                                    ; RENAME
-  375 A:a2ed                                    ; FFB7 JMP DB55
-  376 A:a2ed                                    RENAME=$db55
-  377 A:a2ed  a9 54                              lda #<RENAME-1
-  378 A:a2ef  8d 60 b0                           sta TOKADDR+$60
-  379 A:a2f2  a9 db                              lda #>RENAME-1
-  380 A:a2f4  8d 61 b0                           sta TOKADDR+$61
-
-  382 A:a2f7                                    ; SCRATCH
-  383 A:a2f7                                    ; FFBA JMP DB66
-  384 A:a2f7                                    SCRATCH=$db66
-  385 A:a2f7  a9 65                              lda #<SCRATCH-1
-  386 A:a2f9  8d 62 b0                           sta TOKADDR+$62
-  387 A:a2fc  a9 db                              lda #>SCRATCH-1
-  388 A:a2fe  8d 63 b0                           sta TOKADDR+$63
-
-  391 A:a301                                    ;------
-
-  393 A:a301                                    ; LOAD
-  394 A:a301                                    ; FFD5 JMP F401
-  395 A:a301                                    XLOAD=$f401
-  396 A:a301  a9 00                              lda #<XLOAD-1
-  397 A:a303  8d 26 b0                           sta TOKADDR+$26
-  398 A:a306  a9 f4                              lda #>XLOAD-1
-  399 A:a308  8d 27 b0                           sta TOKADDR+$27
-
-  401 A:a30b                                    ; SAVE
-  402 A:a30b                                    ; FFD8 JMP F6DD
-  403 A:a30b                                    XSAVE=$f6dd
-  404 A:a30b  a9 dc                              lda #<XSAVE-1
-  405 A:a30d  8d 28 b0                           sta TOKADDR+$28
-  406 A:a310  a9 f6                              lda #>XSAVE-1
-  407 A:a312  8d 29 b0                           sta TOKADDR+$29
-
-  409 A:a315                                    ; VERIFY
-  410 A:a315                                    ; FFDB JMP F4F6
-  411 A:a315                                    VERIFY=$f4f6
-  412 A:a315  a9 f5                              lda #<VERIFY-1
-  413 A:a317  8d 2a b0                           sta TOKADDR+$2a
-  414 A:a31a  a9 f4                              lda #>VERIFY-1
-  415 A:a31c  8d 2b b0                           sta TOKADDR+$2b
-
-  417 A:a31f                                    ;------
-
-  419 A:a31f                                    ; SYS
-  420 A:a31f                                    ; FFDE JMP F6C3
-  421 A:a31f                                    SYS=$f6c3
-  422 A:a31f  a9 c2                              lda #<SYS-1
-  423 A:a321  8d 3c b0                           sta TOKADDR+$3c
-  424 A:a324  a9 f6                              lda #>SYS-1
-  425 A:a326  8d 3d b0                           sta TOKADDR+$3d
-
-  427 A:a329                                    ; OPEN
-  428 A:a329                                    ; FFC0 JMP F560
-  429 A:a329                                    OPEN=$f560
-  430 A:a329  a9 5f                              lda #<OPEN-1
-  431 A:a32b  8d 3e b0                           sta TOKADDR+$3e
-  432 A:a32e  a9 f5                              lda #>OPEN-1
-  433 A:a330  8d 3f b0                           sta TOKADDR+$3f
-
-  435 A:a333                                    ; CLOSE
-  436 A:a333                                    ; FFC3 JMP F2DD
-  437 A:a333                                    CLOSE=$f2e0
-  438 A:a333  a9 df                              lda #<CLOSE-1
-  439 A:a335  8d 40 b0                           sta TOKADDR+$40
-  440 A:a338  a9 f2                              lda #>CLOSE-1
-  441 A:a33a  8d 41 b0                           sta TOKADDR+$41
-
-  443 A:a33d                                    ;------
-
-  445 A:a33d                                    ; unknown JMP
-  446 A:a33d                                    ; FFBD JMP D995
-  447 A:a33d                                    UNKNOWN=$d995
-  448 A:a33d  a9 95                              lda #<UNKNOWN
-  449 A:a33f  8d 01 c0                           sta $c001
-  450 A:a342  a9 d9                              lda #>UNKNOWN
-  451 A:a344  8d 02 c0                           sta $c002
-
-  453 A:a347                                    ;------
-
-  467 A:a347  60                                 rts 
-  468 A:a348                                     .) 
-
-  471 A:a348                                    ; extra code to be patched in
-  472 A:a348                                    ; is located after kernal proper,
-  473 A:a348                                    ; but before the kernal jump table
-  474 A:a348                           patch1code 
-  475 A:a348                                     *= PATCH1
+   28 A:a1bb                                    PATCH1=$fd60           ; extra code
+   29 A:a1bb                                    PATCH1END=$ff80
+   30 A:a1bb                                    PATCH2=$ffed           ; jmp table 1
+   31 A:a1bb                                    PATCH3=$ffd5           ; jmp table 2
+   32 A:a1bb                                    PATCH4=$ff81           ; jmp table 3
+
+   34 A:a1bb                                    IOBASE=$e800
+
+   36 A:a1bb                                    curdev=$d4           ; current device number
+
+   38 A:a1bb                                    CHRGOT=$76
+   39 A:a1bb                                    CHRGET=$70
+   40 A:a1bb                                    EVALBYTE=$c8d4
+
+   59 A:a1bb                                     .( 
+
+   61 A:a1bb                           patch_rom4_init .( 
+   62 A:a1bb  78                                 sei 
+   63 A:a1bc  a9 00                              lda #0             ; write-enable all ROMs
+   64 A:a1be  8d 01 e8                           sta $e801
+   65 A:a1c1  20 f6 a1                           jsr patch_in_code
+   66 A:a1c4  60                                 rts 
+   67 A:a1c5                                     .) 
+
+   69 A:a1c5                           patch_rom4_end .( 
+   70 A:a1c5  a9 f0                              lda #$f0             ; write protect all ROMs
+   71 A:a1c7  8d 01 e8                           sta $e801
+   72 A:a1ca  58                                 cli 
+   73 A:a1cb  60                                 rts 
+   74 A:a1cc                                     .) 
+
+   76 A:a1cc                           patch_kernal4 .( 
+   77 A:a1cc                                    ; clear out the jump table from unrelated BASIC jumps
+   78 A:a1cc                                    ; Note that those are referenced in the BASIC token 
+   79 A:a1cc                                    ; list, so we need to patch in address minus 1
+   80 A:a1cc  20 02 a2                           jsr patch_in_jmptbl
+
+   82 A:a1cf                                    ; remove the page FF jmp table entries that are only used from
+   83 A:a1cf                                    ; BASIC
+   84 A:a1cf  20 74 a2                           jsr free_dosjmps
+
+   86 A:a1d2                                    ; remove a timer adjustment seemingly left over from 
+   87 A:a1d2                                    ; BASIC1/2 where the 16640 screen cycle clock was adjusted
+   88 A:a1d2                                    ; to be closer to 60 Hz.
+   89 A:a1d2                                    ; This also frees zeropage location $99/$9a
+   90 A:a1d2  20 67 a2                           jsr remove_timerfix
+
+   92 A:a1d5                                    ; pass all calls to STOP through FFE1
+   93 A:a1d5  20 24 a2                           jsr use_jmptable_stop
+
+   95 A:a1d8                                    ; link in check for STOP in IEEE
+   96 A:a1d8  20 e6 a1                           jsr link_ieee_stop
+
+   98 A:a1db                                    ; add missing ATN disable
+   99 A:a1db                                    ;jsr disable_atn
+
+  101 A:a1db  60                                 rts 
+  102 A:a1dc                                     .) 
+
+  104 A:a1dc                           patch_basic4 .( 
+  105 A:a1dc                                    ; convenience: remove check for D drive parameters
+  106 A:a1dc                                    ; being 0/1 only.
+  107 A:a1dc  20 5c a2                           jsr remove_d01_check
+
+  109 A:a1df                                    ; convenience: ignore extra characters after filename
+  110 A:a1df                                    ; in disk basic commands
+  111 A:a1df  20 51 a2                           jsr ignore_after_filename
+
+  113 A:a1e2                                    ; convenience: allow consecutive bytes in POKE command
+  114 A:a1e2  20 41 a2                           jsr set_poke
+  115 A:a1e5  60                                 rts 
+  116 A:a1e6                                     .) 
+
+  118 A:a1e6                                    ; -------------------------------------------------------------- 
+  119 A:a1e6                                    ; in some cases ATN is active after a STOP, which prevents
+  120 A:a1e6                                    ; USB from being used
+  121 A:a1e6                                    ;disable_atn .(
+  122 A:a1e6                                    ; lda #$20 ; JSR
+  123 A:a1e6                                    ; ldx #<lf2b8
+  124 A:a1e6                                    ; ldy #>lf2b8
+  125 A:a1e6                                    ; sta $f2b8
+  126 A:a1e6                                    ; stx $f2b9
+  127 A:a1e6                                    ; sty $f2ba
+  128 A:a1e6                                    ; lda #$ea ; NOP
+  129 A:a1e6                                    ; sta $f2bb
+  130 A:a1e6                                    ; rts
+  131 A:a1e6                                    ; .)
+
+  133 A:a1e6                                    ; -------------------------------------------------------------- 
+  134 A:a1e6                                    ; link in check for STOP in IEEE
+  135 A:a1e6                           link_ieee_stop .( 
+  136 A:a1e6  a2 20                              ldx #$20             ; JSR
+  137 A:a1e8  a9 68                              lda #<lf11e
+  138 A:a1ea  a0 fd                              ldy #>lf11e
+  139 A:a1ec  8e 1e f1                           stx $f11e
+  140 A:a1ef  8d 1f f1                           sta $f11f
+  141 A:a1f2  8c 20 f1                           sty $f120
+  142 A:a1f5  60                                 rts 
+  143 A:a1f6                                     .) 
+
+  145 A:a1f6                                    ; -------------------------------------------------------------- 
+  146 A:a1f6                                    ; patch in extra code
+  147 A:a1f6                           patch_in_code .( 
+  148 A:a1f6  a0 80                              ldy #patch1len
+  149 A:a1f8  b9 50 a3                 l1        lda patch1code-1,y
+  150 A:a1fb  99 5f fd                           sta PATCH1-1,y
+  151 A:a1fe  88                                 dey 
+  152 A:a1ff  d0 f7                              bne l1
+  153 A:a201  60                                 rts 
+  154 A:a202                                     .) 
+
+  156 A:a202                           patch_in_jmptbl .( 
+  157 A:a202  a0 09                              ldy #patch2len
+  158 A:a204  b9 d0 a3                 l2        lda patch2code-1,y
+  159 A:a207  99 ec ff                           sta PATCH2-1,y
+  160 A:a20a  88                                 dey 
+  161 A:a20b  d0 f7                              bne l2
+
+  163 A:a20d  a0 0c                              ldy #patch3len
+  164 A:a20f  b9 d9 a3                 l3        lda patch3code-1,y
+  165 A:a212  99 d4 ff                           sta PATCH3-1,y
+  166 A:a215  88                                 dey 
+  167 A:a216  d0 f7                              bne l3
+
+  169 A:a218  a0 45                              ldy #patch4len
+  170 A:a21a  b9 e5 a3                 l4        lda patch4code-1,y
+  171 A:a21d  99 80 ff                           sta PATCH4-1,y
+  172 A:a220  88                                 dey 
+  173 A:a221  d0 f7                              bne l4
+
+  175 A:a223  60                                 rts 
+  176 A:a224                                     .) 
+
+  178 A:a224                                    ; -------------------------------------------------------------- 
+  179 A:a224                                    ; pass all calls to STOP through FFE1
+  180 A:a224                           use_jmptable_stop .( 
+  181 A:a224  a9 e1                              lda #<$ffe1
+  182 A:a226  a0 ff                              ldy #>$ffe1
+
+  184 A:a228  8d 57 f1                           sta $f157
+  185 A:a22b  8c 58 f1                           sty $f158
+
+  187 A:a22e  8d 61 f1                           sta $f161
+  188 A:a231  8c 62 f1                           sty $f162
+
+  190 A:a234  8d 96 f3                           sta $f396
+  191 A:a237  8c 97 f3                           sty $f397
+
+  193 A:a23a  8d 22 f7                           sta $f722
+  194 A:a23d  8c 23 f7                           sty $f723
+
+  196 A:a240  60                                 rts 
+  197 A:a241                                     .) 
+
+  199 A:a241                                    ; -------------------------------------------------------------- 
+  200 A:a241                                    ; convenience: consecutive bytes in POKE
+  201 A:a241                           set_poke  .( 
+  202 A:a241  a9 4c                              lda #$4c
+  203 A:a243  8d 60 c9                           sta $c960
+  204 A:a246  a9 c4                              lda #<XPOKE
+  205 A:a248  8d 61 c9                           sta $c961
+  206 A:a24b  a9 fd                              lda #>XPOKE
+  207 A:a24d  8d 62 c9                           sta $c962
+  208 A:a250  60                                 rts 
+  209 A:a251                                     .) 
+
+  211 A:a251                                    ; -------------------------------------------------------------- 
+  212 A:a251                                    ; convenience: ignore extra characters after filename
+  213 A:a251                                    ; in disk basic commands
+  214 A:a251                           ignore_after_filename .( 
+
+  216 A:a251                                    ; change the JMP at $ddb3 from syntax error to end of line handling
+  217 A:a251                                    EOL=$dd03
+  218 A:a251  a9 03                              lda #<EOL
+  219 A:a253  8d b4 dd                           sta $ddb4
+  220 A:a256  a9 dd                              lda #>EOL
+  221 A:a258  8d b5 dd                           sta $ddb5
+  222 A:a25b  60                                 rts 
+  223 A:a25c                                     .) 
+
+  225 A:a25c                                    ; -------------------------------------------------------------- 
+  226 A:a25c                                    ; convenience: remove check for D drive parameters
+  227 A:a25c                                    ; being 0/1 only.
+  228 A:a25c                           remove_d01_check .( 
+
+  230 A:a25c                                    ; remove the check and branch at $dd1f-dd23
+  231 A:a25c  a9 ea                              lda #$ea             ; NOP
+  232 A:a25e  a0 04                              ldy #$dd23-$dd1f
+  233 A:a260  99 1e dd                 l         sta $dd1e,y
+  234 A:a263  88                                 dey 
+  235 A:a264  d0 fa                              bne l
+  236 A:a266  60                                 rts 
+  237 A:a267                                     .) 
+
+  239 A:a267                                    ; -------------------------------------------------------------- 
+  240 A:a267                                    ; remove a timer adjustment seemingly left over from 
+  241 A:a267                                    ; BASIC1/2 where the 16640 screen cycle clock was adjusted
+  242 A:a267                                    ; to be closer to 60 Hz.
+  243 A:a267                                    ; This also frees zeropage location $99/$9a
+  244 A:a267                           remove_timerfix .( 
+
+  246 A:a267                                    ; remove the counter code on $f768-$f779
+  247 A:a267  a9 ea                              lda #$ea             ; NOP
+  248 A:a269  a0 12                              ldy #$f77a-$f768
+  249 A:a26b                           l1                         ; sta $f767,y
+  250 A:a26b  88                                 dey 
+  251 A:a26c  d0 fd                              bne l1
+
+  253 A:a26e                                    ; also remove the counter reset at $f799-$f7a0
+  254 A:a26e  a0 07                              ldy #$f7a0-$f799
+  255 A:a270                           l2                         ; sta $f798,y
+  256 A:a270  88                                 dey 
+  257 A:a271  d0 fd                              bne l2
+  258 A:a273  60                                 rts 
+  259 A:a274                                     .) 
+
+  261 A:a274                                    ; -------------------------------------------------------------- 
+  262 A:a274                                    ; remove the page FF jmp table entries that are only used from
+  263 A:a274                                    ; BASIC
+
+  265 A:a274                           free_dosjmps .( 
+
+  267 A:a274                                    TOKADDR=$b000
+
+  269 A:a274                                    ; ------------------
+  270 A:a274                                    ; $48-$65 can actually be updated as/from a table
+
+  272 A:a274                                    ; CONCAT
+  273 A:a274                                    ; FF93 JMP DAC7
+  274 A:a274                                    CONCAT=$dac7
+  275 A:a274  a9 c6                              lda #<CONCAT-1
+  276 A:a276  8d 48 b0                           sta TOKADDR+$48
+  277 A:a279  a9 da                              lda #>CONCAT-1
+  278 A:a27b  8d 49 b0                           sta TOKADDR+$49
+
+  280 A:a27e                                    ; DOPEN
+  281 A:a27e                                    ; FF95 JMP D942
+  282 A:a27e                                    DOPEN=$d942
+  283 A:a27e  a9 41                              lda #<DOPEN-1
+  284 A:a280  8d 4a b0                           sta TOKADDR+$4a
+  285 A:a283  a9 d9                              lda #>DOPEN-1
+  286 A:a285  8d 4b b0                           sta TOKADDR+$4b
+
+  288 A:a288                                    ; DCLOSE
+  289 A:a288                                    ; FF99 JMP DA07
+  290 A:a288                                    DCLOSE=$da07
+  291 A:a288  a9 06                              lda #<DCLOSE-1
+  292 A:a28a  8d 4c b0                           sta TOKADDR+$4c
+  293 A:a28d  a9 da                              lda #>DCLOSE-1
+  294 A:a28f  8d 4d b0                           sta TOKADDR+$4d
+
+  296 A:a292                                    ; RECORD
+  297 A:a292                                    ; FF9C JMP D7AF
+  298 A:a292                                    RECORD=$d7af
+  299 A:a292  a9 ae                              lda #<RECORD-1
+  300 A:a294  8d 4e b0                           sta TOKADDR+$4e
+  301 A:a297  a9 d7                              lda #>RECORD-1
+  302 A:a299  8d 4f b0                           sta TOKADDR+$4f
+
+  304 A:a29c                                    ; HEADER
+  305 A:a29c                                    ; FF9F JMP D9D2
+  306 A:a29c                                    HEADER=$d9d2
+  307 A:a29c  a9 d1                              lda #<HEADER-1
+  308 A:a29e  8d 50 b0                           sta TOKADDR+$50
+  309 A:a2a1  a9 d9                              lda #>HEADER-1
+  310 A:a2a3  8d 51 b0                           sta TOKADDR+$51
+
+  312 A:a2a6                                    ; COLLECT
+  313 A:a2a6                                    ; FFA2 JMP DA65
+  314 A:a2a6                                    COLLECT=$da65
+  315 A:a2a6  a9 64                              lda #<COLLECT-1
+  316 A:a2a8  8d 52 b0                           sta TOKADDR+$52
+  317 A:a2ab  a9 da                              lda #>COLLECT-1
+  318 A:a2ad  8d 53 b0                           sta TOKADDR+$53
+
+  320 A:a2b0                                    ; BACKUP
+  321 A:a2b0                                    ; FFA5 JMP DA7E
+  322 A:a2b0                                    BACKUP=$da7e
+  323 A:a2b0  a9 7d                              lda #<BACKUP-1
+  324 A:a2b2  8d 54 b0                           sta TOKADDR+$54
+  325 A:a2b5  a9 da                              lda #>BACKUP-1
+  326 A:a2b7  8d 55 b0                           sta TOKADDR+$55
+
+  328 A:a2ba                                    ; COPY
+  329 A:a2ba                                    ; FFA8 JMP DAA7
+  330 A:a2ba                                    COPY=$daa7
+  331 A:a2ba  a9 a6                              lda #<COPY-1
+  332 A:a2bc  8d 56 b0                           sta TOKADDR+$56
+  333 A:a2bf  a9 da                              lda #>COPY-1
+  334 A:a2c1  8d 57 b0                           sta TOKADDR+$57
+
+  336 A:a2c4                                    ; APPEND
+  337 A:a2c4                                    ; FFAB JMP D977
+  338 A:a2c4                                    APPEND=$d977
+  339 A:a2c4  a9 76                              lda #<APPEND-1
+  340 A:a2c6  8d 58 b0                           sta TOKADDR+$58
+  341 A:a2c9  a9 d9                              lda #>APPEND-1
+  342 A:a2cb  8d 59 b0                           sta TOKADDR+$59
+
+  344 A:a2ce                                    ; DSAVE
+  345 A:a2ce                                    ; FFAE JMP DB0D
+  346 A:a2ce                                    DSAVE=$db0d
+  347 A:a2ce  a9 0c                              lda #<DSAVE-1
+  348 A:a2d0  8d 5a b0                           sta TOKADDR+$5a
+  349 A:a2d3  a9 db                              lda #>DSAVE-1
+  350 A:a2d5  8d 5b b0                           sta TOKADDR+$5b
+
+  352 A:a2d8                                    ; DLOAD
+  353 A:a2d8                                    ; FFB1 JMP DB3A
+  354 A:a2d8                                    DLOAD=$db3a
+  355 A:a2d8  a9 39                              lda #<DLOAD-1
+  356 A:a2da  8d 5c b0                           sta TOKADDR+$5c
+  357 A:a2dd  a9 db                              lda #>DLOAD-1
+  358 A:a2df  8d 5d b0                           sta TOKADDR+$5d
+
+  360 A:a2e2                                    ; DIRECTORY
+  361 A:a2e2                                    ; FFB4 JMP D873
+  362 A:a2e2                                    DIRECTORY=$d873
+  363 A:a2e2                                    ; CATALOG
+  364 A:a2e2  a9 72                              lda #<DIRECTORY-1
+  365 A:a2e4  8d 5e b0                           sta TOKADDR+$5e
+  366 A:a2e7  a9 d8                              lda #>DIRECTORY-1
+  367 A:a2e9  8d 5f b0                           sta TOKADDR+$5f
+  368 A:a2ec                                    ; DIRECTORY
+  369 A:a2ec  a9 72                              lda #<DIRECTORY-1
+  370 A:a2ee  8d 64 b0                           sta TOKADDR+$64
+  371 A:a2f1  a9 d8                              lda #>DIRECTORY-1
+  372 A:a2f3  8d 65 b0                           sta TOKADDR+$65
+
+  374 A:a2f6                                    ; RENAME
+  375 A:a2f6                                    ; FFB7 JMP DB55
+  376 A:a2f6                                    RENAME=$db55
+  377 A:a2f6  a9 54                              lda #<RENAME-1
+  378 A:a2f8  8d 60 b0                           sta TOKADDR+$60
+  379 A:a2fb  a9 db                              lda #>RENAME-1
+  380 A:a2fd  8d 61 b0                           sta TOKADDR+$61
+
+  382 A:a300                                    ; SCRATCH
+  383 A:a300                                    ; FFBA JMP DB66
+  384 A:a300                                    SCRATCH=$db66
+  385 A:a300  a9 65                              lda #<SCRATCH-1
+  386 A:a302  8d 62 b0                           sta TOKADDR+$62
+  387 A:a305  a9 db                              lda #>SCRATCH-1
+  388 A:a307  8d 63 b0                           sta TOKADDR+$63
+
+  391 A:a30a                                    ;------
+
+  393 A:a30a                                    ; LOAD
+  394 A:a30a                                    ; FFD5 JMP F401
+  395 A:a30a                                    XLOAD=$f401
+  396 A:a30a  a9 00                              lda #<XLOAD-1
+  397 A:a30c  8d 26 b0                           sta TOKADDR+$26
+  398 A:a30f  a9 f4                              lda #>XLOAD-1
+  399 A:a311  8d 27 b0                           sta TOKADDR+$27
+
+  401 A:a314                                    ; SAVE
+  402 A:a314                                    ; FFD8 JMP F6DD
+  403 A:a314                                    XSAVE=$f6dd
+  404 A:a314  a9 dc                              lda #<XSAVE-1
+  405 A:a316  8d 28 b0                           sta TOKADDR+$28
+  406 A:a319  a9 f6                              lda #>XSAVE-1
+  407 A:a31b  8d 29 b0                           sta TOKADDR+$29
+
+  409 A:a31e                                    ; VERIFY
+  410 A:a31e                                    ; FFDB JMP F4F6
+  411 A:a31e                                    VERIFY=$f4f6
+  412 A:a31e  a9 f5                              lda #<VERIFY-1
+  413 A:a320  8d 2a b0                           sta TOKADDR+$2a
+  414 A:a323  a9 f4                              lda #>VERIFY-1
+  415 A:a325  8d 2b b0                           sta TOKADDR+$2b
+
+  417 A:a328                                    ;------
+
+  419 A:a328                                    ; SYS
+  420 A:a328                                    ; FFDE JMP F6C3
+  421 A:a328                                    SYS=$f6c3
+  422 A:a328  a9 c2                              lda #<SYS-1
+  423 A:a32a  8d 3c b0                           sta TOKADDR+$3c
+  424 A:a32d  a9 f6                              lda #>SYS-1
+  425 A:a32f  8d 3d b0                           sta TOKADDR+$3d
+
+  427 A:a332                                    ; OPEN
+  428 A:a332                                    ; FFC0 JMP F560
+  429 A:a332                                    OPEN=$f560
+  430 A:a332  a9 5f                              lda #<OPEN-1
+  431 A:a334  8d 3e b0                           sta TOKADDR+$3e
+  432 A:a337  a9 f5                              lda #>OPEN-1
+  433 A:a339  8d 3f b0                           sta TOKADDR+$3f
+
+  435 A:a33c                                    ; CLOSE
+  436 A:a33c                                    ; FFC3 JMP F2DD
+  437 A:a33c                                    CLOSE=$f2e0
+  438 A:a33c  a9 df                              lda #<CLOSE-1
+  439 A:a33e  8d 40 b0                           sta TOKADDR+$40
+  440 A:a341  a9 f2                              lda #>CLOSE-1
+  441 A:a343  8d 41 b0                           sta TOKADDR+$41
+
+  443 A:a346                                    ;------
+
+  445 A:a346                                    ; unknown JMP
+  446 A:a346                                    ; FFBD JMP D995
+  447 A:a346                                    UNKNOWN=$d995
+  448 A:a346  a9 95                              lda #<UNKNOWN
+  449 A:a348  8d 01 c0                           sta $c001
+  450 A:a34b  a9 d9                              lda #>UNKNOWN
+  451 A:a34d  8d 02 c0                           sta $c002
+
+  453 A:a350                                    ;------
+
+  467 A:a350  60                                 rts 
+  468 A:a351                                     .) 
+
+  471 A:a351                                    ; extra code to be patched in
+  472 A:a351                                    ; is located after kernal proper,
+  473 A:a351                                    ; but before the kernal jump table
+  474 A:a351                           patch1code 
+  475 A:a351                                     *= PATCH1
 
   477 A:fd60                                    ; disable ATN on CLRCHN anyway
   478 A:fd60                           lf2b8     .( 
@@ -2996,20 +3004,20 @@ patch4.a65
   621 A:fde0                                    patch1len=*-PATCH1
   622 A:fde0                                     *= patch1code+patch1len
 
-  624 A:a3c8                                    ; ---------------------------------------
-  625 A:a3c8                                    ; jmp table 1
-  626 A:a3c8                           patch2code 
-  627 A:a3c8                                     *= PATCH2                ; $ffed
+  624 A:a3d1                                    ; ---------------------------------------
+  625 A:a3d1                                    ; jmp table 1
+  626 A:a3d1                           patch2code 
+  627 A:a3d1                                     *= PATCH2                ; $ffed
   628 A:ffed  4c 76 fd                           jmp lFFED                ; SCREEN
   629 A:fff0  4c df fd                           jmp lFFF0                ; PLOT
   630 A:fff3  4c 7b fd                           jmp lFFF3                ; IOBASE
   631 A:fff6                                    patch2len=*-PATCH2
   632 A:fff6                                     *= patch2code+patch2len
 
-  634 A:a3d1                                    ; ---------------------------------------
-  635 A:a3d1                                    ; jmp table 2
-  636 A:a3d1                           patch3code 
-  637 A:a3d1                                     *= PATCH3                ; $ffd5 
+  634 A:a3da                                    ; ---------------------------------------
+  635 A:a3da                                    ; jmp table 2
+  636 A:a3da                           patch3code 
+  637 A:a3da                                     *= PATCH3                ; $ffd5 
   638 A:ffd5  4c 9b fd                           jmp LOAD                ; LOAD  load
   639 A:ffd8  4c a4 fd                           jmp SAVE                ; SAVE  save
   640 A:ffdb  4c bb fd                           jmp SETTIM                ; SETTIM set time
@@ -3017,9 +3025,9 @@ patch4.a65
   642 A:ffe1                                    patch3len=*-PATCH3
   643 A:ffe1                                     *= patch3code+patch3len
 
-  645 A:a3dd                                    ; ---------------------------------------
-  646 A:a3dd                           patch4code 
-  647 A:a3dd                                     *= PATCH4                ; $ff81
+  645 A:a3e6                                    ; ---------------------------------------
+  646 A:a3e6                           patch4code 
+  647 A:a3e6                                     *= PATCH4                ; $ff81
   648 A:ff81  4c 00 e0                           jmp $e000              ; CINT   video reset
   649 A:ff84  4c df fd                           jmp lFF84                ; IOINIT init all other I/O
   650 A:ff87  4c df fd                           jmp lFF87                ; RAMTAS RAM test and find end of RAM
@@ -3046,322 +3054,322 @@ patch4.a65
   671 A:ffc6                                    patch4len=*-PATCH4
   672 A:ffc6                                     *= patch4code+patch4len
 
-  674 A:a422                                     .) 
+  674 A:a42b                                     .) 
 
 boot_rom4.a65
 
-    1 A:a422                                     .xl 
+    1 A:a42b                                     .xl 
 
-  502 A:a422                                     .)                    ; end setup_basic4_xl
+  502 A:a42b                                     .)                    ; end setup_basic4_xl
 
 boot_usb.a65
 
 
-    2 A:a422                                     .( 
+    2 A:a42b                                     .( 
 
-    4 A:a422                                    lock=$0700ff           ; last byte in zeropage in bank 7/block 14
-    5 A:a422                                    VCOUNT=$0700fe
-    6 A:a422                                    tmp=$0700fd
+    4 A:a42b                                    lock=$0700ff           ; last byte in zeropage in bank 7/block 14
+    5 A:a42b                                    VCOUNT=$0700fe
+    6 A:a42b                                    tmp=$0700fd
 
-    8 A:a422                                    MAP_USB=USBBLK
-    9 A:a422                                    MAP_BAS=0
-   10 A:a422                                    MAPREG=BANK
+    8 A:a42b                                    MAP_USB=USBBLK
+    9 A:a42b                                    MAP_BAS=0
+   10 A:a42b                                    MAPREG=BANK
 
-   12 A:a422                                    USBPAGE=$a0
+   12 A:a42b                                    USBPAGE=$a0
 
-   14 A:a422                                    USBBLK=14           ; bank 7 value for BANK  
-   15 A:a422                                    USBBASE=$1000
+   14 A:a42b                                    USBBLK=14           ; bank 7 value for BANK  
+   15 A:a42b                                    USBBASE=$1000
 
-   17 A:a422                                    driver_init=USBBASE
-   18 A:a422                                    driver_poll=USBBASE+3
+   17 A:a42b                                    driver_init=USBBASE
+   18 A:a42b                                    driver_poll=USBBASE+3
 
-   20 A:a422                                    ; -----------------------                                        
-   21 A:a422                                    ; copy over USB code to RAM                                      
-   22 A:a422                                    ; $1a000-$1bfff in flash img                                     
-   23 A:a422                                    ; copy to USBBASE                                                
+   20 A:a42b                                    ; -----------------------                                        
+   21 A:a42b                                    ; copy over USB code to RAM                                      
+   22 A:a42b                                    ; $1a000-$1bfff in flash img                                     
+   23 A:a42b                                    ; copy to USBBASE                                                
 
-   25 A:a422                                     .xl 
-   26 A:a422                           setup_usb_xl 
-   27 A:a422                                     .( 
-   28 A:a422  78                                 sei 
+   25 A:a42b                                     .xl 
+   26 A:a42b                           setup_usb_xl 
+   27 A:a42b                                     .( 
+   28 A:a42b  78                                 sei 
 
-   30 A:a423  a9 0e                              lda #MAP_USB               ; for the PET default VICCY base address of $1000 
-   31 A:a425  8d 02 e8                           sta BANK                ; $e802                                           
+   30 A:a42c  a9 0e                              lda #MAP_USB               ; for the PET default VICCY base address of $1000 
+   31 A:a42e  8d 02 e8                           sta BANK                ; $e802                                           
 
-   33 A:a428  a9 a0                              lda #USBPAGE               ; page in flash                                  
-   34 A:a42a  a2 00 10                           ldx #USBBASE               ; start in current bank                          
-   35 A:a42d  a0 00 20                           ldy #$2000             ; transfer len                                   
-   36 A:a430  20 d0 90                           jsr flash2direct2_xl
+   33 A:a431  a9 a0                              lda #USBPAGE               ; page in flash                                  
+   34 A:a433  a2 00 10                           ldx #USBBASE               ; start in current bank                          
+   35 A:a436  a0 00 20                           ldy #$2000             ; transfer len                                   
+   36 A:a439  20 d0 90                           jsr flash2direct2_xl
 
-   38 A:a433  e2 10                              sep #%00010000
-   39 A:a435                                     .xs 
+   38 A:a43c  e2 10                              sep #%00010000
+   39 A:a43e                                     .xs 
 
-   41 A:a435  a0 0e                              ldy #romcompend-romcomp-1
-   42 A:a437  b9 50 a4                 l         lda romcomp,y
-   43 A:a43a  99 00 df                           sta $df00,y
-   44 A:a43d  88                                 dey 
-   45 A:a43e  10 f7                              bpl l
+   41 A:a43e  a0 0e                              ldy #romcompend-romcomp-1
+   42 A:a440  b9 59 a4                 l         lda romcomp,y
+   43 A:a443  99 00 df                           sta $df00,y
+   44 A:a446  88                                 dey 
+   45 A:a447  10 f7                              bpl l
 
-   47 A:a440  20 00 df                           jsr usb_init
-   48 A:a443  b0 03                              bcs nohw
+   47 A:a449  20 00 df                           jsr usb_init
+   48 A:a44c  b0 03                              bcs nohw
 
-   50 A:a445  20 03 df                           jsr usb_inst
+   50 A:a44e  20 03 df                           jsr usb_inst
 
-   52 A:a448                                    ; TODO:                                                          
-   53 A:a448                                    ; 2. init USB, bind into IRQ                                     
-   54 A:a448                                    ; 3. CLI                                                         
-   55 A:a448                                    ; 4. then use USB keyboard in boot menu                          
-   56 A:a448                                    ; 5. SEI                                                         
-   57 A:a448                                    ; 6. set ROMs                                                    
-   58 A:a448                                    ; 7. if USB option set, copy real bind companion to $df00        
-   59 A:a448                                    ; 8. enable USB interrupt handling                               
-   60 A:a448                                    ; 9. switch BANK back to 0 ($20)                                 
-   61 A:a448                                    ; 10. boot into ROM                                              
+   52 A:a451                                    ; TODO:                                                          
+   53 A:a451                                    ; 2. init USB, bind into IRQ                                     
+   54 A:a451                                    ; 3. CLI                                                         
+   55 A:a451                                    ; 4. then use USB keyboard in boot menu                          
+   56 A:a451                                    ; 5. SEI                                                         
+   57 A:a451                                    ; 6. set ROMs                                                    
+   58 A:a451                                    ; 7. if USB option set, copy real bind companion to $df00        
+   59 A:a451                                    ; 8. enable USB interrupt handling                               
+   60 A:a451                                    ; 9. switch BANK back to 0 ($20)                                 
+   61 A:a451                                    ; 10. boot into ROM                                              
 
-   63 A:a448                           nohw      
-   64 A:a448  a9 00                              lda #MAP_BAS
-   65 A:a44a  8d 02 e8                           sta BANK
+   63 A:a451                           nohw      
+   64 A:a451  a9 00                              lda #MAP_BAS
+   65 A:a453  8d 02 e8                           sta BANK
 
-   67 A:a44d  c2 10                              rep #%00010000
-   68 A:a44f                                     .xl 
-   69 A:a44f  60                                 rts 
-   70 A:a450                                     .) 
+   67 A:a456  c2 10                              rep #%00010000
+   68 A:a458                                     .xl 
+   69 A:a458  60                                 rts 
+   70 A:a459                                     .) 
 
-   72 A:a450                                     .xs 
+   72 A:a459                                     .xs 
 
-   74 A:a450                           romcomp   .( 
-   75 A:a450                                     *= $df00
+   74 A:a459                           romcomp   .( 
+   75 A:a459                                     *= $df00
    76 A:df00                                    ; called from outside                                              
-   77 A:df00  4c 66 a4                 usb_init  jmp init             ; init the USB stack               
-   78 A:df03  4c 5f a4                 usb_inst  jmp install             ; patch in USB interrupt into ROM  
-   79 A:df06  4c 79 a4                 usb_uninst jmp uninstall             ; remove USB patch                 
+   77 A:df00  4c 6f a4                 usb_init  jmp init             ; init the USB stack               
+   78 A:df03  4c 68 a4                 usb_inst  jmp install             ; patch in USB interrupt into ROM  
+   79 A:df06  4c 82 a4                 usb_uninst jmp uninstall             ; remove USB patch                 
    80 A:df09                                    ; called from USB driver interrupt routine                         
-   81 A:df09  4c 81 a4                 usb_pause jmp pause             ;                                  
-   82 A:df0c  4c 9e a4                 usb_appendkey jmp printc2
+   81 A:df09  4c 8a a4                 usb_pause jmp pause             ;                                  
+   82 A:df0c  4c a7 a4                 usb_appendkey jmp printc2
    83 A:df0f                                     *= *-$df00+romcomp
-   84 A:a45f                                     .) 
-   85 A:a45f                           romcompend 
+   84 A:a468                                     .) 
+   85 A:a468                           romcompend 
 
-   87 A:a45f                           install   .( 
-   88 A:a45f                                    ; interrupt is already established for key scanning
-   89 A:a45f                                    ; we just need to release the lock
-   90 A:a45f  a9 00                              lda #0
-   91 A:a461  8f ff 00 07                        sta lock
+   87 A:a468                           install   .( 
+   88 A:a468                                    ; interrupt is already established for key scanning
+   89 A:a468                                    ; we just need to release the lock
+   90 A:a468  a9 00                              lda #0
+   91 A:a46a  8f ff 00 07                        sta lock
 
-   93 A:a465  60                                 rts 
-   94 A:a466                                     .) 
+   93 A:a46e  60                                 rts 
+   94 A:a46f                                     .) 
 
-   96 A:a466                                    ; is entered in MAP_USB, .xs, .as
-   97 A:a466                           init      .( 
-   98 A:a466  08                                 php 
-   99 A:a467  78                                 sei 
+   96 A:a46f                                    ; is entered in MAP_USB, .xs, .as
+   97 A:a46f                           init      .( 
+   98 A:a46f  08                                 php 
+   99 A:a470  78                                 sei 
 
-  101 A:a468  a9 ff                              lda #<-1
-  102 A:a46a  8f ff 00 07                        sta lock
+  101 A:a471  a9 ff                              lda #<-1
+  102 A:a473  8f ff 00 07                        sta lock
 
-  104 A:a46e  20 00 10                           jsr driver_init
+  104 A:a477  20 00 10                           jsr driver_init
 
-  106 A:a471  b0 03                              bcs locked
-  107 A:a473  28                                 plp 
-  108 A:a474  18                                 clc 
-  109 A:a475  60                                 rts 
+  106 A:a47a  b0 03                              bcs locked
+  107 A:a47c  28                                 plp 
+  108 A:a47d  18                                 clc 
+  109 A:a47e  60                                 rts 
 
-  111 A:a476  28                       locked    plp 
-  112 A:a477  38                                 sec 
-  113 A:a478  60                                 rts 
-  114 A:a479                                     .) 
+  111 A:a47f  28                       locked    plp 
+  112 A:a480  38                                 sec 
+  113 A:a481  60                                 rts 
+  114 A:a482                                     .) 
 
-  116 A:a479                           uninstall .( 
-  117 A:a479  78                                 sei 
+  116 A:a482                           uninstall .( 
+  117 A:a482  78                                 sei 
 
-  119 A:a47a  a9 ff                              lda #<-1
-  120 A:a47c  8f ff 00 07                        sta lock
-  121 A:a480  60                                 rts 
-  122 A:a481                                     .) 
+  119 A:a483  a9 ff                              lda #<-1
+  120 A:a485  8f ff 00 07                        sta lock
+  121 A:a489  60                                 rts 
+  122 A:a48a                                     .) 
 
-  125 A:a481                                    ; pause a given number of vertical scree
-  126 A:a481                                    ; in AC has number of frames (retraces) 
-  127 A:a481                                     .xs 
-  128 A:a481                                     .as 
-  129 A:a481                           pause     .( 
-  130 A:a481  08                                 php 
-  131 A:a482  a9 00                              lda #MAP_BAS
-  132 A:a484  8d 02 e8                           sta MAPREG
-  133 A:a487  58                                 cli 
+  125 A:a48a                                    ; pause a given number of vertical scree
+  126 A:a48a                                    ; in AC has number of frames (retraces) 
+  127 A:a48a                                     .xs 
+  128 A:a48a                                     .as 
+  129 A:a48a                           pause     .( 
+  130 A:a48a  08                                 php 
+  131 A:a48b  a9 00                              lda #MAP_BAS
+  132 A:a48d  8d 02 e8                           sta MAPREG
+  133 A:a490  58                                 cli 
 
-  135 A:a488  aa                                 tax 
-  136 A:a489  e8                                 inx                    ; full retraces, s
-  137 A:a48a  af fe 00 07              p0        lda VCOUNT
-  138 A:a48e  cf fe 00 07              p1        cmp VCOUNT
-  139 A:a492  f0 fa                              beq p1
-  140 A:a494  ca                                 dex 
-  141 A:a495  d0 f3                              bne p0
+  135 A:a491  aa                                 tax 
+  136 A:a492  e8                                 inx                    ; full retraces, s
+  137 A:a493  af fe 00 07              p0        lda VCOUNT
+  138 A:a497  cf fe 00 07              p1        cmp VCOUNT
+  139 A:a49b  f0 fa                              beq p1
+  140 A:a49d  ca                                 dex 
+  141 A:a49e  d0 f3                              bne p0
 
-  143 A:a497  a9 0e                              lda #MAP_USB
-  144 A:a499  8d 02 e8                           sta MAPREG
-  145 A:a49c  28                                 plp 
-  146 A:a49d  60                                 rts 
-  147 A:a49e                                     .) 
+  143 A:a4a0  a9 0e                              lda #MAP_USB
+  144 A:a4a2  8d 02 e8                           sta MAPREG
+  145 A:a4a5  28                                 plp 
+  146 A:a4a6  60                                 rts 
+  147 A:a4a7                                     .) 
 
-  150 A:a49e                           printc2   .( 
-  151 A:a49e  aa                                 tax                    ; actually overwrites modifiers in X
-  152 A:a49f  08                                 php 
-  153 A:a4a0  78                                 sei 
+  150 A:a4a7                           printc2   .( 
+  151 A:a4a7  aa                                 tax                    ; actually overwrites modifiers in X
+  152 A:a4a8  08                                 php 
+  153 A:a4a9  78                                 sei 
 
-  155 A:a4a1  b0 09                              bcs stop
+  155 A:a4aa  b0 09                              bcs stop
 
-  157 A:a4a3                                    ;inc $8027
+  157 A:a4ac                                    ;inc $8027
 
-  159 A:a4a3  a9 00                              lda #MAP_BAS
-  160 A:a4a5  8d 02 e8                           sta MAPREG
+  159 A:a4ac  a9 00                              lda #MAP_BAS
+  160 A:a4ae  8d 02 e8                           sta MAPREG
 
-  162 A:a4a8  8a                                 txa 
-  163 A:a4a9  20 da 94                           jsr key_usb
-  164 A:a4ac                           stop      
-  165 A:a4ac  a9 0e                              lda #MAP_USB
-  166 A:a4ae  8d 02 e8                           sta MAPREG
+  162 A:a4b1  8a                                 txa 
+  163 A:a4b2  20 da 94                           jsr key_usb
+  164 A:a4b5                           stop      
+  165 A:a4b5  a9 0e                              lda #MAP_USB
+  166 A:a4b7  8d 02 e8                           sta MAPREG
 
-  168 A:a4b1  28                                 plp 
-  169 A:a4b2  60                                 rts 
-  170 A:a4b3                                     .) 
+  168 A:a4ba  28                                 plp 
+  169 A:a4bb  60                                 rts 
+  170 A:a4bc                                     .) 
 
-  172 A:a4b3                                     .) 
+  172 A:a4bc                                     .) 
 
 boot_sdcard.a65
 
 
-    2 A:a4b3                                     .( 
+    2 A:a4bc                                     .( 
 
-    4 A:a4b3                                    tmp=$0780ff           ; last byte in stack on BLK 15
+    4 A:a4bc                                    tmp=$0780ff           ; last byte in stack on BLK 15
 
-    6 A:a4b3                                    MAP_SDC=SDCBLK
+    6 A:a4bc                                    MAP_SDC=SDCBLK
 
-    8 A:a4b3                                    SDCPAGE=$c0
+    8 A:a4bc                                    SDCPAGE=$c0
 
-   10 A:a4b3                                    SDCBLK=15           ; bank 7 value for BANK  
-   11 A:a4b3                                    SDCBASE=$4000
+   10 A:a4bc                                    SDCBLK=15           ; bank 7 value for BANK  
+   11 A:a4bc                                    SDCBASE=$4000
 
-   13 A:a4b3                                    ; -----------------------                                        
-   14 A:a4b3                                    ; copy over SD Card code to RAM                                      
-   15 A:a4b3                                    ; $1c000-$1dfff in flash img                                     
-   16 A:a4b3                                    ; copy to USBBASE                                                
+   13 A:a4bc                                    ; -----------------------                                        
+   14 A:a4bc                                    ; copy over SD Card code to RAM                                      
+   15 A:a4bc                                    ; $1c000-$1dfff in flash img                                     
+   16 A:a4bc                                    ; copy to USBBASE                                                
 
-   18 A:a4b3                                     .xl 
-   19 A:a4b3                           setup_sdcard_xl 
-   20 A:a4b3                                     .( 
-   21 A:a4b3  08                                 php 
-   22 A:a4b4  78                                 sei 
+   18 A:a4bc                                     .xl 
+   19 A:a4bc                           setup_sdcard_xl 
+   20 A:a4bc                                     .( 
+   21 A:a4bc  08                                 php 
+   22 A:a4bd  78                                 sei 
 
-   24 A:a4b5  a9 0f                              lda #MAP_SDC               ; which RAM bank to use for SDCard support
-   25 A:a4b7  8d 02 e8                           sta BANK                ; $e802                                           
+   24 A:a4be  a9 0f                              lda #MAP_SDC               ; which RAM bank to use for SDCard support
+   25 A:a4c0  8d 02 e8                           sta BANK                ; $e802                                           
 
-   27 A:a4ba  a9 c0                              lda #SDCPAGE               ; page in flash
-   28 A:a4bc  a2 00 40                           ldx #SDCBASE               ; start in current bank                          
-   29 A:a4bf  a0 00 40                           ldy #$4000             ; transfer len                                   
-   30 A:a4c2  20 d0 90                           jsr flash2direct2_xl
+   27 A:a4c3  a9 c0                              lda #SDCPAGE               ; page in flash
+   28 A:a4c5  a2 00 40                           ldx #SDCBASE               ; start in current bank                          
+   29 A:a4c8  a0 00 40                           ldy #$4000             ; transfer len                                   
+   30 A:a4cb  20 d0 90                           jsr flash2direct2_xl
 
-   32 A:a4c5  a9 00                              lda #MAP_BAS               ; switch back to bank 0
-   33 A:a4c7  8d 02 e8                           sta BANK
+   32 A:a4ce  a9 00                              lda #MAP_BAS               ; switch back to bank 0
+   33 A:a4d0  8d 02 e8                           sta BANK
 
-   35 A:a4ca  28                                 plp 
-   36 A:a4cb  60                                 rts 
-   37 A:a4cc                                     .) 
+   35 A:a4d3  28                                 plp 
+   36 A:a4d4  60                                 rts 
+   37 A:a4d5                                     .) 
 
-   39 A:a4cc                                     .) 
+   39 A:a4d5                                     .) 
 
 boot_irq.a65
 
 
-    3 A:a4cc                           irq_install .( 
-    4 A:a4cc  a9 ff                              lda #<-1
-    5 A:a4ce  8f ff 00 07                        sta lock
+    3 A:a4d5                           irq_install .( 
+    4 A:a4d5  a9 ff                              lda #<-1
+    5 A:a4d7  8f ff 00 07                        sta lock
 
-    7 A:a4d2  a9 e9                              lda #<newirq
-    8 A:a4d4  8d ee ff                           sta $ffee              ; 65816 native interrupt vector(!)
-    9 A:a4d7  a9 a4                              lda #>newirq              ; http:
-   10 A:a4d9  8d ef ff                           sta $ffef
+    7 A:a4db  a9 f2                              lda #<newirq
+    8 A:a4dd  8d ee ff                           sta $ffee              ; 65816 native interrupt vector(!)
+    9 A:a4e0  a9 a4                              lda #>newirq              ; http:
+   10 A:a4e2  8d ef ff                           sta $ffef
 
-   12 A:a4dc                                    ; once per screen interrupt (60Hz)
-   13 A:a4dc                                    ; 
-   14 A:a4dc                                    ; UltiPet could use VICCY, but uPET does not have this
-   15 A:a4dc                                    ; So, we fall back to using PET VDRIVE input on PIA1 CB1
+   12 A:a4e5                                    ; once per screen interrupt (60Hz)
+   13 A:a4e5                                    ; 
+   14 A:a4e5                                    ; UltiPet could use VICCY, but uPET does not have this
+   15 A:a4e5                                    ; So, we fall back to using PET VDRIVE input on PIA1 CB1
 
-   27 A:a4dc  a9 3d                              lda #$3d             ; enable VDRIVE interrupt
-   28 A:a4de  8d 13 e8                           sta PIA1+PIA_CRB
+   27 A:a4e5  a9 3d                              lda #$3d             ; enable VDRIVE interrupt
+   28 A:a4e7  8d 13 e8                           sta PIA1+PIA_CRB
 
-   30 A:a4e1  60                                 rts 
-   31 A:a4e2                                     .) 
+   30 A:a4ea  60                                 rts 
+   31 A:a4eb                                     .) 
 
-   33 A:a4e2                           irq_uninstall .( 
-   34 A:a4e2  78                                 sei 
+   33 A:a4eb                           irq_uninstall .( 
+   34 A:a4eb  78                                 sei 
 
-   44 A:a4e3  a9 3c                              lda #$3c
-   45 A:a4e5  8d 13 e8                           sta PIA1+PIA_CRB
+   44 A:a4ec  a9 3c                              lda #$3c
+   45 A:a4ee  8d 13 e8                           sta PIA1+PIA_CRB
 
-   47 A:a4e8  60                                 rts 
-   48 A:a4e9                                     .) 
+   47 A:a4f1  60                                 rts 
+   48 A:a4f2                                     .) 
 
-   50 A:a4e9                                    ; interrupt state saving according to 
-   51 A:a4e9                                    ; http:
-   52 A:a4e9                           newirq    .( 
-   53 A:a4e9                                    ;phb
-   54 A:a4e9                                    ;phd
-   55 A:a4e9  c2 30                              rep #%00110000
-   56 A:a4eb                                     .xl 
-   57 A:a4eb                                     .al 
-   58 A:a4eb  48                                 pha 
-   59 A:a4ec  5a                                 phy 
-   60 A:a4ed  da                                 phx 
+   50 A:a4f2                                    ; interrupt state saving according to 
+   51 A:a4f2                                    ; http:
+   52 A:a4f2                           newirq    .( 
+   53 A:a4f2                                    ;phb
+   54 A:a4f2                                    ;phd
+   55 A:a4f2  c2 30                              rep #%00110000
+   56 A:a4f4                                     .xl 
+   57 A:a4f4                                     .al 
+   58 A:a4f4  48                                 pha 
+   59 A:a4f5  5a                                 phy 
+   60 A:a4f6  da                                 phx 
 
-   62 A:a4ee  e2 30                              sep #%00110000
-   63 A:a4f0                                     .xs 
-   64 A:a4f0                                     .as 
+   62 A:a4f7  e2 30                              sep #%00110000
+   63 A:a4f9                                     .xs 
+   64 A:a4f9                                     .as 
 
-   75 A:a4f0  ad 12 e8                           lda PIA1+PIA_PB            ; clear VDRIVE interrupt
+   75 A:a4f9  ad 12 e8                           lda PIA1+PIA_PB            ; clear VDRIVE interrupt
 
-   78 A:a4f3  20 06 95                           jsr checkkbd_xs
-   79 A:a4f6  20 e6 94                           jsr key_pet
+   78 A:a4fc  20 06 95                           jsr checkkbd_xs
+   79 A:a4ff  20 e6 94                           jsr key_pet
 
-   81 A:a4f9  af fe 00 07                        lda VCOUNT                ; vertical screen interrupt
-   82 A:a4fd  18                                 clc 
-   83 A:a4fe  69 01                              adc #1
-   84 A:a500  8f fe 00 07                        sta VCOUNT
+   81 A:a502  af fe 00 07                        lda VCOUNT                ; vertical screen interrupt
+   82 A:a506  18                                 clc 
+   83 A:a507  69 01                              adc #1
+   84 A:a509  8f fe 00 07                        sta VCOUNT
 
-   86 A:a504  af ff 00 07                        lda lock                ; check lock so we don't get into poll again on pause
-   87 A:a508  30 1b                              bmi nopoll
+   86 A:a50d  af ff 00 07                        lda lock                ; check lock so we don't get into poll again on pause
+   87 A:a511  30 1b                              bmi nopoll
 
-   89 A:a50a  3a                                 dec 
-   90 A:a50b  8f ff 00 07                        sta lock                ; lock
+   89 A:a513  3a                                 dec 
+   90 A:a514  8f ff 00 07                        sta lock                ; lock
 
-   92 A:a50f  a9 0e                              lda #MAP_USB
-   93 A:a511  8d 02 e8                           sta MAPREG
+   92 A:a518  a9 0e                              lda #MAP_USB
+   93 A:a51a  8d 02 e8                           sta MAPREG
 
-   95 A:a514  20 03 10                           jsr driver_poll
+   95 A:a51d  20 03 10                           jsr driver_poll
 
-   97 A:a517  a9 00                              lda #MAP_BAS
-   98 A:a519  8d 02 e8                           sta MAPREG
+   97 A:a520  a9 00                              lda #MAP_BAS
+   98 A:a522  8d 02 e8                           sta MAPREG
 
-  100 A:a51c  af ff 00 07                        lda lock
-  101 A:a520  1a                                 inc 
-  102 A:a521  8f ff 00 07                        sta lock
-  103 A:a525                           nopoll    
+  100 A:a525  af ff 00 07                        lda lock
+  101 A:a529  1a                                 inc 
+  102 A:a52a  8f ff 00 07                        sta lock
+  103 A:a52e                           nopoll    
 
-  109 A:a525  c2 30                              rep #%00110000
-  110 A:a527                                     .xl 
-  111 A:a527                                     .al 
-  112 A:a527  fa                                 plx 
-  113 A:a528  7a                                 ply 
-  114 A:a529  68                                 pla 
-  115 A:a52a                                    ;pld
-  116 A:a52a                                    ;plb
-  117 A:a52a  40                                 rti 
-  118 A:a52b                                     .) 
+  109 A:a52e  c2 30                              rep #%00110000
+  110 A:a530                                     .xl 
+  111 A:a530                                     .al 
+  112 A:a530  fa                                 plx 
+  113 A:a531  7a                                 ply 
+  114 A:a532  68                                 pla 
+  115 A:a533                                    ;pld
+  116 A:a533                                    ;plb
+  117 A:a533  40                                 rti 
+  118 A:a534                                     .) 
 
 boot.a65
 
 
-  411 A:a52b                                    ; this is 4k+6p byte max
-  412 A:a52b                                    ; 1st 256 byte is ipl
+  411 A:a534                                    ; this is 4k+6p byte max
+  412 A:a534                                    ; 1st 256 byte is ipl
 
-  414 A:a52b  ff fe 90 00 01 ff 16 ...           .dsb RUNADDR+22*256-*,$ff
+  414 A:a534  ff fe 90 00 01 ff 16 ...           .dsb RUNADDR+22*256-*,$ff
   415 A:a600                                     .) 

@@ -343,6 +343,21 @@ prioser	lda #"S"
 
 	; set pos screen pointer to x/y
 &getpos	.(
+	jsr getpos_l
+&&getpos_c
+	lda x
+	cmp #6
+	bcc @1
+	adc #0
+@1	adc #6
+	asl
+	adc pos
+	sta pos
+	lda #0
+	adc pos+1
+	sta pos+1
+	rts
+&&getpos_l
 	lda #0
 	sta pos+1
 	lda y
@@ -360,47 +375,40 @@ prioser	lda #"S"
 	lda #0
 	adc pos+1
 	sta pos+1
-	lda x
-	cmp #6
-	bcc @1
-	adc #0
-@1	asl
-	adc pos
-	sta pos
-	lda #0
-	adc pos+1
-	sta pos+1
-	lda #<start-1
+	lda #<start-13
 	clc
 	adc pos
 	sta pos
-	lda #>start-1
+	lda #>start-13
 	adc pos+1
 	sta pos+1
 	rts
 	.)
 
+	; de-select an option
+deact
 	; select an option
-&act	.(
-	jsr getpos
+act	.(
+	jsr getpos_l
+	jsr line_inv
+	jsr getpos_c
 	ldy #1
 al	lda (pos),y
-	ora #128
+	;ora #128
+	and #127
 	sta (pos),y
 	dey
 	bpl al
 	rts
 	.)
 
-	; de-select an option
-deact	.(
-	jsr getpos
-	ldy #1
-dl	lda (pos),y
-	and #127
+line_inv .(
+	ldy #39
+@1	lda (pos),y
+	eor #$80
 	sta (pos),y
 	dey
-	bpl dl
+	bpl @1
 	rts
 	.)
 
