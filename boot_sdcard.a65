@@ -18,9 +18,6 @@ SDCBASE =$4000
 	.xl
 &setup_sdcard_xl
         .(
-	php
-	sei
-
         lda #MAP_SDC 	; which RAM bank to use for SDCard support
         sta BANK        ; $e802                                           
 
@@ -32,7 +29,6 @@ SDCBASE =$4000
         lda #MAP_BAS	; switch back to bank 0
         sta BANK                                                         
 
-	plp
 	rts
         .)                                                               
 

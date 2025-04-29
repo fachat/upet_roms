@@ -93,28 +93,45 @@ nextr	dex
 
 done	ldx char
 	clc
-	beq ret		
+	beq ret	
 	lda shift
 	sec		; got one
 ret	rts
 
 gotone	; x has number of key
 	; save AC
+	pha
+	lda optkbd
+	beq openshift
+	lsr
+	and #%00010000
+	bne c64s
+	bcc openshift
+	jsr shift_petn
+nextr2	pla
+	bra nextr
+openshift
+	jsr shift_petn
+c64s	jsr shift_c64
+	bra nextr2
 
+shift_petn
 	; PET-N
 	cpx #16		; left shift (8/0)
 	beq gotshift
 	cpx #11		; right shift (8/5) (works, but not on a C64 keybd)
 	beq gotshift
+	bne gotchar
 	; C64
+shift_c64
 	cpx #55		; 3/1 = "R" = Left shift on C64 kbd
 	beq gotshift
-
+gotchar
 	stx char
-	bra nextr
+	rts
 gotshift
 	ror shift	; implicit sec after branch from cpx/beq
-	bra nextr
+	rts
 	.)
 
 	;---------------------------------------

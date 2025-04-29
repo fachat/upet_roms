@@ -25,8 +25,6 @@ driver_init	=USBBASE
 	.xl
 &setup_usb_xl                                                                         
         .(                                                               
-	sei
-
         lda #MAP_USB 	; for the PET default VICCY base address of $1000 
         sta BANK        ; $e802                                           
 
