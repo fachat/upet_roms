@@ -6,7 +6,7 @@ all: spiimg loadrom.bin loadrom
 ########################################################
 # sub-repos
 
-REPOS=cbm-edit-rom cbm-x16dos usb65
+REPOS=cbm-edit-rom cbm-x16dos usb65 cbm-fastiec
 
 # downloads all the repos it depends on
 clone: $(REPOS)
@@ -188,6 +188,13 @@ dos.bin: cbm-x16dos/build/UPET/dos.bin
 	cp $< $@
 
 dosromcomp.a65: cbm-x16dos
+
+##########################################################################	
+# Fast IEC driver code
+
+cbm-fastiec:
+	git clone $(BASE)/cbm-fastiec.git
+	#(cd cbm-fastiec; git checkout upet)
 
 ##########################################################################	
 # USB driver code
