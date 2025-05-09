@@ -13,19 +13,24 @@
 ;	bit 3: 1=USB support enabled from keyboard select
 ;	
 ; opts1 bits are:
-;	bit 7: KERNAL enhancements
-;	bit 6: BASIC enhancements
-;	bit 5: new EDITOR (sjg)
-;	bit 4: enable 65816 monitor
-;	bit 3: enable SD-Card support
-;	bit 2: SD unit#
-;	bit 1: enable serial IEC support
-;	bit 0: IEC/IEEE prio
+;	bit 7: SPEED flag (placeholder)
+;	bit 6: KERNAL enhancements
+;	bit 5: BASIC enhancements
+;	bit 4: new EDITOR (sjg)
+;	bit 3: enable 65816 monitor
+;	bit 2: enable SD-Card support
+;	bit 1: SD unit# flag (placeholder)
+;	bit 0: enable serial IEC support
 ; opts2 bits are:
-;	bit 7: enable RS232 port A support
-;	bit 6: enable RS232 port B support
-;	bit 5: enable USB support (mouse/kbd)
-;
+;	bit 7: IEC/IEEE prio
+;	bit 6: enable RS232 port A support
+;	bit 5: enable RS232 port B support
+;	bit 4: enable USB support (mouse/kbd)
+;	bit 3: default screen col (placeholder)
+; optu bits are:
+;	bits 7+6: speed indicator
+;	bits 5+4: default screen col
+;	bits 1+0: unit for SD Card -8
 
 ; device 5 on SPI bus, mode 0, slow clock
 SPI_SEL_EEPROM	=5+8	
@@ -84,6 +89,21 @@ chkloop	lda opt
 	pha
 	jsr clrscreen_xl
 	pla
+	rts
+	.)
+
+&&boot_col .(
+	lda optu
+	and #32+16
+	cmp #32
+	bcs white
+	cmp #16
+	bcs amber
+	lda #BOOTCOL
+	.byt $2c
+amber	lda #13
+	.byt $2c
+white	lda #15
 	rts
 	.)
 
@@ -397,6 +417,7 @@ text	.asc "           MICRO-/ULTI-PET              "
 	.asc "RS232 A                                 "
 	.asc "RS232 B                                 "
         .asc "USB HID                                 "
+        .asc "SCREEN COL                              "
 	.asc 0
 	.)
 
@@ -428,6 +449,7 @@ rl1	beq nextopt
 	beq speed
 	cpy #OPT1_SDUNIT_I
 	beq unit
+	.assert OPT2_UNITOFF_I == 8, "value assumption for branch"
 	cpy #OPT2_UNITOFF_I
 	beq prio
 	bcs uppr
@@ -437,6 +459,8 @@ rl1	beq nextopt
 	jsr showopt
 	bra nextopt
 uppr	
+	cpy #OPT2_SCRCOL_I
+	beq color
 	lda opts_vals2,x
 	and pow2-8,y
 	jsr showopt
@@ -453,6 +477,10 @@ prio	lda opts_vals2,x
 
 speed	lda unit_vals,x
 	jsr showspeed
+	bra nextopt
+
+color	lda unit_vals,x
+	jsr showcol
 	; bra nextopt	; fallthrough
 
 nextopt	inc x
@@ -511,6 +539,23 @@ isM	lda #"M"&$bf
 is4orM	asl
 	bcc is4
 	bcs isM
+	.)
+
+&showcol .(
+	asl
+	asl
+	asl
+	bcs isW
+	asl
+	bcs isA
+	lda #"G"&$bf
+	.byt $2c
+isA	lda #"A"&$bf
+	.byt $2c
+isW	lda #"W"&$bf
+	ldy #1
+	sta (pos),y
+	rts
 	.)
 
 &showprio .(
@@ -743,7 +788,9 @@ action	ldx x
 	sta opts_vals,x
 	and pow2,y
 	bra act2b
-act2	lda opts_vals2,x
+act2	cpy #OPT2_SCRCOL_I
+	beq actcol
+	lda opts_vals2,x
 	eor pow2-8,y
 	sta opts_vals2,x
 	and pow2-8,y
@@ -793,6 +840,22 @@ actprio
 	and pow2-8,y
 	jsr showprio
 	jmp endo
+
+actcol 	.(
+	lda unit_vals,x
+	clc
+	adc #16
+	sta unit_vals,x
+	and #32+16
+	cmp #32+16
+	bne ok
+	lda unit_vals,x
+	and #255-32-16
+	sta unit_vals,x
+ok	jsr showcol
+	jmp endo
+	.)
+
 	.)
 
 	.xl
@@ -910,19 +973,19 @@ pow2	.byt %10000000
 	.byt %00000000		; 9
 
 &opts_mask2
-	.byt %00000000		; 1
-	.byt %00000000		; 2
-	.byt %11110000		; 4
-	.byt %11110000		; 6
-	.byt %11110000		; 8
+	.byt %00001000		; 1
+	.byt %00001000		; 2
+	.byt %11111000		; 4
+	.byt %11111000		; 6
+	.byt %11111000		; 8
 
 	.byt %00000000		; 9
 
-	.byt %00000000		; 1
-	.byt %00000000		; 2
-	.byt %11110000		; 4
-	.byt %11110000		; 6
-	.byt %11110000		; 8
+	.byt %00001000		; 1
+	.byt %00001000		; 2
+	.byt %11111000		; 4
+	.byt %11111000		; 6
+	.byt %11111000		; 8
 
 	.byt %00000000		; 9
 

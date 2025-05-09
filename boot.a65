@@ -204,16 +204,17 @@ doreal
 
 	jsr irq_uninstall
 
-	; set screen to green-on-black
-	; before we set mode, as 8296 disables col mem access
-	lda #$05
-	jsr setcol_xl
-
-	; TODO optimize into a single call
-
 	pla
 	; convert selected boot option to config bits (opt0-2,u)
 	jsr conv_char2opt_xl
+
+	php
+	; set screen to green-on-black
+	; before we set mode, as 8296 disables col mem access
+	jsr boot_col
+	jsr setcol_xl
+	plp
+
 
 	; not found - something bad
 	bcs foundopt
