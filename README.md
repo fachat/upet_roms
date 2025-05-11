@@ -234,10 +234,14 @@ With BASIC 4 there are multiple options that need to be considered:
 	Fast RAM
 
         +----+ $07ffff
-        |    |  
-        +----+ $078000
         |    |         USB- and SD-Card support bank, mapped 
-        |    |         into lower half of bank 0 when active
+        |    |  	$4000-$8000 	16k SD-Card code
+        |    |  	$3000-$4000 	4k SD-Card buffers
+        |    |  	$1000-$3000	8k USB code
+        |    |  	$0020-$002f 	USB code zeropage
+        |    |  	$0010-$001B 	SD-Card zeropage
+        +----+ $078000
+        |    |  
         +----+ $070000
         |    |  
          ...           free

@@ -3394,7 +3394,7 @@ boot_usb.a65
 
    12 A:a631                                    USBPAGE=$a0
 
-   14 A:a631                                    USBBLK=14           ; bank 7 value for BANK  
+   14 A:a631                                    USBBLK=15           ; bank 7 value for BANK  
    15 A:a631                                    USBBASE=$1000
 
    17 A:a631                                    driver_init=USBBASE
@@ -3408,7 +3408,7 @@ boot_usb.a65
    25 A:a631                                     .xl 
    26 A:a631                           setup_usb_xl 
    27 A:a631                                     .( 
-   28 A:a631  a9 0e                              lda #MAP_USB               ; for the PET default VICCY base address of $1000 
+   28 A:a631  a9 0f                              lda #MAP_USB               ; for the PET default VICCY base address of $1000 
    29 A:a633  8d 02 e8                           sta BANK                ; $e802                                           
 
    31 A:a636  a9 a0                              lda #USBPAGE               ; page in flash                                  
@@ -3520,7 +3520,7 @@ boot_usb.a65
   138 A:a6a2  ca                                 dex 
   139 A:a6a3  d0 f3                              bne p0
 
-  141 A:a6a5  a9 0e                              lda #MAP_USB
+  141 A:a6a5  a9 0f                              lda #MAP_USB
   142 A:a6a7  8d 02 e8                           sta MAPREG
   143 A:a6aa  28                                 plp 
   144 A:a6ab  60                                 rts 
@@ -3541,7 +3541,7 @@ boot_usb.a65
   160 A:a6b6  8a                                 txa 
   161 A:a6b7  20 e1 94                           jsr key_usb
   162 A:a6ba                           stop      
-  163 A:a6ba  a9 0e                              lda #MAP_USB
+  163 A:a6ba  a9 0f                              lda #MAP_USB
   164 A:a6bc  8d 02 e8                           sta MAPREG
 
   166 A:a6bf  28                                 plp 
@@ -3652,7 +3652,7 @@ boot_irq.a65
    89 A:a715  3a                                 dec 
    90 A:a716  8f ff 00 07                        sta lock                ; lock
 
-   92 A:a71a  a9 0e                              lda #MAP_USB
+   92 A:a71a  a9 0f                              lda #MAP_USB
    93 A:a71c  8d 02 e8                           sta MAPREG
 
    95 A:a71f  20 03 10                           jsr driver_poll

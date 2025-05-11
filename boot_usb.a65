@@ -11,7 +11,7 @@ tmp	=$0700fd
 
 USBPAGE	=$a0
 
-USBBLK  =14             ; bank 7 value for BANK  
+USBBLK  =15             ; bank 7 value for BANK  
 USBBASE =$1000                                   
 
 driver_init	=USBBASE                                               
