@@ -9,18 +9,25 @@ tmp	=$0700fd
 &MAP_BAS	=0
 &MAPREG		=BANK
 
-USBPAGE	=$a0
+USBPAGE	=$a0		; start of driver in Flash ROM
 
 USBBLK  =15             ; bank 7 value for BANK  
-USBBASE =$1000                                   
 
-driver_init	=USBBASE                                               
-&driver_poll	=USBBASE+3                                             
+DRIVERADDR      =$1000
+COMPADDR        =$df00
+
+driver_init	=DRIVERADDR                                               
+&driver_poll	=DRIVERADDR+3                                             
+
+pause_ax        =COMPADDR+9
+driver_pause_a  =DRIVERADDR+6+1
+print_ax        =COMPADDR+12
+driver_print_a  =DRIVERADDR+9+1
 
         ; -----------------------                                        
         ; copy over USB code to RAM                                      
         ; $1a000-$1bfff in flash img                                     
-        ; copy to USBBASE                                                
+        ; copy to DRIVERADDR                                                
 
 	.xl
 &setup_usb_xl                                                                         
@@ -29,23 +36,30 @@ driver_init	=USBBASE
         sta BANK        ; $e802                                           
 
         lda #USBPAGE    ; page in flash                                  
-        ldx #USBBASE    ; start in current bank                          
+        ldx #DRIVERADDR ; start in current bank                          
         ldy #$2000      ; transfer len                                   
         jsr flash2direct2_xl                                             
+
+	; copy over boot companion
+	ldy #romcompend-romcomp-1
+l	lda romcomp,y
+	sta COMPADDR,y
+	dey
+	bpl l
+
+	; link companion and driver
+	ldx #pause_ax
+	stx driver_pause_a
+	ldx #print_ax
+	stx driver_print_a
 
 	sep #%00010000
 	.xs
 
-	ldy #romcompend-romcomp-1
-l	lda romcomp,y
-	sta $df00,y
-	dey
-	bpl l
-
-	jsr usb_init
+	jsr t_init
     	bcs nohw
        
-	jsr usb_inst
+	jsr t_install
  
         ; TODO:                                                          
         ; 2. init USB, bind into IRQ                                     
@@ -67,22 +81,24 @@ nohw
 	rts
         .)                                                               
 
+	
+
 	.xs                                                                         
 
 romcomp	.(
-	*=$df00
-; called from outside                                              
-&usb_init       jmp init        ; init the USB stack               
-&usb_inst       jmp install     ; patch in USB interrupt into ROM  
-&&usb_uninst    jmp uninstall   ; remove USB patch                 
+	*=COMPADDR
+; ignored
+        jmp t_init        ; init the USB stack               
+        jmp t_install     ; patch in USB interrupt into ROM  
+        jmp t_uninstall   ; remove USB patch                 
 ; called from USB driver interrupt routine                         
-&usb_pause      jmp pause       ;                                  
-&usb_appendkey  jmp printc2                                        
-	*=*-$df00+romcomp
+&usb_pause      jmp t_pause       ;                                  
+&usb_appendkey  jmp t_printc2                                        
+	*=*-COMPADDR+romcomp
 	.)
 romcompend
 
-install	.(
+t_install .(
 	; interrupt is already established for key scanning
 	; we just need to release the lock
 	lda #0
@@ -92,7 +108,7 @@ install	.(
 	.)
 
 	; is entered in MAP_USB, .xs, .as
-init    .(
+t_init    .(
 	php                         
 	sei                         
 	
@@ -111,7 +127,7 @@ locked	plp
 	rts                         
 	.)
 
-uninstall .(
+t_uninstall .(
 	sei
 
 	lda #<-1
@@ -124,7 +140,7 @@ uninstall .(
 	; in AC has number of frames (retraces) 
 	.xs
 	.as
-pause   .(                              
+t_pause .(                              
 	php
 	lda #MAP_BAS
 	sta MAPREG
@@ -145,7 +161,7 @@ p1	cmp VCOUNT
 	.)                              
 
 
-printc2        .(
+t_printc2 .(
 	tax             ; actually overwrites modifiers in X
 	php
 	sei
@@ -167,5 +183,18 @@ stop
 	rts
         .)
 
+	.(
+#define	UPETROM
+&&startupetrom4
+	*=COMPADDR
+#print COMPADDR
+#include "usb65/platforms/upet/petromcomp.a65"
+#undef UPETROM
+#print COMPADDR
+	*=startupetrom4-COMPADDR+*
+&&endupetrom4
+	.)
+
+&tear_usb=t_uninstall
 .)
 

@@ -58,6 +58,8 @@ spiimg: zero boot basic1 edit1 kernal1 basic2 edit2g kernal2 chargen_pet16 charg
 	cat usbcode					>> $@	# 8k USB code
 	# SD-Card support
 	cat dos.bin					>> $@	# 16k SD-Card DOS
+	# @MON (note to be replaced)
+	cat apmonax					>> $@	# 4k MON
 
 
 zero: 

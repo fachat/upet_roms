@@ -37,6 +37,14 @@ USB_CPAGE	=$1f	;$0f	; where USB companion is in flash
 	ldy #$1000
 	jsr flash2direct2_xl
 
+	; -----------------------
+	; TODO check monitor bit
+	; TODO overwrites boot code! needs some relocation!
+;	lda #0
+;	ldx #$a000
+;	ldy #$1000
+;	jsr flash2direct3_xl
+
 	; ------------------
 	; check USB patch
 	lda opt0		; from keyboard selection
@@ -46,18 +54,25 @@ USB_CPAGE	=$1f	;$0f	; where USB companion is in flash
 	and #OPT2_USBHID
 	beq nousb
 dousb
-	; copy over petromcomp to destination at $dfxx
-	lda #USB_CPAGE		; page in flash
-	ldx #USB_COMPANION	; target in bank 0
-	ldy #$0100		; length
-	jsr flash2direct_xl
+;	; copy over petromcomp to destination at $dfxx
+;	lda #USB_CPAGE		; page in flash
+;	ldx #USB_COMPANION	; target in bank 0
+;	ldy #$0100		; length
+;	jsr flash2direct_xl
+	
+	ldx #0
+:	lda startupetrom4,x
+	sta USB_COMPANION,x
+	inx
+	cpx #endupetrom4-startupetrom4
+	bcc :-
 
         ; set X/Y registers to 8 bit ...
         sep #%00010000
         .xs
 	
 	; install it into the ROM
-	jsr $df03
+	jsr USB_COMPANION+3
 
 	rep #%00010000
 	.xl

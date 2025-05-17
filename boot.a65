@@ -200,7 +200,7 @@ doreal
 	; save config char ("1", "2", ..)
 	pha
 
-	jsr usb_uninst
+	jsr tear_usb	;usb_uninst
 
 	jsr irq_uninstall
 
@@ -289,12 +289,18 @@ end
 	; YR = number of bytes (16 bit)
 	; flash bank 0
 flash2direct_xl 
-	clc		; first 64k in Flash
-	.byt $24
+	pha
+	lda #0
+	beq doflash
 	; flash bank 1
 flash2direct2_xl
-	sec		; second 64k in Flash
-
+	pha
+	lda #1		; second 64k in Flash
+	bne doflash
+flash2direct3_xl
+	pha
+	lda #2
+doflash
 	; C is A16 for address in Flash
 	.(
 	pha
@@ -302,8 +308,7 @@ flash2direct2_xl
 	sta SPICTRL	; enable Flash
 	lda #3
 	sta SPIDATA	; READ command
-	lda #0
-	rol		; rotate carry into A16
+	pla
 	sta SPIDATA	; bits 23-16
 	pla
 	sta SPIDATA	; bits 15-8
