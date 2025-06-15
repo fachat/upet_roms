@@ -239,321 +239,327 @@ boot.a65
 
    87 A:1000                                    BRDCOL=0           ; border colour = black
 
-   89 A:1000                                    ; ------------------------
-   90 A:1000                                    ; this is the actual boot code, 
-   91 A:1000                                    ; loaded from Flash via SPI to $9000 by above ipl code
+   89 A:1000                                    ; temporary fix for a (potential) issue in xa2.4.1 when a
+   90 A:1000                                    ; 24 bit value is used before it is defined
+   91 A:1000                                    lock=$0700ff           ; last byte in zeropage in bank 7/block 14
+   92 A:1000                                    VCOUNT=$0700fe
+   93 A:1000                                    ;tmp  =$0700fd
 
-   93 A:1000                                     *= RUNADDR
-   94 A:9000                           jmpboot   
-   95 A:9000                                     .( 
+   95 A:1000                                    ; ------------------------
+   96 A:1000                                    ; this is the actual boot code, 
+   97 A:1000                                    ; loaded from Flash via SPI to $9000 by above ipl code
 
-   97 A:9000                                    ; code runs in .xs/.as
-   98 A:9000                                     .xs 
-   99 A:9000                                     .as 
+   99 A:1000                                     *= RUNADDR
+  100 A:9000                           jmpboot   
+  101 A:9000                                     .( 
 
-  101 A:9000                                    ; -----------------------
-  102 A:9000                                    ; warm reboot init
-  103 A:9000  78                                 sei 
+  103 A:9000                                    ; code runs in .xs/.as
+  104 A:9000                                     .xs 
+  105 A:9000                                     .as 
 
-  105 A:9001                                    ; init control registers
-  106 A:9001  a9 00                              lda #0
-  107 A:9003  8d 00 e8                           sta VCTRL                ; $e800 - default to 40 column
-  108 A:9006  8d 01 e8                           sta MCTRL                ; $e801
-  109 A:9009  8d 02 e8                           sta BANK                ; $e802
-  110 A:900c  8d 03 e8                           sta SPEED                ; $e803 - 1MHz
-  111 A:900f  8d 04 e8                           sta BUSWIN                ; $e804
+  107 A:9000                                    ; -----------------------
+  108 A:9000                                    ; warm reboot init
+  109 A:9000  78                                 sei 
 
-  113 A:9012  a9 02                              lda #VIDBLK               ; for the PET default VICCY base address of $1000
-  114 A:9014  8d 05 e8                           sta VMAP
+  111 A:9001                                    ; init control registers
+  112 A:9001  a9 00                              lda #0
+  113 A:9003  8d 00 e8                           sta VCTRL                ; $e800 - default to 40 column
+  114 A:9006  8d 01 e8                           sta MCTRL                ; $e801
+  115 A:9009  8d 02 e8                           sta BANK                ; $e802
+  116 A:900c  8d 03 e8                           sta SPEED                ; $e803 - 1MHz
+  117 A:900f  8d 04 e8                           sta BUSWIN                ; $e804
 
-  116 A:9017                                    ; init the VICCY emulation (also disables Viccy interrupts)
-  117 A:9017  20 16 91                           jsr setviccy_xs
+  119 A:9012  a9 02                              lda #VIDBLK               ; for the PET default VICCY base address of $1000
+  120 A:9014  8d 05 e8                           sta VMAP
 
-  119 A:901a                                    ; disable PIA/VIA/DAC interrupt sources
-  120 A:901a  a9 00                              lda #0
-  121 A:901c  8d 11 e8                           sta PIA1+PIA_CRA
-  122 A:901f  8d 13 e8                           sta PIA1+PIA_CRB
-  123 A:9022  8d 21 e8                           sta PIA2+PIA_CRA
-  124 A:9025  8d 23 e8                           sta PIA2+PIA_CRB
-  125 A:9028  a9 7f                              lda #127
-  126 A:902a  8d 4e e8                           sta VIA+VIA_IER
+  122 A:9017                                    ; init the VICCY emulation (also disables Viccy interrupts)
+  123 A:9017  20 16 91                           jsr setviccy_xs
 
-  128 A:902d  a9 00                              lda #0
-  129 A:902f  8d 3f e8                           sta DAC+DAC_CTRL
+  125 A:901a                                    ; disable PIA/VIA/DAC interrupt sources
+  126 A:901a  a9 00                              lda #0
+  127 A:901c  8d 11 e8                           sta PIA1+PIA_CRA
+  128 A:901f  8d 13 e8                           sta PIA1+PIA_CRB
+  129 A:9022  8d 21 e8                           sta PIA2+PIA_CRA
+  130 A:9025  8d 23 e8                           sta PIA2+PIA_CRB
+  131 A:9028  a9 7f                              lda #127
+  132 A:902a  8d 4e e8                           sta VIA+VIA_IER
 
-  131 A:9032                                    ; uppercase char
-  132 A:9032  a9 0c                              lda #12
-  133 A:9034  8d 4c e8                           sta VIA+VIA_PCR
+  134 A:902d  a9 00                              lda #0
+  135 A:902f  8d 3f e8                           sta DAC+DAC_CTRL
 
-  135 A:9037                                    ; -----------------------
-  136 A:9037                                    ; switch Ethernet - if exists - to low power mode
-  137 A:9037  a9 04                              lda #4             ; ENC28J60 ethernet module
-  138 A:9039  8d 08 e8                           sta SPICTRL
-  139 A:903c  a9 5e                              lda #%01011110             ; write control register ECON2
-  140 A:903e  8d 09 e8                           sta SPIDATA
-  141 A:9041  a9 28                              lda #%00101000             ; set PWRSV and VRPS
-  142 A:9043  8d 09 e8                           sta SPIDATA
-  143 A:9046  a9 07                              lda #SPIOFF
-  144 A:9048  8d 08 e8                           sta SPICTRL
+  137 A:9032                                    ; uppercase char
+  138 A:9032  a9 0c                              lda #12
+  139 A:9034  8d 4c e8                           sta VIA+VIA_PCR
 
-  146 A:904b                                    ; set X/Y registers to 16 bit ... 
-  147 A:904b  c2 10                              rep #%00010000
-  148 A:904d                                    ; ... and tell the assembler about it 
-  149 A:904d                                     .xl 
+  141 A:9037                                    ; -----------------------
+  142 A:9037                                    ; switch Ethernet - if exists - to low power mode
+  143 A:9037  a9 04                              lda #4             ; ENC28J60 ethernet module
+  144 A:9039  8d 08 e8                           sta SPICTRL
+  145 A:903c  a9 5e                              lda #%01011110             ; write control register ECON2
+  146 A:903e  8d 09 e8                           sta SPIDATA
+  147 A:9041  a9 28                              lda #%00101000             ; set PWRSV and VRPS
+  148 A:9043  8d 09 e8                           sta SPIDATA
+  149 A:9046  a9 07                              lda #SPIOFF
+  150 A:9048  8d 08 e8                           sta SPICTRL
 
-  151 A:904d                                    ; -----------------------
-  152 A:904d                                    ; copy over charrom to RAM
-  153 A:904d                                    ; $2000-$3fff in flash img
+  152 A:904b                                    ; set X/Y registers to 16 bit ... 
+  153 A:904b  c2 10                              rep #%00010000
+  154 A:904d                                    ; ... and tell the assembler about it 
+  155 A:904d                                     .xl 
 
-  155 A:904d                                     .( 
-  156 A:904d  a9 20                              lda #$20
-  157 A:904f  a2 00 c0                           ldx #$c000
-  158 A:9052  a0 00 20                           ldy #$2000
-  159 A:9055  20 d5 90                           jsr flash2direct_xl
-  160 A:9058                                    ; now copy from bank 0 to target location
-  161 A:9058  a2 00 00                           ldx #0
-  162 A:905b                           copy      
-  163 A:905b  bd 00 c0                           lda $c000,x            ; location in test ROM bank
-  164 A:905e  9f 00 00 08                        sta VBANK,x              ; location in RAM - uppermost RAM bank
-  165 A:9062  e8                                 inx 
-  166 A:9063  e0 00 20                           cpx #$2000
-  167 A:9066  d0 f3                              bne copy
-  168 A:9068                                     .) 
+  157 A:904d                                    ; -----------------------
+  158 A:904d                                    ; copy over charrom to RAM
+  159 A:904d                                    ; $2000-$3fff in flash img
 
-  170 A:9068                                    ;----------------------------------------------------
+  161 A:904d                                     .( 
+  162 A:904d  a9 20                              lda #$20
+  163 A:904f  a2 00 c0                           ldx #$c000
+  164 A:9052  a0 00 20                           ldy #$2000
+  165 A:9055  20 d5 90                           jsr flash2direct_xl
+  166 A:9058                                    ; now copy from bank 0 to target location
+  167 A:9058  a2 00 00                           ldx #0
+  168 A:905b                           copy      
+  169 A:905b  bd 00 c0                           lda $c000,x            ; location in test ROM bank
+  170 A:905e  9f 00 00 08                        sta VBANK,x              ; location in RAM - uppermost RAM bank
+  171 A:9062  e8                                 inx 
+  172 A:9063  e0 00 20                           cpx #$2000
+  173 A:9066  d0 f3                              bne copy
+  174 A:9068                                     .) 
 
-  172 A:9068  20 e3 a7                           jsr irq_install
+  176 A:9068                                    ;----------------------------------------------------
 
-  174 A:906b  20 80 91                           jsr clrscreen_xl
+  178 A:9068  20 c9 a7                           jsr irq_install
 
-  176 A:906e  20 cd a7                           jsr setup_sdcard_xl
+  180 A:906b  20 80 91                           jsr clrscreen_xl
 
-  178 A:9071  20 3d a6                           jsr setup_usb_xl
+  182 A:906e  20 b3 a7                           jsr setup_sdcard_xl
 
-  180 A:9074  58                                 cli 
+  184 A:9071  20 16 a7                           jsr setup_usb_xl
 
-  182 A:9075  20 47 97                           jsr do_options_init_xl
-  183 A:9078                           mloop     
-  184 A:9078  20 64 91                           jsr do_menu_xl
+  186 A:9074  58                                 cli 
 
-  186 A:907b  c9 6f                              cmp #"o"
-  187 A:907d  d0 12                              bne doreal
+  188 A:9075  20 47 97                           jsr do_options_init_xl
+  189 A:9078                           mloop     
+  190 A:9078  20 64 91                           jsr do_menu_xl
 
-  189 A:907f  20 57 97                           jsr do_options_xl
+  192 A:907b  c9 6f                              cmp #"o"
+  193 A:907d  d0 12                              bne doreal
 
-  191 A:9082  c9 78                              cmp #"x"
-  192 A:9084  d0 0b                              bne doreal
+  195 A:907f  20 57 97                           jsr do_options_xl
 
-  194 A:9086  a9 00                              lda #0
-  195 A:9088  8d fd 87                           sta opt
-  196 A:908b  8d fc 87                           sta optkbd
+  197 A:9082  c9 78                              cmp #"x"
+  198 A:9084  d0 0b                              bne doreal
 
-  198 A:908e  4c 78 90                           jmp mloop
-  199 A:9091                           doreal    
-  200 A:9091                                    ; save config char ("1", "2", ..)
-  201 A:9091  48                                 pha 
+  200 A:9086  a9 00                              lda #0
+  201 A:9088  8d fd 87                           sta opt
+  202 A:908b  8d fc 87                           sta optkbd
 
-  203 A:9092  20 a0 a6                           jsr tear_usb                ;usb_uninst
+  204 A:908e  4c 78 90                           jmp mloop
+  205 A:9091                           doreal    
+  206 A:9091                                    ; save config char ("1", "2", ..)
+  207 A:9091  48                                 pha 
 
-  205 A:9095  20 f9 a7                           jsr irq_uninstall
+  209 A:9092  20 79 a7                           jsr tear_usb                ;usb_uninst
 
-  207 A:9098  68                                 pla 
-  208 A:9099                                    ; convert selected boot option to config bits (opt0-2,u)
-  209 A:9099  20 45 9f                           jsr conv_char2opt_xl
+  211 A:9095  20 df a7                           jsr irq_uninstall
 
-  211 A:909c  08                                 php 
-  212 A:909d                                    ; set screen to green-on-black
-  213 A:909d                                    ; before we set mode, as 8296 disables col mem access
-  214 A:909d  20 79 97                           jsr boot_col
-  215 A:90a0  20 8c 91                           jsr setcol_xl
-  216 A:90a3  28                                 plp 
+  213 A:9098  68                                 pla 
+  214 A:9099                                    ; convert selected boot option to config bits (opt0-2,u)
+  215 A:9099  20 45 9f                           jsr conv_char2opt_xl
 
-  219 A:90a4                                    ; not found - something bad
-  220 A:90a4  b0 03                              bcs foundopt
-  221 A:90a6  4c 00 90                           jmp jmpboot
-  222 A:90a9                           foundopt  
+  217 A:909c  08                                 php 
+  218 A:909d                                    ; set screen to green-on-black
+  219 A:909d                                    ; before we set mode, as 8296 disables col mem access
+  220 A:909d  20 79 97                           jsr boot_col
+  221 A:90a0  20 8c 91                           jsr setcol_xl
+  222 A:90a3  28                                 plp 
 
-  224 A:90a9                                    ; ----------------------------                                        
-  225 A:90a9                                    ; In: AC has key in ASCII                                             
-  226 A:90a9                                    ;                                                                     
-  227 A:90a9                                    ; out:  c=0:    no option                                             
-  228 A:90a9                                    ;       c=1:    result is in AC:                                      
-  229 A:90a9                                    ; bit 7   - if set, unpatched                                         
-  230 A:90a9                                    ; bit 6   - 1=80 cols                                                 
-  231 A:90a9                                    ; bit 5   - 1=C64                                                     
-  232 A:90a9                                    ; bit 4   - 1=8296 ext.                                               
-  233 A:90a9                                    ; bit 3   - USB kbd support (only BASIC4, only w/ option from USB)    
-  234 A:90a9                                    ; bit 1/0 - model (01=basic1, 10=basic2, 11=basic4)                   
+  225 A:90a4                                    ; not found - something bad
+  226 A:90a4  b0 03                              bcs foundopt
+  227 A:90a6  4c 00 90                           jmp jmpboot
+  228 A:90a9                           foundopt  
 
-  236 A:90a9                                    ;----------------------------------------------------
-  237 A:90a9                                    ; 1= Basic1, 2=Basic2, 3=Basic4
-  238 A:90a9  ad f8 87                           lda opt0
-  239 A:90ac  29 03                              and #%00000011             ; ROM version
+  230 A:90a9                                    ; ----------------------------                                        
+  231 A:90a9                                    ; In: AC has key in ASCII                                             
+  232 A:90a9                                    ;                                                                     
+  233 A:90a9                                    ; out:  c=0:    no option                                             
+  234 A:90a9                                    ;       c=1:    result is in AC:                                      
+  235 A:90a9                                    ; bit 7   - if set, unpatched                                         
+  236 A:90a9                                    ; bit 6   - 1=80 cols                                                 
+  237 A:90a9                                    ; bit 5   - 1=C64                                                     
+  238 A:90a9                                    ; bit 4   - 1=8296 ext.                                               
+  239 A:90a9                                    ; bit 3   - USB kbd support (only BASIC4, only w/ option from USB)    
+  240 A:90a9                                    ; bit 1/0 - model (01=basic1, 10=basic2, 11=basic4)                   
 
-  241 A:90ae  c9 01                              cmp #1
-  242 A:90b0  d0 03                              bne not_b1
+  242 A:90a9                                    ;----------------------------------------------------
+  243 A:90a9                                    ; 1= Basic1, 2=Basic2, 3=Basic4
+  244 A:90a9  ad f8 87                           lda opt0
+  245 A:90ac  29 03                              and #%00000011             ; ROM version
 
-  244 A:90b2  4c 1d a0                           jmp setup_basic1_xl
+  247 A:90ae  c9 01                              cmp #1
+  248 A:90b0  d0 03                              bne not_b1
 
-  246 A:90b5                                    ;------------------------
-  247 A:90b5  c9 02                    not_b1    cmp #2
-  248 A:90b7  d0 03                              bne not_b2
+  250 A:90b2  4c 1d a0                           jmp setup_basic1_xl
 
-  250 A:90b9  4c 7f a1                           jmp setup_basic2_xl
+  252 A:90b5                                    ;------------------------
+  253 A:90b5  c9 02                    not_b1    cmp #2
+  254 A:90b7  d0 03                              bne not_b2
 
-  252 A:90bc                                    ;----------------------------------------------------
-  253 A:90bc                           not_b2                     ; only basic 4 left
-  254 A:90bc                                    ;----------------------------------------------------
+  256 A:90b9  4c 7f a1                           jmp setup_basic2_xl
 
-  256 A:90bc  4c 8f a1                           jmp setup_basic4_xl
+  258 A:90bc                                    ;----------------------------------------------------
+  259 A:90bc                           not_b2                     ; only basic 4 left
+  260 A:90bc                                    ;----------------------------------------------------
 
-  258 A:90bf                                    ; -----------------------
-  259 A:90bf                                    ; switch back to emulation mode
-  260 A:90bf                           end       
-  261 A:90bf  8d 01 e8                           sta MCTRL
+  262 A:90bc  4c 8f a1                           jmp setup_basic4_xl
 
-  263 A:90c2                                    ; set X/Y registers to 8 bit ...
-  264 A:90c2  e2 10                              sep #%00010000
-  265 A:90c4                                    ; ... and tell the assembler about it
-  266 A:90c4                                     .xs 
+  264 A:90bf                                    ; -----------------------
+  265 A:90bf                                    ; switch back to emulation mode
+  266 A:90bf                           end       
+  267 A:90bf  8d 01 e8                           sta MCTRL
 
-  268 A:90c4  ad f5 87                           lda optu
-  269 A:90c7  4a                                 lsr 
-  270 A:90c8  4a                                 lsr 
-  271 A:90c9  4a                                 lsr 
-  272 A:90ca  4a                                 lsr 
-  273 A:90cb  4a                                 lsr 
-  274 A:90cc  4a                                 lsr 
-  275 A:90cd  8d 03 e8                           sta SPEED
+  269 A:90c2                                    ; set X/Y registers to 8 bit ...
+  270 A:90c2  e2 10                              sep #%00010000
+  271 A:90c4                                    ; ... and tell the assembler about it
+  272 A:90c4                                     .xs 
 
-  277 A:90d0                                    ; switch to native mode
-  278 A:90d0  38                                 sec 
-  279 A:90d1  fb                                 xce 
+  274 A:90c4  ad f5 87                           lda optu
+  275 A:90c7  4a                                 lsr 
+  276 A:90c8  4a                                 lsr 
+  277 A:90c9  4a                                 lsr 
+  278 A:90ca  4a                                 lsr 
+  279 A:90cb  4a                                 lsr 
+  280 A:90cc  4a                                 lsr 
+  281 A:90cd  8d 03 e8                           sta SPEED
 
-  281 A:90d2  6c fc ff                           jmp ($fffc)            ; RESET vector
+  283 A:90d0                                    ; switch to native mode
+  284 A:90d0  38                                 sec 
+  285 A:90d1  fb                                 xce 
 
-  283 A:90d5                                    ; ----------------------------
-  284 A:90d5                                    ; copy an area from flash to bank 0 RAM
+  287 A:90d2  6c fc ff                           jmp ($fffc)            ; RESET vector
 
-  286 A:90d5                                     .xl 
-  287 A:90d5                                    ; AC = page in Flash (8bit -> A8-15)
-  288 A:90d5                                    ; XR = start in bank 0 (16bit)
-  289 A:90d5                                    ; YR = number of bytes (16 bit)
-  290 A:90d5                                    ; flash bank 0
-  291 A:90d5                           flash2direct_xl 
-  292 A:90d5  48                                 pha 
-  293 A:90d6  a9 00                              lda #0
-  294 A:90d8  f0 08                              beq doflash
-  295 A:90da                                    ; flash bank 1
-  296 A:90da                           flash2direct2_xl 
-  297 A:90da  48                                 pha 
-  298 A:90db  a9 01                              lda #1             ; second 64k in Flash
-  299 A:90dd  d0 03                              bne doflash
-  300 A:90df                           flash2direct3_xl 
-  301 A:90df  48                                 pha 
-  302 A:90e0  a9 02                              lda #2
-  303 A:90e2                           doflash   
-  304 A:90e2                                    ; C is A16 for address in Flash
-  305 A:90e2                                     .( 
-  306 A:90e2  48                                 pha 
-  307 A:90e3  a9 01                              lda #1
-  308 A:90e5  8d 08 e8                           sta SPICTRL                ; enable Flash
-  309 A:90e8  a9 03                              lda #3
-  310 A:90ea  8d 09 e8                           sta SPIDATA                ; READ command
-  311 A:90ed  68                                 pla 
-  312 A:90ee  8d 09 e8                           sta SPIDATA                ; bits 23-16
-  313 A:90f1  68                                 pla 
-  314 A:90f2  8d 09 e8                           sta SPIDATA                ; bits 15-8
-  315 A:90f5  a9 00                              lda #0
-  316 A:90f7  8d 09 e8                           sta SPIDATA                ; bits 7-0
+  289 A:90d5                                    ; ----------------------------
+  290 A:90d5                                    ; copy an area from flash to bank 0 RAM
 
-  318 A:90fa  ad 09 e8                           lda SPIDATA                ; trigger shift in of first byte into SR (value read is still invalid)
+  292 A:90d5                                     .xl 
+  293 A:90d5                                    ; AC = page in Flash (8bit -> A8-15)
+  294 A:90d5                                    ; XR = start in bank 0 (16bit)
+  295 A:90d5                                    ; YR = number of bytes (16 bit)
+  296 A:90d5                                    ; flash bank 0
+  297 A:90d5                           flash2direct_xl 
+  298 A:90d5  48                                 pha 
+  299 A:90d6  a9 00                              lda #0
+  300 A:90d8  f0 08                              beq doflash
+  301 A:90da                                    ; flash bank 1
+  302 A:90da                           flash2direct2_xl 
+  303 A:90da  48                                 pha 
+  304 A:90db  a9 01                              lda #1             ; second 64k in Flash
+  305 A:90dd  d0 03                              bne doflash
+  306 A:90df                           flash2direct3_xl 
+  307 A:90df  48                                 pha 
+  308 A:90e0  a9 02                              lda #2
+  309 A:90e2                           doflash   
+  310 A:90e2                                    ; C is A16 for address in Flash
+  311 A:90e2                                     .( 
+  312 A:90e2  48                                 pha 
+  313 A:90e3  a9 01                              lda #1
+  314 A:90e5  8d 08 e8                           sta SPICTRL                ; enable Flash
+  315 A:90e8  a9 03                              lda #3
+  316 A:90ea  8d 09 e8                           sta SPIDATA                ; READ command
+  317 A:90ed  68                                 pla 
+  318 A:90ee  8d 09 e8                           sta SPIDATA                ; bits 23-16
+  319 A:90f1  68                                 pla 
+  320 A:90f2  8d 09 e8                           sta SPIDATA                ; bits 15-8
+  321 A:90f5  a9 00                              lda #0
+  322 A:90f7  8d 09 e8                           sta SPIDATA                ; bits 7-0
 
-  320 A:90fd                           readloop  
-  321 A:90fd  ad 09 e8                           lda SPIDATA                ; read byte, trigger shift in of next byte
-  322 A:9100  e0 00 e8                           cpx #$e800             ; skip I/O window
-  323 A:9103  90 05                              bcc ok
-  324 A:9105  e0 00 e9                           cpx #$e900
-  325 A:9108  90 02                              bcc nok
-  326 A:910a  95 00                    ok        sta 0,x
-  327 A:910c  e8                       nok       inx 
-  328 A:910d  88                                 dey 
-  329 A:910e  d0 ed                              bne readloop
+  324 A:90fa  ad 09 e8                           lda SPIDATA                ; trigger shift in of first byte into SR (value read is still invalid)
 
-  331 A:9110  a9 07                              lda #SPIOFF
-  332 A:9112  8d 08 e8                           sta SPICTRL                ; deselect Flash
-  333 A:9115  60                                 rts 
-  334 A:9116                                     .) 
+  326 A:90fd                           readloop  
+  327 A:90fd  ad 09 e8                           lda SPIDATA                ; read byte, trigger shift in of next byte
+  328 A:9100  e0 00 e8                           cpx #$e800             ; skip I/O window
+  329 A:9103  90 05                              bcc ok
+  330 A:9105  e0 00 e9                           cpx #$e900
+  331 A:9108  90 02                              bcc nok
+  332 A:910a  95 00                    ok        sta 0,x
+  333 A:910c  e8                       nok       inx 
+  334 A:910d  88                                 dey 
+  335 A:910e  d0 ed                              bne readloop
 
-  337 A:9116                                     .( 
-  338 A:9116                                    ; set Viccy registers
-  339 A:9116                                    ; note: stored backwards, so alt/compat modes are set
-  340 A:9116                                    ; before affected registers are written to
-  341 A:9116                                     .xs 
-  342 A:9116                           setviccy_xs .( 
-  343 A:9116  a0 29                              ldy #41
-  344 A:9118  8c 80 e8                           sty VICCY                ; register number
-  345 A:911b  b9 3a 91                 l0        lda vdctab,y
-  346 A:911e  8c 80 e8                           sty VICCY
-  347 A:9121  8d 81 e8                           sta VICCY+1          ; register value w/ auto-inc of register number
-  348 A:9124  88                       lx        dey 
-  349 A:9125  10 f4                              bpl l0
+  337 A:9110  a9 07                              lda #SPIOFF
+  338 A:9112  8d 08 e8                           sta SPICTRL                ; deselect Flash
+  339 A:9115  60                                 rts 
+  340 A:9116                                     .) 
 
-  351 A:9127                                    ; disable sprites
-  352 A:9127  a2 08                              ldx #8
-  353 A:9129  a0 00                              ldy #0
-  354 A:912b  a9 33                              lda #51
-  355 A:912d  8d 80 e8                 sl        sta VICCY
-  356 A:9130  8c 81 e8                           sty VICCY+1
-  357 A:9133  18                                 clc 
-  358 A:9134  69 04                              adc #4
-  359 A:9136  ca                                 dex 
-  360 A:9137  d0 f4                              bne sl
-  361 A:9139  60                                 rts 
+  343 A:9116                                     .( 
+  344 A:9116                                    ; set Viccy registers
+  345 A:9116                                    ; note: stored backwards, so alt/compat modes are set
+  346 A:9116                                    ; before affected registers are written to
+  347 A:9116                                     .xs 
+  348 A:9116                           setviccy_xs .( 
+  349 A:9116  a0 29                              ldy #41
+  350 A:9118  8c 80 e8                           sty VICCY                ; register number
+  351 A:911b  b9 3a 91                 l0        lda vdctab,y
+  352 A:911e  8c 80 e8                           sty VICCY
+  353 A:9121  8d 81 e8                           sta VICCY+1          ; register value w/ auto-inc of register number
+  354 A:9124  88                       lx        dey 
+  355 A:9125  10 f4                              bpl l0
 
-  363 A:913a  00                       vdctab    .byt 0           ; r0 ignored
-  364 A:913b  28                                 .byt 40              ; r1 number of chars per line displayed
-  365 A:913c  00 00 00 00                        .byt 0,0,0,0; r2-5 ignored
-  366 A:9140  19                                 .byt 25              ; r6 char rows displayed
-  367 A:9141  00                                 .byt 0              ; r7 ignored
-  368 A:9142  00                                 .byt 0              ; r8: b7= 80 col mode; b1=interlace, b0=double
-  369 A:9143  07                                 .byt 7              ; r9: rows per char (-1)
-  370 A:9144  20                                 .byt 32              ; r10: cursor start (b0-4, b6/5= mode, 00=solid, 01=off, 1x= blink)
-  371 A:9145  07                                 .byt 7              ; r11: cursor end line
-  372 A:9146  10                                 .byt >$1000             ; r12: start of vid memory high (upet compat -> $9xxx in video bank)
-  373 A:9147  00                                 .byt <$1000             ; r13: start of vid memory low (upet compat -> $9xxx in video bank)
-  374 A:9148  10                                 .byt >$1000             ; r14: cursor pos high
-  375 A:9149  00                                 .byt <$1000             ; r15: cursor pos low
-  376 A:914a  00 00 00 00                        .byt 0,0,0,0; r16-r19: ignored
-  377 A:914e  d0                                 .byt >$d000             ; r20: start of attribute memory high
-  378 A:914f  00                                 .byt <$d000             ; r21: start of attribute memory low
-  379 A:9150  09                                 .byt 9              ; r22: number of bits displayed of a char (horizontal)
-  380 A:9151  0f                                 .byt 15              ; r23: displayed number of rows per char
-  381 A:9152  00                                 .byt 0              ; r24: b0-3 scroll down, b4: up/low border ext, b5 blink rate, b6: reverse
-  382 A:9153  00                                 .byt 0              ; r25: b0-3 scroll right, b4: l/r border ext, b6: attrib enable, b7: bitmap mode
-  383 A:9154  05                                 .byt BOOTCOL                ; r26: b0-3: bg colour, b4-7: fg colour
-  384 A:9155  00                                 .byt 0              ; r27: address incr
-  385 A:9156  00                                 .byt >$00             ; r28: char set address high
-  386 A:9157  07                                 .byt 7              ; r29: underline scanline
-  387 A:9158  00 00                              .byt 0,0        ; r30/31: rasterline counter low/high
-  388 A:915a  94                                 .byt 128+4+16  ; r32: b2: extended (cpet compat), b4: disp en, b7: upet compat
-  389 A:915b  0f                                 .byt $0f              ; r33: b0-3: bg colour 1, b4-7: bg colour 2
-  390 A:915c  00                                 .byt BRDCOL                ; r34: border colour (b0-3)
-  391 A:915d  00                                 .byt 0              ; r35: irq control
-  392 A:915e  7f                                 .byt 127              ; r36: irq status (clear all sources)
-  393 A:915f  00                                 .byt 0              ; r37: v/h sync status (VDC)
+  357 A:9127                                    ; disable sprites
+  358 A:9127  a2 08                              ldx #8
+  359 A:9129  a0 00                              ldy #0
+  360 A:912b  a9 33                              lda #51
+  361 A:912d  8d 80 e8                 sl        sta VICCY
+  362 A:9130  8c 81 e8                           sty VICCY+1
+  363 A:9133  18                                 clc 
+  364 A:9134  69 04                              adc #4
+  365 A:9136  ca                                 dex 
+  366 A:9137  d0 f4                              bne sl
+  367 A:9139  60                                 rts 
 
-  398 A:9160  09                                 .byt 9              ; r38: horizontal position (chars)
-  399 A:9161  4f                                 .byt 79              ; r39: vertical position (rasterlines)
+  369 A:913a  00                       vdctab    .byt 0           ; r0 ignored
+  370 A:913b  28                                 .byt 40              ; r1 number of chars per line displayed
+  371 A:913c  00 00 00 00                        .byt 0,0,0,0; r2-5 ignored
+  372 A:9140  19                                 .byt 25              ; r6 char rows displayed
+  373 A:9141  00                                 .byt 0              ; r7 ignored
+  374 A:9142  00                                 .byt 0              ; r8: b7= 80 col mode; b1=interlace, b0=double
+  375 A:9143  07                                 .byt 7              ; r9: rows per char (-1)
+  376 A:9144  20                                 .byt 32              ; r10: cursor start (b0-4, b6/5= mode, 00=solid, 01=off, 1x= blink)
+  377 A:9145  07                                 .byt 7              ; r11: cursor end line
+  378 A:9146  10                                 .byt >$1000             ; r12: start of vid memory high (upet compat -> $9xxx in video bank)
+  379 A:9147  00                                 .byt <$1000             ; r13: start of vid memory low (upet compat -> $9xxx in video bank)
+  380 A:9148  10                                 .byt >$1000             ; r14: cursor pos high
+  381 A:9149  00                                 .byt <$1000             ; r15: cursor pos low
+  382 A:914a  00 00 00 00                        .byt 0,0,0,0; r16-r19: ignored
+  383 A:914e  d0                                 .byt >$d000             ; r20: start of attribute memory high
+  384 A:914f  00                                 .byt <$d000             ; r21: start of attribute memory low
+  385 A:9150  09                                 .byt 9              ; r22: number of bits displayed of a char (horizontal)
+  386 A:9151  0f                                 .byt 15              ; r23: displayed number of rows per char
+  387 A:9152  00                                 .byt 0              ; r24: b0-3 scroll down, b4: up/low border ext, b5 blink rate, b6: reverse
+  388 A:9153  00                                 .byt 0              ; r25: b0-3 scroll right, b4: l/r border ext, b6: attrib enable, b7: bitmap mode
+  389 A:9154  05                                 .byt BOOTCOL                ; r26: b0-3: bg colour, b4-7: fg colour
+  390 A:9155  00                                 .byt 0              ; r27: address incr
+  391 A:9156  00                                 .byt >$00             ; r28: char set address high
+  392 A:9157  07                                 .byt 7              ; r29: underline scanline
+  393 A:9158  00 00                              .byt 0,0        ; r30/31: rasterline counter low/high
+  394 A:915a  94                                 .byt 128+4+16  ; r32: b2: extended (cpet compat), b4: disp en, b7: upet compat
+  395 A:915b  0f                                 .byt $0f              ; r33: b0-3: bg colour 1, b4-7: bg colour 2
+  396 A:915c  00                                 .byt BRDCOL                ; r34: border colour (b0-3)
+  397 A:915d  00                                 .byt 0              ; r35: irq control
+  398 A:915e  7f                                 .byt 127              ; r36: irq status (clear all sources)
+  399 A:915f  00                                 .byt 0              ; r37: v/h sync status (VDC)
 
-  401 A:9162  00                                 .byt 0              ; r40: alt match
-  402 A:9163  00                                 .byt 0              ; r41: alt raster row
+  404 A:9160  09                                 .byt 9              ; r38: horizontal position (chars)
+  405 A:9161  4f                                 .byt 79              ; r39: vertical position (rasterlines)
 
-  404 A:9164                                     .) 
+  407 A:9162  00                                 .byt 0              ; r40: alt match
+  408 A:9163  00                                 .byt 0              ; r41: alt raster row
 
-  406 A:9164                                     .) 
+  410 A:9164                                     .) 
 
-  408 A:9164                                    ; ---------------------------------------------------------
+  412 A:9164                                     .) 
+
+  414 A:9164                                    ; ---------------------------------------------------------
 
 boot_menu.a65
 
@@ -2274,504 +2280,502 @@ boot_rom4.a65
     6 A:a18f                                    USB_COMPANION=$df00           ; USB link
     7 A:a18f                                    USB_CPAGE=$1f           ;$0f ; where USB companion is in flash
 
-    9 A:a18f                                    ; -----------------------
-   10 A:a18f                                    ; copy over PET BASIC4 $b000-$dfff
-   11 A:a18f  a9 c0                              lda #$c0
-   12 A:a191  a2 00 b0                           ldx #$b000
-   13 A:a194  a0 00 30                           ldy #$3000
-   14 A:a197  20 d5 90                           jsr flash2direct_xl
-
-   16 A:a19a                                    ; copy over PET KERNEL4 $f000-$ffff
-   17 A:a19a  a9 f0                              lda #$f0
-   18 A:a19c  a2 00 f0                           ldx #$f000
-   19 A:a19f  a0 00 10                           ldy #$1000
-   20 A:a1a2  20 d5 90                           jsr flash2direct_xl
-
-   22 A:a1a5  ad f8 87                           lda opt0                ; bits 7/6/5 have number of editor ROM
-   23 A:a1a8                                    ; bit 7: 1=orig, 0=patched
-   24 A:a1a8                                    ; bit 6: 1=80 col, 0=40 col
-   25 A:a1a8                                    ; bit 5: 1=c64, 0=PET-N kbd
-   26 A:a1a8                                    ; 000 = PET-N, 40 col, patched
-   27 A:a1a8                                    ; 001 = C64,   40 col, patched
-   28 A:a1a8                                    ; 010 = PET-N, 80 col, patched
-   29 A:a1a8                                    ; 011 = C64,   80 col, patched
-   30 A:a1a8                                    ; 100 = PET-N, 40 col, orig
-   31 A:a1a8                                    ; 101 = C64,   40 col, orig
-   32 A:a1a8                                    ; 110 = PET-N, 80 col, orig
-   33 A:a1a8                                    ; 111 = C64,   80 col, orig
-   34 A:a1a8  29 e0                              and #%11100000
-   35 A:a1aa  4a                                 lsr 
-   36 A:a1ab  a2 00 e0                           ldx #$e000
-   37 A:a1ae  a0 00 10                           ldy #$1000
-   38 A:a1b1  20 da 90                           jsr flash2direct2_xl
-
-   40 A:a1b4                                    ; -----------------------
-   41 A:a1b4                                    ; TODO check monitor bit
-   42 A:a1b4                                    ; TODO overwrites boot code! needs some relocation!
-   43 A:a1b4                                    ; lda #0
-   44 A:a1b4                                    ; ldx #$a000
-   45 A:a1b4                                    ; ldy #$1000
-   46 A:a1b4                                    ; jsr flash2direct3_xl
-
-   48 A:a1b4                                    ; ------------------
-   49 A:a1b4                                    ; check USB patch
-   50 A:a1b4  ad f8 87                           lda opt0                ; from keyboard selection
-   51 A:a1b7  29 08                              and #OPT0_USBKBD
-   52 A:a1b9  d0 07                              bne dousb
-   53 A:a1bb  ad f6 87                           lda opt2                ; from options menu
-   54 A:a1be  29 10                              and #OPT2_USBHID
-   55 A:a1c0  f0 1b                              beq nousb
-   56 A:a1c2                           dousb     
-   57 A:a1c2                                    ; ; copy over petromcomp to destination at $dfxx
-   58 A:a1c2                                    ; lda #USB_CPAGE  ; page in flash
-   59 A:a1c2                                    ; ldx #USB_COMPANION ; target in bank 0
-   60 A:a1c2                                    ; ldy #$0100  ; length
-   61 A:a1c2                                    ; jsr flash2direct_xl
-
-   63 A:a1c2  a2 00 00                           ldx #0
-   64 A:a1c5  bd da a6                 :           lda startupetrom4,x
-   65 A:a1c8  9d 00 df                           sta USB_COMPANION,x
-   66 A:a1cb  e8                                 inx 
-   67 A:a1cc  e0 f3 00                           cpx #endupetrom4-startupetrom4
-   68 A:a1cf  90 f4                              bcc :-
-
-   70 A:a1d1                                    ; set X/Y registers to 8 bit ...
-   71 A:a1d1  e2 10                              sep #%00010000
-   72 A:a1d3                                     .xs 
-
-   74 A:a1d3                                    ; install it into the ROM
-   75 A:a1d3  20 03 df                           jsr USB_COMPANION+3
-
-   77 A:a1d6  c2 10                              rep #%00010000
-   78 A:a1d8                                     .xl 
-
-   80 A:a1d8                                    ; reverse write protect done there
-   81 A:a1d8  a9 00                              lda #0
-   82 A:a1da  8d 01 e8                           sta $e801
-
-   84 A:a1dd                                    ; ------------------
-   85 A:a1dd                                    ; check SD Card
-   86 A:a1dd                           nousb     
-   87 A:a1dd  ad f7 87                           lda opt1
-   88 A:a1e0  29 04                              and #OPT1_SDCARD
-   89 A:a1e2  f0 03                              beq nosd
-   90 A:a1e4  20 05 a2                           jsr patch_sdcard4_xl
-   91 A:a1e7                           nosd      
-   92 A:a1e7                                    ; ------------------
-   93 A:a1e7                                    ; check BASIC4 patch
-   94 A:a1e7                                    ; uses kernel, basic, siec patch bits
-   95 A:a1e7  20 14 a2                           jsr patch_rom4_xl
-
-   98 A:a1ea                                    ; ------------------
-   99 A:a1ea                                    ; memory map setup
-  100 A:a1ea                           b4_orig   
-  101 A:a1ea                                    ; check 80 column bit
-  102 A:a1ea                                    ; TODO move to Viccy on FPGA machines
-  103 A:a1ea  ad f8 87                           lda opt0
-  104 A:a1ed  29 40                              and #%01000000
-  105 A:a1ef  f0 05                              beq col40
-  106 A:a1f1  a9 02                              lda #%00000010
-  107 A:a1f3  8d 00 e8                           sta VCTRL
-  108 A:a1f6                           col40     
-  109 A:a1f6                                    ; check 8296 bit
-  110 A:a1f6  ad f8 87                           lda opt0
-  111 A:a1f9  29 10                              and #%00010000
-  112 A:a1fb  f0 03                              beq not_96
-  113 A:a1fd                                    ; 8296
-  114 A:a1fd  a9 e8                              lda #%11101000
-  115 A:a1ff  2c                                 .byt $2c
-  116 A:a200  a9 e0                    not_96    lda #%11100000
-
-  118 A:a202  4c bf 90                           jmp end
-
-  121 A:a205                           patch_sdcard4_xl .( 
-
-  123 A:a205                                    ; -------------------------------
-  124 A:a205                                    ; SD Card patch
-
-  126 A:a205                                    ; set X/Y registers to 8 bit ...
-  127 A:a205  e2 10                              sep #%00010000
-  128 A:a207                                     .xs 
-
-  130 A:a207  ad f5 87                           lda optu
-  131 A:a20a  29 03                              and #3
-  132 A:a20c  09 08                              ora #8
-  133 A:a20e  20 65 a2                           jsr sdcard_install
-
-  135 A:a211  c2 10                              rep #%00010000
-  136 A:a213                                     .xl 
-  137 A:a213  60                                 rts 
-  138 A:a214                                     .) 
-
-  140 A:a214                           patch_rom4_xl .( 
-  141 A:a214                                    ; set X/Y registers to 8 bit ...
-  142 A:a214  e2 10                              sep #%00010000
-  143 A:a216                                     .xs 
-
-  145 A:a216  20 cd a3                           jsr patch_rom4_init
-
-  147 A:a219  ad f7 87                           lda opt1
-  148 A:a21c  29 40                              and #OPT1_KERNAL
-  149 A:a21e  f0 03                              beq nokern
-  150 A:a220  20 de a3                           jsr patch_kernal4
-  151 A:a223                           nokern    
-  152 A:a223  ad f7 87                           lda opt1
-  153 A:a226  29 20                              and #OPT1_BASIC
-  154 A:a228  f0 03                              beq nobasic
-  155 A:a22a  20 ee a3                           jsr patch_basic4
-  156 A:a22d                           nobasic   
-  157 A:a22d  20 d7 a3                           jsr patch_rom4_end
+    9 A:a18f                                    MAP_USB=15
+   10 A:a18f                                    STPFL=$9b
+   11 A:a18f                                    driver_init=$1000
+
+   13 A:a18f                                    ; -----------------------
+   14 A:a18f                                    ; copy over PET BASIC4 $b000-$dfff
+   15 A:a18f  a9 c0                              lda #$c0
+   16 A:a191  a2 00 b0                           ldx #$b000
+   17 A:a194  a0 00 30                           ldy #$3000
+   18 A:a197  20 d5 90                           jsr flash2direct_xl
+
+   20 A:a19a                                    ; copy over PET KERNEL4 $f000-$ffff
+   21 A:a19a  a9 f0                              lda #$f0
+   22 A:a19c  a2 00 f0                           ldx #$f000
+   23 A:a19f  a0 00 10                           ldy #$1000
+   24 A:a1a2  20 d5 90                           jsr flash2direct_xl
+
+   26 A:a1a5  ad f8 87                           lda opt0                ; bits 7/6/5 have number of editor ROM
+   27 A:a1a8                                    ; bit 7: 1=orig, 0=patched
+   28 A:a1a8                                    ; bit 6: 1=80 col, 0=40 col
+   29 A:a1a8                                    ; bit 5: 1=c64, 0=PET-N kbd
+   30 A:a1a8                                    ; 000 = PET-N, 40 col, patched
+   31 A:a1a8                                    ; 001 = C64,   40 col, patched
+   32 A:a1a8                                    ; 010 = PET-N, 80 col, patched
+   33 A:a1a8                                    ; 011 = C64,   80 col, patched
+   34 A:a1a8                                    ; 100 = PET-N, 40 col, orig
+   35 A:a1a8                                    ; 101 = C64,   40 col, orig
+   36 A:a1a8                                    ; 110 = PET-N, 80 col, orig
+   37 A:a1a8                                    ; 111 = C64,   80 col, orig
+   38 A:a1a8  29 e0                              and #%11100000
+   39 A:a1aa  4a                                 lsr 
+   40 A:a1ab  a2 00 e0                           ldx #$e000
+   41 A:a1ae  a0 00 10                           ldy #$1000
+   42 A:a1b1  20 da 90                           jsr flash2direct2_xl
+
+   44 A:a1b4                                    ; -----------------------
+   45 A:a1b4                                    ; TODO check monitor bit
+   46 A:a1b4                                    ; TODO overwrites boot code! needs some relocation!
+   47 A:a1b4                                    ; lda #0
+   48 A:a1b4                                    ; ldx #$a000
+   49 A:a1b4                                    ; ldy #$1000
+   50 A:a1b4                                    ; jsr flash2direct3_xl
+
+   52 A:a1b4                                    ; ------------------
+   53 A:a1b4                                    ; check USB patch
+   54 A:a1b4  ad f8 87                           lda opt0                ; from keyboard selection
+   55 A:a1b7  29 08                              and #OPT0_USBKBD
+   56 A:a1b9  d0 07                              bne dousb
+   57 A:a1bb  ad f6 87                           lda opt2                ; from options menu
+   58 A:a1be  29 10                              and #OPT2_USBHID
+   59 A:a1c0  f0 1b                              beq nousb
+   60 A:a1c2                           dousb     
+   61 A:a1c2  a2 00 00                           ldx #0
+   62 A:a1c5  bd 9d a6                 :           lda usbcomp_start,x
+   63 A:a1c8  9d 00 df                           sta USB_COMPANION,x
+   64 A:a1cb  e8                                 inx 
+   65 A:a1cc  e0 79 00                           cpx #usbcomp_end-usbcomp_start
+   66 A:a1cf  90 f4                              bcc :-
+
+   68 A:a1d1                                    ; set X/Y registers to 8 bit ...
+   69 A:a1d1  e2 10                              sep #%00010000
+   70 A:a1d3                                     .xs 
+
+   72 A:a1d3                                    ; install it into the ROM
+   73 A:a1d3  20 03 df                           jsr USB_COMPANION+3
+
+   75 A:a1d6  c2 10                              rep #%00010000
+   76 A:a1d8                                     .xl 
+
+   78 A:a1d8                                    ; reverse write protect done there
+   79 A:a1d8  a9 00                              lda #0
+   80 A:a1da  8d 01 e8                           sta $e801
+
+   82 A:a1dd                                    ; ------------------
+   83 A:a1dd                                    ; check SD Card
+   84 A:a1dd                           nousb     
+   85 A:a1dd  ad f7 87                           lda opt1
+   86 A:a1e0  29 04                              and #OPT1_SDCARD
+   87 A:a1e2  f0 03                              beq nosd
+   88 A:a1e4  20 05 a2                           jsr patch_sdcard4_xl
+   89 A:a1e7                           nosd      
+   90 A:a1e7                                    ; ------------------
+   91 A:a1e7                                    ; check BASIC4 patch
+   92 A:a1e7                                    ; uses kernel, basic, siec patch bits
+   93 A:a1e7  20 14 a2                           jsr patch_rom4_xl
+
+   96 A:a1ea                                    ; ------------------
+   97 A:a1ea                                    ; memory map setup
+   98 A:a1ea                           b4_orig   
+   99 A:a1ea                                    ; check 80 column bit
+  100 A:a1ea                                    ; TODO move to Viccy on FPGA machines
+  101 A:a1ea  ad f8 87                           lda opt0
+  102 A:a1ed  29 40                              and #%01000000
+  103 A:a1ef  f0 05                              beq col40
+  104 A:a1f1  a9 02                              lda #%00000010
+  105 A:a1f3  8d 00 e8                           sta VCTRL
+  106 A:a1f6                           col40     
+  107 A:a1f6                                    ; check 8296 bit
+  108 A:a1f6  ad f8 87                           lda opt0
+  109 A:a1f9  29 10                              and #%00010000
+  110 A:a1fb  f0 03                              beq not_96
+  111 A:a1fd                                    ; 8296
+  112 A:a1fd  a9 e8                              lda #%11101000
+  113 A:a1ff  2c                                 .byt $2c
+  114 A:a200  a9 e0                    not_96    lda #%11100000
+
+  116 A:a202  4c bf 90                           jmp end
+
+  119 A:a205                           patch_sdcard4_xl .( 
+
+  121 A:a205                                    ; -------------------------------
+  122 A:a205                                    ; SD Card patch
+
+  124 A:a205                                    ; set X/Y registers to 8 bit ...
+  125 A:a205  e2 10                              sep #%00010000
+  126 A:a207                                     .xs 
+
+  128 A:a207  ad f5 87                           lda optu
+  129 A:a20a  29 03                              and #3
+  130 A:a20c  09 08                              ora #8
+  131 A:a20e  20 65 a2                           jsr sdcard_install
+
+  133 A:a211  c2 10                              rep #%00010000
+  134 A:a213                                     .xl 
+  135 A:a213  60                                 rts 
+  136 A:a214                                     .) 
+
+  138 A:a214                           patch_rom4_xl .( 
+  139 A:a214                                    ; set X/Y registers to 8 bit ...
+  140 A:a214  e2 10                              sep #%00010000
+  141 A:a216                                     .xs 
+
+  143 A:a216  20 cd a3                           jsr patch_rom4_init
+
+  145 A:a219  ad f7 87                           lda opt1
+  146 A:a21c  29 40                              and #OPT1_KERNAL
+  147 A:a21e  f0 03                              beq nokern
+  148 A:a220  20 de a3                           jsr patch_kernal4
+  149 A:a223                           nokern    
+  150 A:a223  ad f7 87                           lda opt1
+  151 A:a226  29 20                              and #OPT1_BASIC
+  152 A:a228  f0 03                              beq nobasic
+  153 A:a22a  20 ee a3                           jsr patch_basic4
+  154 A:a22d                           nobasic   
+  155 A:a22d  20 d7 a3                           jsr patch_rom4_end
 
-  159 A:a230  c2 10                              rep #%00010000
-  160 A:a232                                     .xl 
-  161 A:a232                                    ; -------------------------------
-  162 A:a232                                    ; IEEE speed patch
+  157 A:a230  c2 10                              rep #%00010000
+  158 A:a232                                     .xl 
+  159 A:a232                                    ; -------------------------------
+  160 A:a232                                    ; IEEE speed patch
 
-  164 A:a232                                    ; patch target area start
-  165 A:a232  a2 20 fe                           ldx #IEEE_PATCH
+  162 A:a232                                    ; patch target area start
+  163 A:a232  a2 20 fe                           ldx #IEEE_PATCH
 
-  167 A:a235                                    ; from http:
-  168 A:a235  a9 4c                              lda #$4c
-  169 A:a237  cd d8 f0                           cmp $f0d8              ; is already patched with JMP (e.g. SDCard)
-  170 A:a23a  d0 06                              bne nopatch
+  165 A:a235                                    ; from http:
+  166 A:a235  a9 4c                              lda #$4c
+  167 A:a237  cd d8 f0                           cmp $f0d8              ; is already patched with JMP (e.g. SDCard)
+  168 A:a23a  d0 06                              bne nopatch
 
-  172 A:a23c  ac d9 f0                           ldy $f0d9              ; XR/YR is 16 bit, copy over current JMP target to
-  173 A:a23f  8c 63 a2                           sty jmptarget                ; patch JMP target
-
-  175 A:a242  8d d8 f0                 nopatch   sta $f0d8           ; JMP
-  176 A:a245  8e d9 f0                           stx $f0d9              ; 16 bit address
-
-  178 A:a248  a0 00 00                           ldy #0
-  179 A:a24b  b9 58 a2                 pl0       lda PATCH4_0,y
-  180 A:a24e  95 00                              sta 0,x
-  181 A:a250  e8                                 inx 
-  182 A:a251  c8                                 iny 
-  183 A:a252  c0 0c 00                           cpy #12
-  184 A:a255  d0 f4                              bne pl0
-
-  186 A:a257  60                                 rts 
-
-  188 A:a258                                    ; this patch code is in itself all relative,
-  189 A:a258                                    ; so not address calculations are needed
-  190 A:a258                           PATCH4_0  .( 
-  191 A:a258  a9 04                              lda #4
-  192 A:a25a  38                       l1        sec 
-  193 A:a25b  e9 01                              sbc #1
-  194 A:a25d  d0 fb                              bne l1
-  195 A:a25f  ad 40 e8                           lda $e840
-  196 A:a262                                    jmptarget=*+1
-  197 A:a262  4c db f0                           jmp $f0db
-  198 A:a265                                     .) 
-
-  200 A:a265                                     .)                    ; end patch_rom4_xl
-
-  202 A:a265                                     .xs 
-
-  204 A:a265                                    ; --------------------------------------------------------
-  205 A:a265                                    ; This installs the patches to link the CMDR-DOS into the
-  206 A:a265                                    ; PET BASIC 4 ROM. It requires that the DOS "rom.bin" is
-  207 A:a265                                    ; loaded into the bank 7 (14 as value for $e802) at $4000.
-  208 A:a265                                    ; Also, it must run in the upper half of bank 0, as it
-  209 A:a265                                    ; switches the lower half to bank 7, to run the dos_init.
-  210 A:a265                                    ; 
-  211 A:a265                                    ; It also requires the value of "SDC_COMPANION" to be set
-  212 A:a265                                    ; to the place in the ROM where to copy the link code.
-
-  214 A:a265                                     .( 
-
-  216 A:a265                                    ; address of the DOS in DOSBANK
-  217 A:a265                                    DOS=$4000
-
-  219 A:a265                                    ; DOS jumptable
-  220 A:a265                                    dos_seclstn=DOS+3*0
-  221 A:a265                                    dos_sectlk=DOS+3*1
-  222 A:a265                                    dos_iecin=DOS+3*2
-  223 A:a265                                    dos_iecout=DOS+3*3
-  224 A:a265                                    dos_untlk=DOS+3*4 ; note: currently no-op
-  225 A:a265                                    dos_unlsn=DOS+3*5
-  226 A:a265                                    dos_listn=DOS+3*6
-  227 A:a265                                    dos_talk=DOS+3*7 ; note: currently same as listn
-
-  229 A:a265                                    dos_init=DOS+3*8
-
-  231 A:a265                                    ; banking
-
-  234 A:a265                                     .assert BANK=$e802,"BANK register incorrectly defined"
-
-  240 A:a265                                    DOSBANK=15           ; DOS runs in memory mapped from $078000-$07ffff
-  241 A:a265                                    BASBANK=0           ; BASIC runs in bank 0
-
-  243 A:a265                                    ; variables in BASIC address space
-
-  245 A:a265                                    flags=$03fe           ; for testing for now
-
-  247 A:a265                                    curdev=$d4           ; current device (unit) number
-  248 A:a265                                    cursec=$d3           ; current secondary address
-
-  250 A:a265                                    status=$96           ; IEEE status
-
-  252 A:a265                                    ; DOS bank vars
-
-  254 A:a265                                    dos_status=$0287           ; from dos inc/banks.inc
-
-  256 A:a265                                    ; constants (flags) - checked for with BVx/BPL/BMI
-
-  258 A:a265                                    DOS_TALK=$80
-  259 A:a265                                    DOS_LISTEN=$40
-
-  261 A:a265                                    ; install the patch and binding
-
-  263 A:a265                           sdcard_install .( 
-  264 A:a265  48                                 pha 
-
-  266 A:a266  a9 60                              lda #%01100000
-  267 A:a268  8d 01 e8                           sta $e801              ; make ROM writable
-
-  269 A:a26b                                    ; copy over the patch into ROM
-  270 A:a26b  a2 eb                              ldx #rompatch_end-rompatch_start
-  271 A:a26d  bd e1 a2                 l0        lda PATCH-1,x
-  272 A:a270  9d 2f fe                           sta SDC_COMPANION-1,x
-  273 A:a273  ca                                 dex 
-  274 A:a274  d0 f7                              bne l0
-
-  276 A:a276  a9 4c                              lda #$4c             ; JMP
-  277 A:a278  a2 30                              ldx #<talk_listn_unlstn
-  278 A:a27a  a0 fe                              ldy #>talk_listn_unlstn
-  279 A:a27c  8d d8 f0                           sta $f0d8              ; note this is called for TALK, LISTEN and UNLISTEN
-  280 A:a27f  8e d9 f0                           stx $f0d9              ; with either $20, $40, or $3F in A (and PHA'd)
-  281 A:a282  8c da f0                           sty $f0da
-
-  283 A:a285  a2 d1                              ldx #<seclstn
-  284 A:a287  a0 fe                              ldy #>seclstn
-  285 A:a289  8d 45 f1                           sta $f145
-  286 A:a28c  8e 46 f1                           stx $f146
-  287 A:a28f  8c 47 f1                           sty $f147
-
-  289 A:a292  a2 c4                              ldx #<untlk
-  290 A:a294  a0 fe                              ldy #>untlk
-  291 A:a296  8d ae f1                           sta $f1ae
-  292 A:a299  8e af f1                           stx $f1af
-  293 A:a29c  8c b0 f1                           sty $f1b0
-
-  295 A:a29f  a2 f1                              ldx #<iecin
-  296 A:a2a1  a0 fe                              ldy #>iecin
-  297 A:a2a3  8d c2 f1                           sta $f1c2
-  298 A:a2a6  8e c3 f1                           stx $f1c3
-  299 A:a2a9  8c c4 f1                           sty $f1c4
-
-  301 A:a2ac  a2 7d                              ldx #<sectlk
-  302 A:a2ae  a0 fe                              ldy #>sectlk
-  303 A:a2b0  8d 95 f1                           sta $f195
-  304 A:a2b3  8e 96 f1                           stx $f196
-  305 A:a2b6  8c 97 f1                           sty $f197
-
-  307 A:a2b9  a2 9b                              ldx #<iecout
-  308 A:a2bb  a0 fe                              ldy #>iecout
-  309 A:a2bd  8d 9e f1                           sta $f19e
-  310 A:a2c0  8e 9f f1                           stx $f19f
-  311 A:a2c3  8c a0 f1                           sty $f1a0
-  312 A:a2c6  a9 ea                              lda #$ea             ; NOP
-  313 A:a2c8  8d a1 f1                           sta $f1a1
-
-  315 A:a2cb  a9 e0                              lda #%11100000
-  316 A:a2cd  8d 01 e8                           sta $e801              ; write protect ROM
-
-  318 A:a2d0                                    ; init the DOS
-
-  320 A:a2d0  68                                 pla                    ; dos unit
-
-  322 A:a2d1  08                                 php 
-  323 A:a2d2  78                                 sei 
-  324 A:a2d3  a2 0f                              ldx #DOSBANK
-  325 A:a2d5  8e 02 e8                           stx BANK
-  326 A:a2d8  20 18 40                           jsr dos_init
-  327 A:a2db  a9 00                              lda #BASBANK
-  328 A:a2dd  8d 02 e8                           sta BANK
-  329 A:a2e0  28                                 plp 
-  330 A:a2e1  60                                 rts 
-  331 A:a2e2                                     .) 
-
-  333 A:a2e2                                    ; -------------------------------------------------------
-  334 A:a2e2                                    ; the following code is copied into the ROM and called
-  335 A:a2e2                                    ; from the patches into the IEEE code
-
-  337 A:a2e2                           PATCH     
-  337 A:a2e2                                    
-  338 A:a2e2                                    ; assemble for ROM address
-
-  340 A:a2e2                                     *= SDC_COMPANION
-  341 A:fe30                           rompatch_start 
-  341 A:fe30                                    
-
-  343 A:fe30                                    ; AC is free. It needs to be #$40 when going back
-  344 A:fe30                           talk_listn_unlstn .( 
-  345 A:fe30  c9 3f                              cmp #$3f
-  346 A:fe32  f0 32                              beq unlisten
-
-  348 A:fe34  08                                 php 
-  349 A:fe35  da                                 phx 
-  350 A:fe36  78                                 sei 
-  351 A:fe37  a5 d4                              lda curdev
-  352 A:fe39  a2 0f                              ldx #DOSBANK
-  353 A:fe3b  8e 02 e8                           stx BANK
-  354 A:fe3e  20 15 40                           jsr dos_talk                ; note: DOS currently has same code for talk && listen 
-  355 A:fe41  a2 00                              ldx #BASBANK
-  356 A:fe43  8e 02 e8                           stx BANK
-  357 A:fe46  ba                                 tsx 
-
-  359 A:fe47  ad fe 03                           lda flags
-  360 A:fe4a  29 3f                              and #%00111111
-  361 A:fe4c  b0 0d                              bcs no_dev
-  362 A:fe4e                                    ; move the IEEE TALK/LISTEN commands into right bits for flags
-  363 A:fe4e                                     .assert DOS_LISTEN=$40,"check on flag"
-  364 A:fe4e                                     .assert DOS_TALK=$80,"check on flag"
-  365 A:fe4e  4a                                 lsr                    ; keep C for bit 0 ...
-  366 A:fe4f  1d 03 01                           ora $0103,x            ; $40 for talk, $20 for listen
-  367 A:fe52  2a                                 rol                    ; ... restore bit 0
-  368 A:fe53  8d fe 03                           sta flags
-  369 A:fe56  fa                                 plx 
-  370 A:fe57  28                                 plp 
-  371 A:fe58  68                                 pla                    ; pop TALK/LISTEN flag saved by ROM 
-  372 A:fe59  18                                 clc 
-  373 A:fe5a  60                                 rts 
-
-  375 A:fe5b  8d fe 03                 no_dev    sta flags
-  376 A:fe5e  fa                                 plx 
-  377 A:fe5f  28                                 plp 
-  378 A:fe60                           orig_unlsn 
-  379 A:fe60  ad 40 e8                           lda $e840
-  380 A:fe63  4c db f0                           jmp $f0db
-
-  382 A:fe66                           unlisten  
-  383 A:fe66                                     .assert DOS_LISTEN=$40,"check on flag"
-  384 A:fe66  2c fe 03                           bit flags
-  385 A:fe69  50 f5                              bvc orig_unlsn
-  386 A:fe6b  08                                 php 
-  387 A:fe6c  78                                 sei 
-  388 A:fe6d  a9 0f                              lda #DOSBANK
-  389 A:fe6f  8d 02 e8                           sta BANK
-  390 A:fe72  20 0f 40                           jsr dos_unlsn
-  391 A:fe75  a9 00                              lda #BASBANK
-  392 A:fe77  8d 02 e8                           sta BANK
-  393 A:fe7a  28                                 plp 
-  394 A:fe7b  68                                 pla 
-  395 A:fe7c  60                                 rts 
-  396 A:fe7d                                     .) 
-
-  398 A:fe7d                           sectlk    .( 
-  399 A:fe7d                                     .assert DOS_TALK=$80,"check on flag"
-  400 A:fe7d  2c fe 03                           bit flags
-  401 A:fe80  10 13                              bpl not_dos
-  402 A:fe82                           fix_sectalk 
-  403 A:fe82  da                                 phx 
-  404 A:fe83  08                                 php 
-  405 A:fe84  78                                 sei 
-  406 A:fe85  a2 0f                              ldx #DOSBANK
-  407 A:fe87  8e 02 e8                           stx BANK
-  408 A:fe8a  20 03 40                           jsr dos_sectlk
-  409 A:fe8d  a2 00                              ldx #BASBANK
-  410 A:fe8f  8e 02 e8                           stx BANK
-  411 A:fe92  28                                 plp 
-  412 A:fe93  fa                                 plx 
-  413 A:fe94  60                                 rts 
-  414 A:fe95                           not_dos   
-  415 A:fe95  20 09 f1                           jsr $f109
-  416 A:fe98  4c 98 f1                           jmp $f198
-  417 A:fe9b                                     .) 
-
-  419 A:fe9b                           iecout    .( 
-  420 A:fe9b                                     .assert DOS_LISTEN=$40,"check on flag"
-  421 A:fe9b  2c fe 03                           bit flags
-  422 A:fe9e  50 1a                              bvc not_dos
-  423 A:fea0  da                                 phx 
-  424 A:fea1  08                                 php 
-  425 A:fea2  78                                 sei 
-  426 A:fea3  a2 0f                              ldx #DOSBANK
-  427 A:fea5  8e 02 e8                           stx BANK
-  428 A:fea8  20 09 40                           jsr dos_iecout
-  429 A:feab  ad 87 02                           lda dos_status
-  430 A:feae  a2 00                              ldx #BASBANK
-  431 A:feb0  8e 02 e8                           stx BANK
-  432 A:feb3  05 96                              ora status
-  433 A:feb5  85 96                              sta status
-  434 A:feb7  28                                 plp 
-  435 A:feb8  fa                                 plx 
-  436 A:feb9  60                                 rts 
-  437 A:feba                           not_dos   
-  438 A:feba  24 a0                              bit $a0
-  439 A:febc  30 03                              bmi l1
-  440 A:febe  4c a2 f1                           jmp $f1a2
-  441 A:fec1  4c a6 f1                 l1        jmp $f1a6
-  442 A:fec4                                     .) 
-
-  444 A:fec4                           untlk     .( 
-  445 A:fec4                                     .assert DOS_TALK=$80,"check on flag"
-  446 A:fec4  2c fe 03                           bit flags
-  447 A:fec7  10 01                              bpl not_dos
-  448 A:fec9                                    ; no-op
-  449 A:fec9  60                                 rts 
-  450 A:feca                           not_dos   
-  451 A:feca  ad 40 e8                           lda $e840
-  452 A:fecd  4c b1 f1                           jmp $f1b1
-  453 A:fed0  60                                 rts 
-  454 A:fed1                                     .) 
-
-  456 A:fed1                           seclstn   .( 
-  457 A:fed1                                     .assert DOS_LISTEN=$40,"check on flag"
-  458 A:fed1  2c fe 03                           bit flags
-  459 A:fed4  30 ac                              bmi fix_sectalk                ; catch buggy softare calling seclisten instead of sectalk
-  460 A:fed6  50 13                              bvc not_dos
-  461 A:fed8  da                                 phx 
-  462 A:fed9  08                                 php 
-  463 A:feda  78                                 sei 
-  464 A:fedb  a2 0f                              ldx #DOSBANK
-  465 A:fedd  8e 02 e8                           stx BANK
-  466 A:fee0  20 00 40                           jsr dos_seclstn
-  467 A:fee3  a2 00                              ldx #BASBANK
-  468 A:fee5  8e 02 e8                           stx BANK
-  469 A:fee8  28                                 plp 
-  470 A:fee9  fa                                 plx 
-  471 A:feea  60                                 rts 
-
-  473 A:feeb  20 09 f1                 not_dos   jsr $f109
-  474 A:feee  4c 48 f1                           jmp $f148
-  475 A:fef1                                     .) 
-
-  477 A:fef1                           iecin     .( 
-  478 A:fef1                                     .assert DOS_TALK=$80,"check on flag"
-  479 A:fef1  2c fe 03                           bit flags
-  480 A:fef4  10 1f                              bpl not_dos
-  481 A:fef6  08                                 php 
-  482 A:fef7  da                                 phx 
-  483 A:fef8  5a                                 phy 
-  484 A:fef9  78                                 sei 
-  485 A:fefa  a2 0f                              ldx #DOSBANK
-  486 A:fefc  8e 02 e8                           stx BANK
-  487 A:feff  20 06 40                           jsr dos_iecin
-  488 A:ff02  ac 87 02                           ldy dos_status
-  489 A:ff05  a2 00                              ldx #BASBANK
-  490 A:ff07  8e 02 e8                           stx BANK
-  491 A:ff0a  48                                 pha 
-  492 A:ff0b  98                                 tya 
-  493 A:ff0c  05 96                              ora status
-  494 A:ff0e  85 96                              sta status
-  495 A:ff10  68                                 pla 
-  496 A:ff11  7a                                 ply 
-  497 A:ff12  fa                                 plx 
-  498 A:ff13  28                                 plp 
-  499 A:ff14  60                                 rts 
-  500 A:ff15                           not_dos   
-  501 A:ff15  8d 21 e8                           sta $e821
-  502 A:ff18  4c c5 f1                           jmp $f1c5
-  503 A:ff1b                                     .) 
-
-  506 A:ff1b                           rompatch_end 
-  506 A:ff1b                                    
-
-  508 A:ff1b                                    ; fix up PC 
-  509 A:ff1b                                     *= PATCH+(rompatch_end-rompatch_start)
-
-  511 A:a3cd                                     .) 
+  170 A:a23c  ac d9 f0                           ldy $f0d9              ; XR/YR is 16 bit, copy over current JMP target to
+  171 A:a23f  8c 63 a2                           sty jmptarget                ; patch JMP target
+
+  173 A:a242  8d d8 f0                 nopatch   sta $f0d8           ; JMP
+  174 A:a245  8e d9 f0                           stx $f0d9              ; 16 bit address
+
+  176 A:a248  a0 00 00                           ldy #0
+  177 A:a24b  b9 58 a2                 pl0       lda PATCH4_0,y
+  178 A:a24e  95 00                              sta 0,x
+  179 A:a250  e8                                 inx 
+  180 A:a251  c8                                 iny 
+  181 A:a252  c0 0c 00                           cpy #12
+  182 A:a255  d0 f4                              bne pl0
+
+  184 A:a257  60                                 rts 
+
+  186 A:a258                                    ; this patch code is in itself all relative,
+  187 A:a258                                    ; so not address calculations are needed
+  188 A:a258                           PATCH4_0  .( 
+  189 A:a258  a9 04                              lda #4
+  190 A:a25a  38                       l1        sec 
+  191 A:a25b  e9 01                              sbc #1
+  192 A:a25d  d0 fb                              bne l1
+  193 A:a25f  ad 40 e8                           lda $e840
+  194 A:a262                                    jmptarget=*+1
+  195 A:a262  4c db f0                           jmp $f0db
+  196 A:a265                                     .) 
+
+  198 A:a265                                     .)                    ; end patch_rom4_xl
+
+  200 A:a265                                     .xs 
+
+  202 A:a265                                    ; --------------------------------------------------------
+  203 A:a265                                    ; This installs the patches to link the CMDR-DOS into the
+  204 A:a265                                    ; PET BASIC 4 ROM. It requires that the DOS "rom.bin" is
+  205 A:a265                                    ; loaded into the bank 7 (14 as value for $e802) at $4000.
+  206 A:a265                                    ; Also, it must run in the upper half of bank 0, as it
+  207 A:a265                                    ; switches the lower half to bank 7, to run the dos_init.
+  208 A:a265                                    ; 
+  209 A:a265                                    ; It also requires the value of "SDC_COMPANION" to be set
+  210 A:a265                                    ; to the place in the ROM where to copy the link code.
+
+  212 A:a265                                     .( 
+
+  214 A:a265                                    ; address of the DOS in DOSBANK
+  215 A:a265                                    DOS=$4000
+
+  217 A:a265                                    ; DOS jumptable
+  218 A:a265                                    dos_seclstn=DOS+3*0
+  219 A:a265                                    dos_sectlk=DOS+3*1
+  220 A:a265                                    dos_iecin=DOS+3*2
+  221 A:a265                                    dos_iecout=DOS+3*3
+  222 A:a265                                    dos_untlk=DOS+3*4 ; note: currently no-op
+  223 A:a265                                    dos_unlsn=DOS+3*5
+  224 A:a265                                    dos_listn=DOS+3*6
+  225 A:a265                                    dos_talk=DOS+3*7 ; note: currently same as listn
+
+  227 A:a265                                    dos_init=DOS+3*8
+
+  229 A:a265                                    ; banking
+
+  232 A:a265                                     .assert BANK=$e802,"BANK register incorrectly defined"
+
+  238 A:a265                                    DOSBANK=15           ; DOS runs in memory mapped from $078000-$07ffff
+  239 A:a265                                    BASBANK=0           ; BASIC runs in bank 0
+
+  241 A:a265                                    ; variables in BASIC address space
+
+  243 A:a265                                    flags=$03fe           ; for testing for now
+
+  245 A:a265                                    curdev=$d4           ; current device (unit) number
+  246 A:a265                                    cursec=$d3           ; current secondary address
+
+  248 A:a265                                    status=$96           ; IEEE status
+
+  250 A:a265                                    ; DOS bank vars
+
+  252 A:a265                                    dos_status=$0287           ; from dos inc/banks.inc
+
+  254 A:a265                                    ; constants (flags) - checked for with BVx/BPL/BMI
+
+  256 A:a265                                    DOS_TALK=$80
+  257 A:a265                                    DOS_LISTEN=$40
+
+  259 A:a265                                    ; install the patch and binding
+
+  261 A:a265                           sdcard_install .( 
+  262 A:a265  48                                 pha 
+
+  264 A:a266  a9 60                              lda #%01100000
+  265 A:a268  8d 01 e8                           sta $e801              ; make ROM writable
+
+  267 A:a26b                                    ; copy over the patch into ROM
+  268 A:a26b  a2 eb                              ldx #rompatch_end-rompatch_start
+  269 A:a26d  bd e1 a2                 l0        lda PATCH-1,x
+  270 A:a270  9d 2f fe                           sta SDC_COMPANION-1,x
+  271 A:a273  ca                                 dex 
+  272 A:a274  d0 f7                              bne l0
+
+  274 A:a276  a9 4c                              lda #$4c             ; JMP
+  275 A:a278  a2 30                              ldx #<talk_listn_unlstn
+  276 A:a27a  a0 fe                              ldy #>talk_listn_unlstn
+  277 A:a27c  8d d8 f0                           sta $f0d8              ; note this is called for TALK, LISTEN and UNLISTEN
+  278 A:a27f  8e d9 f0                           stx $f0d9              ; with either $20, $40, or $3F in A (and PHA'd)
+  279 A:a282  8c da f0                           sty $f0da
+
+  281 A:a285  a2 d1                              ldx #<seclstn
+  282 A:a287  a0 fe                              ldy #>seclstn
+  283 A:a289  8d 45 f1                           sta $f145
+  284 A:a28c  8e 46 f1                           stx $f146
+  285 A:a28f  8c 47 f1                           sty $f147
+
+  287 A:a292  a2 c4                              ldx #<untlk
+  288 A:a294  a0 fe                              ldy #>untlk
+  289 A:a296  8d ae f1                           sta $f1ae
+  290 A:a299  8e af f1                           stx $f1af
+  291 A:a29c  8c b0 f1                           sty $f1b0
+
+  293 A:a29f  a2 f1                              ldx #<iecin
+  294 A:a2a1  a0 fe                              ldy #>iecin
+  295 A:a2a3  8d c2 f1                           sta $f1c2
+  296 A:a2a6  8e c3 f1                           stx $f1c3
+  297 A:a2a9  8c c4 f1                           sty $f1c4
+
+  299 A:a2ac  a2 7d                              ldx #<sectlk
+  300 A:a2ae  a0 fe                              ldy #>sectlk
+  301 A:a2b0  8d 95 f1                           sta $f195
+  302 A:a2b3  8e 96 f1                           stx $f196
+  303 A:a2b6  8c 97 f1                           sty $f197
+
+  305 A:a2b9  a2 9b                              ldx #<iecout
+  306 A:a2bb  a0 fe                              ldy #>iecout
+  307 A:a2bd  8d 9e f1                           sta $f19e
+  308 A:a2c0  8e 9f f1                           stx $f19f
+  309 A:a2c3  8c a0 f1                           sty $f1a0
+  310 A:a2c6  a9 ea                              lda #$ea             ; NOP
+  311 A:a2c8  8d a1 f1                           sta $f1a1
+
+  313 A:a2cb  a9 e0                              lda #%11100000
+  314 A:a2cd  8d 01 e8                           sta $e801              ; write protect ROM
+
+  316 A:a2d0                                    ; init the DOS
+
+  318 A:a2d0  68                                 pla                    ; dos unit
+
+  320 A:a2d1  08                                 php 
+  321 A:a2d2  78                                 sei 
+  322 A:a2d3  a2 0f                              ldx #DOSBANK
+  323 A:a2d5  8e 02 e8                           stx BANK
+  324 A:a2d8  20 18 40                           jsr dos_init
+  325 A:a2db  a9 00                              lda #BASBANK
+  326 A:a2dd  8d 02 e8                           sta BANK
+  327 A:a2e0  28                                 plp 
+  328 A:a2e1  60                                 rts 
+  329 A:a2e2                                     .) 
+
+  331 A:a2e2                                    ; -------------------------------------------------------
+  332 A:a2e2                                    ; the following code is copied into the ROM and called
+  333 A:a2e2                                    ; from the patches into the IEEE code
+
+  335 A:a2e2                           PATCH     
+  335 A:a2e2                                    
+  336 A:a2e2                                    ; assemble for ROM address
+
+  338 A:a2e2                                     *= SDC_COMPANION
+  339 A:fe30                           rompatch_start 
+  339 A:fe30                                    
+
+  341 A:fe30                                    ; AC is free. It needs to be #$40 when going back
+  342 A:fe30                           talk_listn_unlstn .( 
+  343 A:fe30  c9 3f                              cmp #$3f
+  344 A:fe32  f0 32                              beq unlisten
+
+  346 A:fe34  08                                 php 
+  347 A:fe35  da                                 phx 
+  348 A:fe36  78                                 sei 
+  349 A:fe37  a5 d4                              lda curdev
+  350 A:fe39  a2 0f                              ldx #DOSBANK
+  351 A:fe3b  8e 02 e8                           stx BANK
+  352 A:fe3e  20 15 40                           jsr dos_talk                ; note: DOS currently has same code for talk && listen 
+  353 A:fe41  a2 00                              ldx #BASBANK
+  354 A:fe43  8e 02 e8                           stx BANK
+  355 A:fe46  ba                                 tsx 
+
+  357 A:fe47  ad fe 03                           lda flags
+  358 A:fe4a  29 3f                              and #%00111111
+  359 A:fe4c  b0 0d                              bcs no_dev
+  360 A:fe4e                                    ; move the IEEE TALK/LISTEN commands into right bits for flags
+  361 A:fe4e                                     .assert DOS_LISTEN=$40,"check on flag"
+  362 A:fe4e                                     .assert DOS_TALK=$80,"check on flag"
+  363 A:fe4e  4a                                 lsr                    ; keep C for bit 0 ...
+  364 A:fe4f  1d 03 01                           ora $0103,x            ; $40 for talk, $20 for listen
+  365 A:fe52  2a                                 rol                    ; ... restore bit 0
+  366 A:fe53  8d fe 03                           sta flags
+  367 A:fe56  fa                                 plx 
+  368 A:fe57  28                                 plp 
+  369 A:fe58  68                                 pla                    ; pop TALK/LISTEN flag saved by ROM 
+  370 A:fe59  18                                 clc 
+  371 A:fe5a  60                                 rts 
+
+  373 A:fe5b  8d fe 03                 no_dev    sta flags
+  374 A:fe5e  fa                                 plx 
+  375 A:fe5f  28                                 plp 
+  376 A:fe60                           orig_unlsn 
+  377 A:fe60  ad 40 e8                           lda $e840
+  378 A:fe63  4c db f0                           jmp $f0db
+
+  380 A:fe66                           unlisten  
+  381 A:fe66                                     .assert DOS_LISTEN=$40,"check on flag"
+  382 A:fe66  2c fe 03                           bit flags
+  383 A:fe69  50 f5                              bvc orig_unlsn
+  384 A:fe6b  08                                 php 
+  385 A:fe6c  78                                 sei 
+  386 A:fe6d  a9 0f                              lda #DOSBANK
+  387 A:fe6f  8d 02 e8                           sta BANK
+  388 A:fe72  20 0f 40                           jsr dos_unlsn
+  389 A:fe75  a9 00                              lda #BASBANK
+  390 A:fe77  8d 02 e8                           sta BANK
+  391 A:fe7a  28                                 plp 
+  392 A:fe7b  68                                 pla 
+  393 A:fe7c  60                                 rts 
+  394 A:fe7d                                     .) 
+
+  396 A:fe7d                           sectlk    .( 
+  397 A:fe7d                                     .assert DOS_TALK=$80,"check on flag"
+  398 A:fe7d  2c fe 03                           bit flags
+  399 A:fe80  10 13                              bpl not_dos
+  400 A:fe82                           fix_sectalk 
+  401 A:fe82  da                                 phx 
+  402 A:fe83  08                                 php 
+  403 A:fe84  78                                 sei 
+  404 A:fe85  a2 0f                              ldx #DOSBANK
+  405 A:fe87  8e 02 e8                           stx BANK
+  406 A:fe8a  20 03 40                           jsr dos_sectlk
+  407 A:fe8d  a2 00                              ldx #BASBANK
+  408 A:fe8f  8e 02 e8                           stx BANK
+  409 A:fe92  28                                 plp 
+  410 A:fe93  fa                                 plx 
+  411 A:fe94  60                                 rts 
+  412 A:fe95                           not_dos   
+  413 A:fe95  20 09 f1                           jsr $f109
+  414 A:fe98  4c 98 f1                           jmp $f198
+  415 A:fe9b                                     .) 
+
+  417 A:fe9b                           iecout    .( 
+  418 A:fe9b                                     .assert DOS_LISTEN=$40,"check on flag"
+  419 A:fe9b  2c fe 03                           bit flags
+  420 A:fe9e  50 1a                              bvc not_dos
+  421 A:fea0  da                                 phx 
+  422 A:fea1  08                                 php 
+  423 A:fea2  78                                 sei 
+  424 A:fea3  a2 0f                              ldx #DOSBANK
+  425 A:fea5  8e 02 e8                           stx BANK
+  426 A:fea8  20 09 40                           jsr dos_iecout
+  427 A:feab  ad 87 02                           lda dos_status
+  428 A:feae  a2 00                              ldx #BASBANK
+  429 A:feb0  8e 02 e8                           stx BANK
+  430 A:feb3  05 96                              ora status
+  431 A:feb5  85 96                              sta status
+  432 A:feb7  28                                 plp 
+  433 A:feb8  fa                                 plx 
+  434 A:feb9  60                                 rts 
+  435 A:feba                           not_dos   
+  436 A:feba  24 a0                              bit $a0
+  437 A:febc  30 03                              bmi l1
+  438 A:febe  4c a2 f1                           jmp $f1a2
+  439 A:fec1  4c a6 f1                 l1        jmp $f1a6
+  440 A:fec4                                     .) 
+
+  442 A:fec4                           untlk     .( 
+  443 A:fec4                                     .assert DOS_TALK=$80,"check on flag"
+  444 A:fec4  2c fe 03                           bit flags
+  445 A:fec7  10 01                              bpl not_dos
+  446 A:fec9                                    ; no-op
+  447 A:fec9  60                                 rts 
+  448 A:feca                           not_dos   
+  449 A:feca  ad 40 e8                           lda $e840
+  450 A:fecd  4c b1 f1                           jmp $f1b1
+  451 A:fed0  60                                 rts 
+  452 A:fed1                                     .) 
+
+  454 A:fed1                           seclstn   .( 
+  455 A:fed1                                     .assert DOS_LISTEN=$40,"check on flag"
+  456 A:fed1  2c fe 03                           bit flags
+  457 A:fed4  30 ac                              bmi fix_sectalk                ; catch buggy softare calling seclisten instead of sectalk
+  458 A:fed6  50 13                              bvc not_dos
+  459 A:fed8  da                                 phx 
+  460 A:fed9  08                                 php 
+  461 A:feda  78                                 sei 
+  462 A:fedb  a2 0f                              ldx #DOSBANK
+  463 A:fedd  8e 02 e8                           stx BANK
+  464 A:fee0  20 00 40                           jsr dos_seclstn
+  465 A:fee3  a2 00                              ldx #BASBANK
+  466 A:fee5  8e 02 e8                           stx BANK
+  467 A:fee8  28                                 plp 
+  468 A:fee9  fa                                 plx 
+  469 A:feea  60                                 rts 
+
+  471 A:feeb  20 09 f1                 not_dos   jsr $f109
+  472 A:feee  4c 48 f1                           jmp $f148
+  473 A:fef1                                     .) 
+
+  475 A:fef1                           iecin     .( 
+  476 A:fef1                                     .assert DOS_TALK=$80,"check on flag"
+  477 A:fef1  2c fe 03                           bit flags
+  478 A:fef4  10 1f                              bpl not_dos
+  479 A:fef6  08                                 php 
+  480 A:fef7  da                                 phx 
+  481 A:fef8  5a                                 phy 
+  482 A:fef9  78                                 sei 
+  483 A:fefa  a2 0f                              ldx #DOSBANK
+  484 A:fefc  8e 02 e8                           stx BANK
+  485 A:feff  20 06 40                           jsr dos_iecin
+  486 A:ff02  ac 87 02                           ldy dos_status
+  487 A:ff05  a2 00                              ldx #BASBANK
+  488 A:ff07  8e 02 e8                           stx BANK
+  489 A:ff0a  48                                 pha 
+  490 A:ff0b  98                                 tya 
+  491 A:ff0c  05 96                              ora status
+  492 A:ff0e  85 96                              sta status
+  493 A:ff10  68                                 pla 
+  494 A:ff11  7a                                 ply 
+  495 A:ff12  fa                                 plx 
+  496 A:ff13  28                                 plp 
+  497 A:ff14  60                                 rts 
+  498 A:ff15                           not_dos   
+  499 A:ff15  8d 21 e8                           sta $e821
+  500 A:ff18  4c c5 f1                           jmp $f1c5
+  501 A:ff1b                                     .) 
+
+  504 A:ff1b                           rompatch_end 
+  504 A:ff1b                                    
+
+  506 A:ff1b                                    ; fix up PC 
+  507 A:ff1b                                     *= PATCH+(rompatch_end-rompatch_start)
+
+  509 A:a3cd                                     .) 
 
 patch4.a65
 
@@ -3395,591 +3399,563 @@ patch4.a65
 
 boot_rom4.a65
 
-    1 A:a63d                                     .xl 
 
-  517 A:a63d                                     .)                    ; end setup_basic4_xl
+usb65/platforms/upet/petrom_install.a65
+
+
+   32 A:a63d                                    ;------------------------------------------------
+   33 A:a63d                                    ; install the USB code
+   34 A:a63d                           usb_install .( 
+   35 A:a63d  a9 00                              lda #<newirq
+   36 A:a63f  a2 df                              ldx #>newirq
+   37 A:a641  a0 00                              ldy #0             ; lock value to set
+
+   39 A:a643                                    ; set interrupt addr from a/x
+   40 A:a643  08                                 php 
+   41 A:a644  78                                 sei 
+
+   43 A:a645  48                                 pha 
+
+   45 A:a646  98                                 tya 
+   46 A:a647  8f ff 00 07                        sta lock
+
+   48 A:a64b  a9 00                              lda #0
+   49 A:a64d  8d 01 e8                           sta $e801              ; make memory writable
+
+   51 A:a650                                    ; x is not modified
+   52 A:a650  ad 55 e4                           lda $e455              ; standard interrupt routine
+   53 A:a653  c9 4c                              cmp #$4c             ; JMP on some ROMs
+   54 A:a655  f0 06                              beq dojmp
+   55 A:a657  a9 56                              lda #<$e456
+   56 A:a659  a0 e4                              ldy #>$e456
+   57 A:a65b  d0 07                              bne inject
+
+   59 A:a65d  ac 57 e4                 dojmp     ldy $e457           ; E455 JMP XXXX ; get address from JMP
+   60 A:a660  ad 56 e4                           lda $e456
+   61 A:a663  1a                                 inc                    ; no overflow in current ROM
+   62 A:a664                           inject    
+   63 A:a664  8d 6f a6                           sta addr2
+   64 A:a667  8c 70 a6                           sty addr2+1
+
+   66 A:a66a  68                                 pla 
+   67 A:a66b  18                                 clc 
+   68 A:a66c  24                                 .byt $24
+   69 A:a66d  38                       next2     sec 
+   70 A:a66e                                    addr2=*+1
+   71 A:a66e  8d ff ff                           sta $ffff              ; set from above
+   72 A:a671  ee 6f a6                           inc addr2
+   73 A:a674                                    ; no overflow on current ROMs
+   74 A:a674  8a                                 txa 
+   75 A:a675  90 f6                              bcc next2
+
+   77 A:a677  a9 c0                              lda #%11000000
+   78 A:a679  8d 01 e8                           sta $e801              ; protect memory $b-fxxx
+
+   80 A:a67c  28                                 plp 
+   81 A:a67d  60                                 rts 
+   82 A:a67e                                     .) 
+
+   86 A:a67e                                    ;-------------------------------
+   87 A:a67e                                    ; init the driver in USB bank and check for hardware
+   88 A:a67e                                    ; if returns with C=0, we can install interrupt handler
+   89 A:a67e                           usb_init  .( 
+   90 A:a67e  08                                 php 
+   91 A:a67f  78                                 sei 
+
+   93 A:a680  a2 0f                              ldx #MAP_USB
+   94 A:a682  8e 02 e8                           stx MAPREG
+
+   96 A:a685  a9 ff                              lda #<-1
+   97 A:a687  8f ff 00 07                        sta lock
+
+   99 A:a68b  20 00 10                           jsr driver_init
+
+  101 A:a68e  a2 00                              ldx #MAP_BAS
+  102 A:a690  8e 02 e8                           stx MAPREG
+
+  104 A:a693  b0 05                              bcs locked
+  105 A:a695  28                                 plp 
+  106 A:a696  18                                 clc 
+  107 A:a697  4c 3d a6                           jmp usb_install
+
+  109 A:a69a  28                       locked    plp 
+  110 A:a69b  38                                 sec 
+  111 A:a69c  60                                 rts 
+  112 A:a69d                                     .) 
+
+boot_rom4.a65
+
+
+  527 A:a69d                           usbcomp_start 
+  528 A:a69d                                     *= USB_COMPANION
+
+usb65/platforms/upet/petrom_install.a65
+
+
+  116 A:df00                                    ;-------------------------------
+  117 A:df00                                    ; new interrupt routine
+  118 A:df00                           newirq    .( 
+
+  120 A:df00                                    ; do the part we've actually overwritten
+  121 A:df00                                    ; which includes checking for the STOP key.
+  122 A:df00  20 ea ff                           jsr $ffea
+
+  124 A:df03                                    ; The first part is such a BAD HACK(tm)
+  125 A:df03                                    ;
+  126 A:df03                                    ; After IEC load, the kernal calls F92B, assumingly to check
+  127 A:df03                                    ; the RUN/STOP key a last time. But starting from F92E it checks
+  128 A:df03                                    ; whether the interrupt vector is set to page $E4xx - and if not,
+  129 A:df03                                    ; just loops! One way around this is the following
+  130 A:df03                                    ; BAD HACK:
+  131 A:df03                                    ; in the interrupt routine, we check whether we have interrupted the
+  132 A:df03                                    ; code in just this place, and then forward the RTI address on the
+  133 A:df03                                    ; stack such that the check is ignored.
+  134 A:df03                                    ; However, it seems there are conditions where this still did not 
+  135 A:df03                                    ; trigger. My assumption is that the number of cycles for a screen
+  136 A:df03                                    ; (interrupt) is similar to when checking the STOP key in the loop
+  137 A:df03                                    ; So, instead, we re-purpose the BRK vector jump, which is at 
+  138 A:df03                                    ; $E44F and use the BRK code instead
+  139 A:df03                                    ; 
+  140 A:df03  ba                                 tsx 
+
+  142 A:df04                                    ;-------------------------------
+  143 A:df04                                    ; debug output
+
+  159 A:df04                                    ;-------------------------------
+  160 A:df04                                    ; protect IEEE488 
+  161 A:df04                                    ; lda $e840
+  162 A:df04                                    ; and #$c1 ; NRFDin, NDACin, DAVin
+  163 A:df04                                    ; cmp #$c1 ; active? then do not poll, as we might interfere with IEEE488 timing
+  164 A:df04                                    ; bne nopoll
+
+  166 A:df04  bd 06 01                           lda $0106,x            ; protect all interrupts in $f0xx-$f3xx
+  167 A:df07  29 fc                              and #$fc
+  168 A:df09  c9 f0                              cmp #$f0
+  169 A:df0b  f0 25                              beq nopoll
+
+  171 A:df0d                                    ;-------------------------------
+  172 A:df0d                                    ; check soft lock
+  173 A:df0d                                    ; no race condition, we can safely assume to not be interrupted (on single-cpu)
+
+  175 A:df0d  af ff 00 07                        lda lock
+  176 A:df11  30 1f                              bmi nopoll
+
+  178 A:df13                                    ;-------------------------------
+  179 A:df13                                    ; poll the USB bus
+  180 A:df13                           poll      
+
+  190 A:df13  af ff 00 07                        lda lock                ; lock so we don't get into poll again for now; results in $ff
+  191 A:df17  3a                                 dec 
+  192 A:df18  8f ff 00 07                        sta lock
+
+  194 A:df1c  a9 0f                              lda #MAP_USB
+  195 A:df1e  8d 02 e8                           sta MAPREG
+  196 A:df21  20 03 10                           jsr driver_poll
+
+  198 A:df24  a9 00                              lda #MAP_BAS
+  199 A:df26  8d 02 e8                           sta MAPREG
+
+  201 A:df29  af ff 00 07                        lda lock
+  202 A:df2d  1a                                 inc 
+  203 A:df2e  8f ff 00 07                        sta lock
+  204 A:df32                           nopoll    
+  205 A:df32                                    ; return to original IRQ
+  206 A:df32  60                                 rts 
+  207 A:df33                                     .) 
+
+  211 A:df33                                    ;----------------------------------------------------------------
+  212 A:df33                                    ; those callbacks are being called from the driver, i.e. 
+  213 A:df33                                    ; actually from within somewhere in the code. We need
+  214 A:df33                                    ; to protect the output
+
+  216 A:df33                                    ; pause a given number of vertical screen retraces (1/50th seconds)
+  217 A:df33                                    ; in AC has number of frames (retraces)
+  218 A:df33                           pause     .( 
+  219 A:df33  08                                 php 
+  220 A:df34  a2 00                              ldx #MAP_BAS
+  221 A:df36  8e 02 e8                           stx MAPREG
+
+  223 A:df39  58                                 cli 
+  224 A:df3a  aa                                 tax 
+  225 A:df3b  e8                                 inx                    ; full retraces, so one more border between traces
+  226 A:df3c  af fe 00 07              p0        lda VCOUNT
+  227 A:df40  cf fe 00 07              p1        cmp VCOUNT
+  228 A:df44  f0 fa                              beq p1
+  229 A:df46  ca                                 dex 
+  230 A:df47  d0 f3                              bne p0
+
+  232 A:df49  78                                 sei 
+  233 A:df4a  a2 0f                              ldx #MAP_USB
+  234 A:df4c  8e 02 e8                           stx MAPREG
+
+  236 A:df4f  28                                 plp 
+  237 A:df50  60                                 rts 
+  238 A:df51                                     .) 
+
+  242 A:df51                                    ;----------------------------------------------------------------
+
+  246 A:df51                           printc2   .( 
+  247 A:df51                                    ; write a char into the key buffer (if not filled already)
+  248 A:df51  08                                 php 
+  249 A:df52  78                                 sei 
+  250 A:df53  da                                 phx 
+
+  252 A:df54  a2 00                              ldx #MAP_BAS
+  253 A:df56  8e 02 e8                           stx MAPREG
+
+  255 A:df59  b0 13                              bcs stop
+
+  257 A:df5b  a6 9e                              ldx $9e
+  258 A:df5d  e0 09                              cpx #9             ; at $e3 for 80 cols, or $03eb for 40 cols - so use constant 
+  259 A:df5f  b0 05                              bcs full
+  260 A:df61  9d 6f 02                           sta $026f,x
+  261 A:df64  e6 9e                              inc $9e
+  262 A:df66                           full      
+  263 A:df66  a2 0f                              ldx #MAP_USB
+  264 A:df68  8e 02 e8                           stx MAPREG
+
+  266 A:df6b  fa                                 plx 
+  267 A:df6c  28                                 plp 
+  268 A:df6d  60                                 rts 
+
+  270 A:df6e                                    ;.assert KBD_CB_STOP == 1, "STOP key bit"
+  271 A:df6e                           stop      
+  272 A:df6e                                    ;inc $8000
+  273 A:df6e                                    ;sta $8001
+  274 A:df6e  6a                                 ror                    ; check KBD_CB_STOP flag
+  275 A:df6f  90 f5                              bcc full
+  276 A:df71  a5 9b                              lda STPFL
+  277 A:df73  29 ef                              and #$ef
+  278 A:df75  85 9b                              sta STPFL
+  279 A:df77  80 ed                              bra full
+  280 A:df79                                     .) 
+
+boot_rom4.a65
+
+    1 A:df79                                     *= usbcomp_start+*-USB_COMPANION
+
+  537 A:a716                           usbcomp_end 
+
+  539 A:a716                                     .xl 
+  540 A:a716                                     .)                    ; end setup_basic4_xl
 
 boot_usb.a65
 
 
-    2 A:a63d                                     .( 
+    2 A:a716                                     .( 
 
-    4 A:a63d                                    lock=$0700ff           ; last byte in zeropage in bank 7/block 14
-    5 A:a63d                                    VCOUNT=$0700fe
-    6 A:a63d                                    tmp=$0700fd
+    4 A:a716                                    ;&lock =$0700ff ; last byte in zeropage in bank 7/block 14
+    5 A:a716                                    ;&VCOUNT =$0700fe
+    6 A:a716                                    ;usbtmp =$0700fd
 
-    8 A:a63d                                    MAP_USB=USBBLK
-    9 A:a63d                                    MAP_BAS=0
-   10 A:a63d                                    MAPREG=BANK
+    8 A:a716                                    MAP_USB=USBBLK
+    9 A:a716                                    MAP_BAS=0
+   10 A:a716                                    MAPREG=BANK
 
-   12 A:a63d                                    USBPAGE=$a0           ; start of driver in Flash ROM
+   12 A:a716                                    USBPAGE=$a0           ; start of driver in Flash ROM
 
-   14 A:a63d                                    USBBLK=15           ; bank 7 value for BANK  
+   14 A:a716                                    USBBLK=15           ; bank 7 value for BANK  
 
-   16 A:a63d                                    DRIVERADDR=$1000
-   17 A:a63d                                    COMPADDR=$df00
+   16 A:a716                                    DRIVERADDR=$1000
+   17 A:a716                                    COMPADDR=$df00
 
-   19 A:a63d                                    driver_init=DRIVERADDR
-   20 A:a63d                                    driver_poll=DRIVERADDR+3
+   19 A:a716                                    driver_init=DRIVERADDR
+   20 A:a716                                    driver_poll=DRIVERADDR+3
 
-   22 A:a63d                                    pause_ax=COMPADDR+9
-   23 A:a63d                                    driver_pause_a=DRIVERADDR+6+1
-   24 A:a63d                                    print_ax=COMPADDR+12
-   25 A:a63d                                    driver_print_a=DRIVERADDR+9+1
+   22 A:a716                                    pause_ax=COMPADDR+9
+   23 A:a716                                    driver_pause_a=DRIVERADDR+6+1
+   24 A:a716                                    print_ax=COMPADDR+12
+   25 A:a716                                    driver_print_a=DRIVERADDR+9+1
 
-   27 A:a63d                                    ; -----------------------                                        
-   28 A:a63d                                    ; copy over USB code to RAM                                      
-   29 A:a63d                                    ; $1a000-$1bfff in flash img                                     
-   30 A:a63d                                    ; copy to DRIVERADDR                                                
+   27 A:a716                                    ; -----------------------                                        
+   28 A:a716                                    ; copy over USB code to RAM                                      
+   29 A:a716                                    ; $1a000-$1bfff in flash img                                     
+   30 A:a716                                    ; copy to DRIVERADDR                                                
 
-   32 A:a63d                                     .xl 
-   33 A:a63d                           setup_usb_xl 
-   34 A:a63d                                     .( 
-   35 A:a63d  a9 0f                              lda #MAP_USB               ; for the PET default VICCY base address of $1000 
-   36 A:a63f  8d 02 e8                           sta BANK                ; $e802                                           
+   32 A:a716                                     .xl 
+   33 A:a716                           setup_usb_xl 
+   34 A:a716                                     .( 
+   35 A:a716  a9 0f                              lda #MAP_USB               ; for the PET default VICCY base address of $1000 
+   36 A:a718  8d 02 e8                           sta BANK                ; $e802                                           
 
-   38 A:a642  a9 a0                              lda #USBPAGE               ; page in flash                                  
-   39 A:a644  a2 00 10                           ldx #DRIVERADDR               ; start in current bank                          
-   40 A:a647  a0 00 20                           ldy #$2000             ; transfer len                                   
-   41 A:a64a  20 da 90                           jsr flash2direct2_xl
+   38 A:a71b  a9 a0                              lda #USBPAGE               ; page in flash                                  
+   39 A:a71d  a2 00 10                           ldx #DRIVERADDR               ; start in current bank                          
+   40 A:a720  a0 00 20                           ldy #$2000             ; transfer len                                   
+   41 A:a723  20 da 90                           jsr flash2direct2_xl
 
-   43 A:a64d                                    ; copy over boot companion
-   44 A:a64d  a0 0e 00                           ldy #romcompend-romcomp-1
-   45 A:a650  b9 77 a6                 l         lda romcomp,y
-   46 A:a653  99 00 df                           sta COMPADDR,y
-   47 A:a656  88                                 dey 
-   48 A:a657  10 f7                              bpl l
+   43 A:a726                                    ; copy over boot companion
+   44 A:a726  a0 0e 00                           ldy #romcompend-romcomp-1
+   45 A:a729  b9 50 a7                 l         lda romcomp,y
+   46 A:a72c  99 00 df                           sta COMPADDR,y
+   47 A:a72f  88                                 dey 
+   48 A:a730  10 f7                              bpl l
 
-   50 A:a659                                    ; link companion and driver
-   51 A:a659  a2 09 df                           ldx #pause_ax
-   52 A:a65c  8e 07 10                           stx driver_pause_a
-   53 A:a65f  a2 0c df                           ldx #print_ax
-   54 A:a662  8e 0a 10                           stx driver_print_a
+   50 A:a732                                    ; link companion and driver
+   51 A:a732  a2 09 df                           ldx #pause_ax
+   52 A:a735  8e 07 10                           stx driver_pause_a
+   53 A:a738  a2 0c df                           ldx #print_ax
+   54 A:a73b  8e 0a 10                           stx driver_print_a
 
-   56 A:a665  e2 10                              sep #%00010000
-   57 A:a667                                     .xs 
+   56 A:a73e  e2 10                              sep #%00010000
+   57 A:a740                                     .xs 
 
-   59 A:a667  20 8d a6                           jsr t_init
-   60 A:a66a  b0 03                              bcs nohw
+   59 A:a740  20 66 a7                           jsr t_init
+   60 A:a743  b0 03                              bcs nohw
 
-   62 A:a66c  20 86 a6                           jsr t_install
+   62 A:a745  20 5f a7                           jsr t_install
 
-   64 A:a66f                                    ; TODO:                                                          
-   65 A:a66f                                    ; 2. init USB, bind into IRQ                                     
-   66 A:a66f                                    ; 3. CLI                                                         
-   67 A:a66f                                    ; 4. then use USB keyboard in boot menu                          
-   68 A:a66f                                    ; 5. SEI                                                         
-   69 A:a66f                                    ; 6. set ROMs                                                    
-   70 A:a66f                                    ; 7. if USB option set, copy real bind companion to $df00        
-   71 A:a66f                                    ; 8. enable USB interrupt handling                               
-   72 A:a66f                                    ; 9. switch BANK back to 0 ($20)                                 
-   73 A:a66f                                    ; 10. boot into ROM                                              
+   64 A:a748                                    ; TODO:                                                          
+   65 A:a748                                    ; 2. init USB, bind into IRQ                                     
+   66 A:a748                                    ; 3. CLI                                                         
+   67 A:a748                                    ; 4. then use USB keyboard in boot menu                          
+   68 A:a748                                    ; 5. SEI                                                         
+   69 A:a748                                    ; 6. set ROMs                                                    
+   70 A:a748                                    ; 7. if USB option set, copy real bind companion to $df00        
+   71 A:a748                                    ; 8. enable USB interrupt handling                               
+   72 A:a748                                    ; 9. switch BANK back to 0 ($20)                                 
+   73 A:a748                                    ; 10. boot into ROM                                              
 
-   75 A:a66f                           nohw      
-   76 A:a66f  a9 00                              lda #MAP_BAS
-   77 A:a671  8d 02 e8                           sta BANK
+   75 A:a748                           nohw      
+   76 A:a748  a9 00                              lda #MAP_BAS
+   77 A:a74a  8d 02 e8                           sta BANK
 
-   79 A:a674  c2 10                              rep #%00010000
-   80 A:a676                                     .xl 
-   81 A:a676  60                                 rts 
-   82 A:a677                                     .) 
+   79 A:a74d  c2 10                              rep #%00010000
+   80 A:a74f                                     .xl 
+   81 A:a74f  60                                 rts 
+   82 A:a750                                     .) 
 
-   86 A:a677                                     .xs 
+   86 A:a750                                     .xs 
 
-   88 A:a677                           romcomp   .( 
-   89 A:a677                                     *= COMPADDR
+   88 A:a750                           romcomp   .( 
+   89 A:a750                                     *= COMPADDR
    90 A:df00                                    ; ignored
-   91 A:df00  4c 8d a6                           jmp t_init                ; init the USB stack               
-   92 A:df03  4c 86 a6                           jmp t_install                ; patch in USB interrupt into ROM  
-   93 A:df06  4c a0 a6                           jmp t_uninstall                ; remove USB patch                 
+   91 A:df00  4c 66 a7                           jmp t_init                ; init the USB stack               
+   92 A:df03  4c 5f a7                           jmp t_install                ; patch in USB interrupt into ROM  
+   93 A:df06  4c 79 a7                           jmp t_uninstall                ; remove USB patch                 
    94 A:df09                                    ; called from USB driver interrupt routine                         
-   95 A:df09  4c a8 a6                 usb_pause jmp t_pause             ;                                  
-   96 A:df0c  4c c5 a6                 usb_appendkey jmp t_printc2
+   95 A:df09  4c 81 a7                 usb_pause jmp t_pause             ;                                  
+   96 A:df0c  4c 9e a7                 usb_appendkey jmp t_printc2
    97 A:df0f                                     *= *-COMPADDR+romcomp
-   98 A:a686                                     .) 
-   99 A:a686                           romcompend 
-
-  101 A:a686                           t_install .( 
-  102 A:a686                                    ; interrupt is already established for key scanning
-  103 A:a686                                    ; we just need to release the lock
-  104 A:a686  a9 00                              lda #0
-  105 A:a688  8f ff 00 07                        sta lock
-
-  107 A:a68c  60                                 rts 
-  108 A:a68d                                     .) 
-
-  110 A:a68d                                    ; is entered in MAP_USB, .xs, .as
-  111 A:a68d                           t_init    .( 
-  112 A:a68d  08                                 php 
-  113 A:a68e  78                                 sei 
-
-  115 A:a68f  a9 ff                              lda #<-1
-  116 A:a691  8f ff 00 07                        sta lock
-
-  118 A:a695  20 00 10                           jsr driver_init
-
-  120 A:a698  b0 03                              bcs locked
-  121 A:a69a  28                                 plp 
-  122 A:a69b  18                                 clc 
-  123 A:a69c  60                                 rts 
-
-  125 A:a69d  28                       locked    plp 
-  126 A:a69e  38                                 sec 
-  127 A:a69f  60                                 rts 
-  128 A:a6a0                                     .) 
-
-  130 A:a6a0                           t_uninstall .( 
-  131 A:a6a0  78                                 sei 
-
-  133 A:a6a1  a9 ff                              lda #<-1
-  134 A:a6a3  8f ff 00 07                        sta lock
-  135 A:a6a7  60                                 rts 
-  136 A:a6a8                                     .) 
-
-  139 A:a6a8                                    ; pause a given number of vertical scree
-  140 A:a6a8                                    ; in AC has number of frames (retraces) 
-  141 A:a6a8                                     .xs 
-  142 A:a6a8                                     .as 
-  143 A:a6a8                           t_pause   .( 
-  144 A:a6a8  08                                 php 
-  145 A:a6a9  a9 00                              lda #MAP_BAS
-  146 A:a6ab  8d 02 e8                           sta MAPREG
-  147 A:a6ae  58                                 cli 
-
-  149 A:a6af  aa                                 tax 
-  150 A:a6b0  e8                                 inx                    ; full retraces, s
-  151 A:a6b1  af fe 00 07              p0        lda VCOUNT
-  152 A:a6b5  cf fe 00 07              p1        cmp VCOUNT
-  153 A:a6b9  f0 fa                              beq p1
-  154 A:a6bb  ca                                 dex 
-  155 A:a6bc  d0 f3                              bne p0
-
-  157 A:a6be  a9 0f                              lda #MAP_USB
-  158 A:a6c0  8d 02 e8                           sta MAPREG
-  159 A:a6c3  28                                 plp 
-  160 A:a6c4  60                                 rts 
-  161 A:a6c5                                     .) 
-
-  164 A:a6c5                           t_printc2 .( 
-  165 A:a6c5  aa                                 tax                    ; actually overwrites modifiers in X
-  166 A:a6c6  08                                 php 
-  167 A:a6c7  78                                 sei 
-
-  169 A:a6c8  b0 09                              bcs stop
-
-  171 A:a6ca                                    ;inc $8027
-
-  173 A:a6ca  a9 00                              lda #MAP_BAS
-  174 A:a6cc  8d 02 e8                           sta MAPREG
-
-  176 A:a6cf  8a                                 txa 
-  177 A:a6d0  20 e9 94                           jsr key_usb
-  178 A:a6d3                           stop      
-  179 A:a6d3  a9 0f                              lda #MAP_USB
-  180 A:a6d5  8d 02 e8                           sta MAPREG
-
-  182 A:a6d8  28                                 plp 
-  183 A:a6d9  60                                 rts 
-  184 A:a6da                                     .) 
-
-  186 A:a6da                                     .( 
-
-  188 A:a6da                           startupetrom4 
-  189 A:a6da                                     *= COMPADDR
-
-usb65/platforms/upet/petromcomp.a65
-
-
-   33 A:df00                                     .( 
-   34 A:df00                                     .text 
-
-   58 A:df00                                    tmpx=$0700fe           ; 
-   59 A:df00                                    ;lock =$033c
-   60 A:df00                                    ;tmpx =$033d
-
-   62 A:df00                                    IRQV=$90           ; PET interrupt vector
-   63 A:df00                                    STPFL=$9b           ; STOP flag. If $ff, STOP key not pressed
-
-   65 A:df00                                    ; called from outside
-   66 A:df00  4c 5b df                           jmp init                ; init the USB stack
-   67 A:df03  4c 1a df                           jmp install                ; patch in USB interrupt into ROM
-   68 A:df06  4c 12 df                           jmp uninstall                ; remove USB patch
-   69 A:df09                                    ; called from USB driver interrupt routine
-   70 A:df09  4c ad df                 pause_a   jmp pause             ; 
-   71 A:df0c  4c cb df                 print_a   jmp printc2
-   72 A:df0f                                    ; internal
-   73 A:df0f  4c 7a df                           jmp newirq
-
-   75 A:df12                                    ;------------------------------------------------
-
-   77 A:df12                           uninstall .( 
-   78 A:df12  a9 ea                              lda #<$ffea
-   79 A:df14  a2 ff                              ldx #>$ffea
-   80 A:df16  a0 ff                              ldy #<-1
-   81 A:df18  d0 06                              bne setaddr
-   82 A:df1a                           install   
-   83 A:df1a  a9 7a                              lda #<newirq
-   84 A:df1c  a2 df                              ldx #>newirq
-   85 A:df1e  a0 00                              ldy #0             ; lock value to set
-   86 A:df20                                    ; set interrupt addr from a/x
-   87 A:df20                           setaddr   
-   88 A:df20  08                                 php 
-   89 A:df21  78                                 sei 
-
-   91 A:df22  48                                 pha 
-
-   93 A:df23  98                                 tya 
-   94 A:df24  8f ff 00 07                        sta lock
-
-   96 A:df28  a9 00                              lda #0
-   97 A:df2a  8d 01 e8                           sta $e801              ; make memory writable
-
-   99 A:df2d                                    ; x is not modified
-  100 A:df2d  ad 55 e4                           lda $e455              ; standard interrupt routine
-  101 A:df30  c9 4c                              cmp #$4c             ; JMP on some ROMs
-  102 A:df32  f0 06                              beq dojmp
-  103 A:df34  a9 56                              lda #<$e456
-  104 A:df36  a0 e4                              ldy #>$e456
-  105 A:df38  d0 07                              bne inject
-
-  107 A:df3a  ac 57 e4                 dojmp     ldy $e457           ; E455 JMP XXXX ; get address from JMP
-  108 A:df3d  ad 56 e4                           lda $e456
-  109 A:df40  1a                                 inc                    ; no overflow in current ROM
-  110 A:df41                           inject    
-  111 A:df41  8d 4c df                           sta addr2
-  112 A:df44  8c 4d df                           sty addr2+1
-
-  114 A:df47  68                                 pla 
-  115 A:df48  18                                 clc 
-  116 A:df49  24                                 .byt $24
-  117 A:df4a  38                       next2     sec 
-  118 A:df4b                                    addr2=*+1
-  119 A:df4b  8d ff ff                           sta $ffff              ; set from above
-  120 A:df4e  ee 4c df                           inc addr2
-  121 A:df51                                    ; no overflow on current ROMs
-  122 A:df51  8a                                 txa 
-  123 A:df52  90 f6                              bcc next2
-
-  125 A:df54  a9 c0                              lda #%11000000
-  126 A:df56  8d 01 e8                           sta $e801              ; protect memory $b-fxxx
-
-  128 A:df59  28                                 plp 
-  129 A:df5a  60                                 rts 
-  130 A:df5b                                     .) 
-
-  132 A:df5b                                     .( 
-  133 A:df5b                                    ;-------------------------------
-  134 A:df5b                                    ; init the driver in USB bank and check for hardware
-  135 A:df5b                                    ; if returns with C=0, we can install interrupt handler
-
-  137 A:df5b  a2 0f                    init      ldx #MAP_USB
-  138 A:df5d  8e 02 e8                           stx MAPREG
-
-  140 A:df60  08                                 php 
-  141 A:df61  78                                 sei 
-
-  143 A:df62  a9 ff                              lda #<-1
-  144 A:df64  8f ff 00 07                        sta lock
-
-  146 A:df68  20 00 10                           jsr driver_init
-
-  148 A:df6b  a2 00                              ldx #MAP_BAS
-  149 A:df6d  8e 02 e8                           stx MAPREG
-
-  151 A:df70  b0 05                              bcs locked
-  152 A:df72  28                                 plp 
-  153 A:df73  18                                 clc 
-  154 A:df74  4c 1a df                           jmp install
-
-  156 A:df77  28                       locked    plp 
-  157 A:df78  38                                 sec 
-  158 A:df79  60                                 rts 
-  159 A:df7a                                     .) 
-
-  161 A:df7a                                     .( 
-  162 A:df7a                                    ;-------------------------------
-  163 A:df7a                                    ; new interrupt routine
-  164 A:df7a                           newirq    
-  165 A:df7a                                    ; do the part we've actually overwritten
-  166 A:df7a                                    ; which includes checking for the STOP key.
-  167 A:df7a  20 ea ff                           jsr $ffea
-
-  169 A:df7d                                    ; The first part is such a BAD HACK(tm)
-  170 A:df7d                                    ;
-  171 A:df7d                                    ; After IEC load, the kernal calls F92B, assumingly to check
-  172 A:df7d                                    ; the RUN/STOP key a last time. But starting from F92E it checks
-  173 A:df7d                                    ; whether the interrupt vector is set to page $E4xx - and if not,
-  174 A:df7d                                    ; just loops! One way around this is the following
-  175 A:df7d                                    ; BAD HACK:
-  176 A:df7d                                    ; in the interrupt routine, we check whether we have interrupted the
-  177 A:df7d                                    ; code in just this place, and then forward the RTI address on the
-  178 A:df7d                                    ; stack such that the check is ignored.
-  179 A:df7d                                    ; However, it seems there are conditions where this still did not 
-  180 A:df7d                                    ; trigger. My assumption is that the number of cycles for a screen
-  181 A:df7d                                    ; (interrupt) is similar to when checking the STOP key in the loop
-  182 A:df7d                                    ; So, instead, we re-purpose the BRK vector jump, which is at 
-  183 A:df7d                                    ; $E44F and use the BRK code instead
-  184 A:df7d                                    ; 
-  185 A:df7d  ba                                 tsx 
-
-  187 A:df7e                                    ;-------------------------------
-  188 A:df7e                                    ; debug output
-
-  204 A:df7e                                    ;-------------------------------
-  205 A:df7e                                    ; protect IEEE488 
-  206 A:df7e                                    ; lda $e840
-  207 A:df7e                                    ; and #$c1 ; NRFDin, NDACin, DAVin
-  208 A:df7e                                    ; cmp #$c1 ; active? then do not poll, as we might interfere with IEEE488 timing
-  209 A:df7e                                    ; bne nopoll
-
-  211 A:df7e  bd 06 01                           lda $0106,x            ; protect all interrupts in $f0xx-$f3xx
-  212 A:df81  29 fc                              and #$fc
-  213 A:df83  c9 f0                              cmp #$f0
-  214 A:df85  f0 25                              beq nopoll
-
-  216 A:df87                                    ;-------------------------------
-  217 A:df87                                    ; check soft lock
-  218 A:df87                                    ; no race condition, we can safely assume to not be interrupted (on single-cpu)
-
-  220 A:df87  af ff 00 07                        lda lock
-  221 A:df8b  30 1f                              bmi nopoll
-
-  223 A:df8d                                    ;-------------------------------
-  224 A:df8d                                    ; poll the USB bus
-  225 A:df8d                           poll      
-
-  235 A:df8d  af ff 00 07                        lda lock                ; lock so we don't get into poll again for now; results in $ff
-  236 A:df91  3a                                 dec 
-  237 A:df92  8f ff 00 07                        sta lock
-
-  239 A:df96  a9 0f                              lda #MAP_USB
-  240 A:df98  8d 02 e8                           sta MAPREG
-  241 A:df9b  20 03 10                           jsr driver_poll
-
-  243 A:df9e  a9 00                              lda #MAP_BAS
-  244 A:dfa0  8d 02 e8                           sta MAPREG
-
-  246 A:dfa3  af ff 00 07                        lda lock
-  247 A:dfa7  1a                                 inc 
-  248 A:dfa8  8f ff 00 07                        sta lock
-  249 A:dfac                           nopoll    
-  250 A:dfac                                    ; return to original IRQ
-  251 A:dfac  60                                 rts 
-  252 A:dfad                                     .) 
-
-  254 A:dfad                                    ;----------------------------------------------------------------
-  255 A:dfad                                    ; those callbacks are being called from the driver, i.e. 
-  256 A:dfad                                    ; actually from within somewhere in the code. We need
-  257 A:dfad                                    ; to protect the output
-
-  261 A:dfad                                    ; pause a given number of vertical screen retraces (1/50th seconds)
-  262 A:dfad                                    ; in AC has number of frames (retraces)
-  263 A:dfad                           pause     .( 
-  264 A:dfad  08                                 php 
-  265 A:dfae  a2 00                              ldx #MAP_BAS
-  266 A:dfb0  8e 02 e8                           stx MAPREG
-
-  268 A:dfb3  58                                 cli 
-  269 A:dfb4  aa                                 tax 
-  270 A:dfb5  e8                                 inx                    ; full retraces, so one more border between traces
-  271 A:dfb6  af fe 00 07              p0        lda VCOUNT
-  272 A:dfba  cf fe 00 07              p1        cmp VCOUNT
-  273 A:dfbe  f0 fa                              beq p1
-  274 A:dfc0  ca                                 dex 
-  275 A:dfc1  d0 f3                              bne p0
-
-  277 A:dfc3  78                                 sei 
-  278 A:dfc4  a2 0f                              ldx #MAP_USB
-  279 A:dfc6  8e 02 e8                           stx MAPREG
-
-  281 A:dfc9  28                                 plp 
-  282 A:dfca  60                                 rts 
-  283 A:dfcb                                     .) 
-
-  286 A:dfcb                                    ;----------------------------------------------------------------
-
-  290 A:dfcb                           printc2   .( 
-  291 A:dfcb                                    ; write a char into the key buffer (if not filled already)
-  292 A:dfcb  08                                 php 
-  293 A:dfcc  78                                 sei 
-  294 A:dfcd  da                                 phx 
-
-  296 A:dfce  a2 00                              ldx #MAP_BAS
-  297 A:dfd0  8e 02 e8                           stx MAPREG
-
-  299 A:dfd3  b0 13                              bcs stop
-
-  301 A:dfd5  a6 9e                              ldx $9e
-  302 A:dfd7  e0 09                              cpx #9             ; at $e3 for 80 cols, or $03eb for 40 cols - so use constant 
-  303 A:dfd9  b0 05                              bcs full
-  304 A:dfdb  9d 6f 02                           sta $026f,x
-  305 A:dfde  e6 9e                              inc $9e
-  306 A:dfe0                           full      
-  307 A:dfe0  a2 0f                              ldx #MAP_USB
-  308 A:dfe2  8e 02 e8                           stx MAPREG
-
-  310 A:dfe5  fa                                 plx 
-  311 A:dfe6  28                                 plp 
-  312 A:dfe7  60                                 rts 
-
-  314 A:dfe8                                    ;.assert KBD_CB_STOP == 1, "STOP key bit"
-  315 A:dfe8                           stop      
-  316 A:dfe8                                    ;inc $8000
-  317 A:dfe8                                    ;sta $8001
-  318 A:dfe8  6a                                 ror                    ; check KBD_CB_STOP flag
-  319 A:dfe9  90 f5                              bcc full
-  320 A:dfeb  a5 9b                              lda STPFL
-  321 A:dfed  29 ef                              and #$ef
-  322 A:dfef  85 9b                              sta STPFL
-  323 A:dff1  80 ed                              bra full
-  324 A:dff3                                     .) 
-
-  326 A:dff3                                     .) 
-
-  328 A:dff3                                    ;#print *
-  329 A:dff3                                     .assert *<$e000,"boot code too large!"
-
-boot_usb.a65
-
-    1 A:dff3                                     *= startupetrom4-COMPADDR+*
-
-  195 A:a7cd                           endupetrom4 
-  196 A:a7cd                                     .) 
-
-  198 A:a7cd                                    tear_usb=t_uninstall
-  199 A:a7cd                                     .) 
+   98 A:a75f                                     .) 
+   99 A:a75f                           romcompend 
+
+  101 A:a75f                           t_install .( 
+  102 A:a75f                                    ; interrupt is already established for key scanning
+  103 A:a75f                                    ; we just need to release the lock
+  104 A:a75f  a9 00                              lda #0
+  105 A:a761  8f ff 00 07                        sta lock
+
+  107 A:a765  60                                 rts 
+  108 A:a766                                     .) 
+
+  110 A:a766                                    ; is entered in MAP_USB, .xs, .as
+  111 A:a766                           t_init    .( 
+  112 A:a766  08                                 php 
+  113 A:a767  78                                 sei 
+
+  115 A:a768  a9 ff                              lda #<-1
+  116 A:a76a  8f ff 00 07                        sta lock
+
+  118 A:a76e  20 00 10                           jsr driver_init
+
+  120 A:a771  b0 03                              bcs locked
+  121 A:a773  28                                 plp 
+  122 A:a774  18                                 clc 
+  123 A:a775  60                                 rts 
+
+  125 A:a776  28                       locked    plp 
+  126 A:a777  38                                 sec 
+  127 A:a778  60                                 rts 
+  128 A:a779                                     .) 
+
+  130 A:a779                           t_uninstall .( 
+  131 A:a779  78                                 sei 
+
+  133 A:a77a  a9 ff                              lda #<-1
+  134 A:a77c  8f ff 00 07                        sta lock
+  135 A:a780  60                                 rts 
+  136 A:a781                                     .) 
+
+  139 A:a781                                    ; pause a given number of vertical scree
+  140 A:a781                                    ; in AC has number of frames (retraces) 
+  141 A:a781                                     .xs 
+  142 A:a781                                     .as 
+  143 A:a781                           t_pause   .( 
+  144 A:a781  08                                 php 
+  145 A:a782  a9 00                              lda #MAP_BAS
+  146 A:a784  8d 02 e8                           sta MAPREG
+  147 A:a787  58                                 cli 
+
+  149 A:a788  aa                                 tax 
+  150 A:a789  e8                                 inx                    ; full retraces, s
+  151 A:a78a  af fe 00 07              p0        lda VCOUNT
+  152 A:a78e  cf fe 00 07              p1        cmp VCOUNT
+  153 A:a792  f0 fa                              beq p1
+  154 A:a794  ca                                 dex 
+  155 A:a795  d0 f3                              bne p0
+
+  157 A:a797  a9 0f                              lda #MAP_USB
+  158 A:a799  8d 02 e8                           sta MAPREG
+  159 A:a79c  28                                 plp 
+  160 A:a79d  60                                 rts 
+  161 A:a79e                                     .) 
+
+  164 A:a79e                           t_printc2 .( 
+  165 A:a79e  aa                                 tax                    ; actually overwrites modifiers in X
+  166 A:a79f  08                                 php 
+  167 A:a7a0  78                                 sei 
+
+  169 A:a7a1  b0 09                              bcs stop
+
+  171 A:a7a3                                    ;inc $8027
+
+  173 A:a7a3  a9 00                              lda #MAP_BAS
+  174 A:a7a5  8d 02 e8                           sta MAPREG
+
+  176 A:a7a8  8a                                 txa 
+  177 A:a7a9  20 e9 94                           jsr key_usb
+  178 A:a7ac                           stop      
+  179 A:a7ac  a9 0f                              lda #MAP_USB
+  180 A:a7ae  8d 02 e8                           sta MAPREG
+
+  182 A:a7b1  28                                 plp 
+  183 A:a7b2  60                                 rts 
+  184 A:a7b3                                     .) 
+
+  186 A:a7b3                                    tear_usb=t_uninstall
+  187 A:a7b3                                     .) 
 
 boot_sdcard.a65
 
 
-    2 A:a7cd                                     .( 
+    2 A:a7b3                                     .( 
 
-    4 A:a7cd                                    tmp=$0780ff           ; last byte in stack on BLK 15
+    4 A:a7b3                                    tmp=$0780ff           ; last byte in stack on BLK 15
 
-    6 A:a7cd                                    MAP_SDC=SDCBLK
+    6 A:a7b3                                    MAP_SDC=SDCBLK
 
-    8 A:a7cd                                    SDCPAGE=$c0
+    8 A:a7b3                                    SDCPAGE=$c0
 
-   10 A:a7cd                                    SDCBLK=15           ; bank 7 value for BANK  
-   11 A:a7cd                                    SDCBASE=$4000
+   10 A:a7b3                                    SDCBLK=15           ; bank 7 value for BANK  
+   11 A:a7b3                                    SDCBASE=$4000
 
-   13 A:a7cd                                    ; -----------------------                                        
-   14 A:a7cd                                    ; copy over SD Card code to RAM                                      
-   15 A:a7cd                                    ; $1c000-$1dfff in flash img                                     
-   16 A:a7cd                                    ; copy to USBBASE                                                
+   13 A:a7b3                                    ; -----------------------                                        
+   14 A:a7b3                                    ; copy over SD Card code to RAM                                      
+   15 A:a7b3                                    ; $1c000-$1dfff in flash img                                     
+   16 A:a7b3                                    ; copy to USBBASE                                                
 
-   18 A:a7cd                                     .xl 
-   19 A:a7cd                           setup_sdcard_xl 
-   20 A:a7cd                                     .( 
-   21 A:a7cd  a9 0f                              lda #MAP_SDC               ; which RAM bank to use for SDCard support
-   22 A:a7cf  8d 02 e8                           sta BANK                ; $e802                                           
+   18 A:a7b3                                     .xl 
+   19 A:a7b3                           setup_sdcard_xl 
+   20 A:a7b3                                     .( 
+   21 A:a7b3  a9 0f                              lda #MAP_SDC               ; which RAM bank to use for SDCard support
+   22 A:a7b5  8d 02 e8                           sta BANK                ; $e802                                           
 
-   24 A:a7d2  a9 c0                              lda #SDCPAGE               ; page in flash
-   25 A:a7d4  a2 00 40                           ldx #SDCBASE               ; start in current bank                          
-   26 A:a7d7  a0 00 40                           ldy #$4000             ; transfer len                                   
-   27 A:a7da  20 da 90                           jsr flash2direct2_xl
+   24 A:a7b8  a9 c0                              lda #SDCPAGE               ; page in flash
+   25 A:a7ba  a2 00 40                           ldx #SDCBASE               ; start in current bank                          
+   26 A:a7bd  a0 00 40                           ldy #$4000             ; transfer len                                   
+   27 A:a7c0  20 da 90                           jsr flash2direct2_xl
 
-   29 A:a7dd  a9 00                              lda #MAP_BAS               ; switch back to bank 0
-   30 A:a7df  8d 02 e8                           sta BANK
+   29 A:a7c3  a9 00                              lda #MAP_BAS               ; switch back to bank 0
+   30 A:a7c5  8d 02 e8                           sta BANK
 
-   32 A:a7e2  60                                 rts 
-   33 A:a7e3                                     .) 
+   32 A:a7c8  60                                 rts 
+   33 A:a7c9                                     .) 
 
-   35 A:a7e3                                     .) 
+   35 A:a7c9                                     .) 
 
 boot_irq.a65
 
 
-    3 A:a7e3                           irq_install .( 
-    4 A:a7e3  a9 ff                              lda #<-1
-    5 A:a7e5  8f ff 00 07                        sta lock
+    3 A:a7c9                           irq_install .( 
+    4 A:a7c9  a9 ff                              lda #<-1
+    5 A:a7cb  8f ff 00 07                        sta lock
 
-    7 A:a7e9  a9 00                              lda #<newirq
-    8 A:a7eb  8d ee ff                           sta $ffee              ; 65816 native interrupt vector(!)
-    9 A:a7ee  a9 a8                              lda #>newirq              ; http:
-   10 A:a7f0  8d ef ff                           sta $ffef
+    7 A:a7cf  a9 e6                              lda #<newirq
+    8 A:a7d1  8d ee ff                           sta $ffee              ; 65816 native interrupt vector(!)
+    9 A:a7d4  a9 a7                              lda #>newirq              ; http:
+   10 A:a7d6  8d ef ff                           sta $ffef
 
-   12 A:a7f3                                    ; once per screen interrupt (60Hz)
-   13 A:a7f3                                    ; 
-   14 A:a7f3                                    ; UltiPet could use VICCY, but uPET does not have this
-   15 A:a7f3                                    ; So, we fall back to using PET VDRIVE input on PIA1 CB1
+   12 A:a7d9                                    ; once per screen interrupt (60Hz)
+   13 A:a7d9                                    ; 
+   14 A:a7d9                                    ; UltiPet could use VICCY, but uPET does not have this
+   15 A:a7d9                                    ; So, we fall back to using PET VDRIVE input on PIA1 CB1
 
-   27 A:a7f3  a9 3d                              lda #$3d             ; enable VDRIVE interrupt
-   28 A:a7f5  8d 13 e8                           sta PIA1+PIA_CRB
+   27 A:a7d9  a9 3d                              lda #$3d             ; enable VDRIVE interrupt
+   28 A:a7db  8d 13 e8                           sta PIA1+PIA_CRB
 
-   30 A:a7f8  60                                 rts 
-   31 A:a7f9                                     .) 
+   30 A:a7de  60                                 rts 
+   31 A:a7df                                     .) 
 
-   33 A:a7f9                           irq_uninstall .( 
-   34 A:a7f9  78                                 sei 
+   33 A:a7df                           irq_uninstall .( 
+   34 A:a7df  78                                 sei 
 
-   44 A:a7fa  a9 3c                              lda #$3c
-   45 A:a7fc  8d 13 e8                           sta PIA1+PIA_CRB
+   44 A:a7e0  a9 3c                              lda #$3c
+   45 A:a7e2  8d 13 e8                           sta PIA1+PIA_CRB
 
-   47 A:a7ff  60                                 rts 
-   48 A:a800                                     .) 
+   47 A:a7e5  60                                 rts 
+   48 A:a7e6                                     .) 
 
-   50 A:a800                                    ; interrupt state saving according to 
-   51 A:a800                                    ; http:
-   52 A:a800                           newirq    .( 
-   53 A:a800                                    ;phb
-   54 A:a800                                    ;phd
-   55 A:a800  c2 30                              rep #%00110000
-   56 A:a802                                     .xl 
-   57 A:a802                                     .al 
-   58 A:a802  48                                 pha 
-   59 A:a803  5a                                 phy 
-   60 A:a804  da                                 phx 
+   50 A:a7e6                                    ; interrupt state saving according to 
+   51 A:a7e6                                    ; http:
+   52 A:a7e6                           newirq    .( 
+   53 A:a7e6                                    ;phb
+   54 A:a7e6                                    ;phd
+   55 A:a7e6  c2 30                              rep #%00110000
+   56 A:a7e8                                     .xl 
+   57 A:a7e8                                     .al 
+   58 A:a7e8  48                                 pha 
+   59 A:a7e9  5a                                 phy 
+   60 A:a7ea  da                                 phx 
 
-   62 A:a805  e2 30                              sep #%00110000
-   63 A:a807                                     .xs 
-   64 A:a807                                     .as 
+   62 A:a7eb  e2 30                              sep #%00110000
+   63 A:a7ed                                     .xs 
+   64 A:a7ed                                     .as 
 
-   75 A:a807  ad 12 e8                           lda PIA1+PIA_PB            ; clear VDRIVE interrupt
+   75 A:a7ed  ad 12 e8                           lda PIA1+PIA_PB            ; clear VDRIVE interrupt
 
-   78 A:a80a  20 15 95                           jsr checkkbd_xs
-   79 A:a80d  20 f5 94                           jsr key_pet
+   78 A:a7f0  20 15 95                           jsr checkkbd_xs
+   79 A:a7f3  20 f5 94                           jsr key_pet
 
-   81 A:a810  af fe 00 07                        lda VCOUNT                ; vertical screen interrupt
-   82 A:a814  18                                 clc 
-   83 A:a815  69 01                              adc #1
-   84 A:a817  8f fe 00 07                        sta VCOUNT
+   81 A:a7f6  af fe 00 07                        lda VCOUNT                ; vertical screen interrupt
+   82 A:a7fa  18                                 clc 
+   83 A:a7fb  69 01                              adc #1
+   84 A:a7fd  8f fe 00 07                        sta VCOUNT
 
-   86 A:a81b  af ff 00 07                        lda lock                ; check lock so we don't get into poll again on pause
-   87 A:a81f  30 1b                              bmi nopoll
+   86 A:a801  af ff 00 07                        lda lock                ; check lock so we don't get into poll again on pause
+   87 A:a805  30 1b                              bmi nopoll
 
-   89 A:a821  3a                                 dec 
-   90 A:a822  8f ff 00 07                        sta lock                ; lock
+   89 A:a807  3a                                 dec 
+   90 A:a808  8f ff 00 07                        sta lock                ; lock
 
-   92 A:a826  a9 0f                              lda #MAP_USB
-   93 A:a828  8d 02 e8                           sta MAPREG
+   92 A:a80c  a9 0f                              lda #MAP_USB
+   93 A:a80e  8d 02 e8                           sta MAPREG
 
-   95 A:a82b  20 03 10                           jsr driver_poll
+   95 A:a811  20 03 10                           jsr driver_poll
 
-   97 A:a82e  a9 00                              lda #MAP_BAS
-   98 A:a830  8d 02 e8                           sta MAPREG
+   97 A:a814  a9 00                              lda #MAP_BAS
+   98 A:a816  8d 02 e8                           sta MAPREG
 
-  100 A:a833  af ff 00 07                        lda lock
-  101 A:a837  1a                                 inc 
-  102 A:a838  8f ff 00 07                        sta lock
-  103 A:a83c                           nopoll    
+  100 A:a819  af ff 00 07                        lda lock
+  101 A:a81d  1a                                 inc 
+  102 A:a81e  8f ff 00 07                        sta lock
+  103 A:a822                           nopoll    
 
-  109 A:a83c  c2 30                              rep #%00110000
-  110 A:a83e                                     .xl 
-  111 A:a83e                                     .al 
-  112 A:a83e  fa                                 plx 
-  113 A:a83f  7a                                 ply 
-  114 A:a840  68                                 pla 
-  115 A:a841                                    ;pld
-  116 A:a841                                    ;plb
-  117 A:a841  40                                 rti 
-  118 A:a842                                     .) 
+  109 A:a822  c2 30                              rep #%00110000
+  110 A:a824                                     .xl 
+  111 A:a824                                     .al 
+  112 A:a824  fa                                 plx 
+  113 A:a825  7a                                 ply 
+  114 A:a826  68                                 pla 
+  115 A:a827                                    ;pld
+  116 A:a827                                    ;plb
+  117 A:a827  40                                 rti 
+  118 A:a828                                     .) 
 
 boot.a65
 
 
-  421 A:a842                                    ; this is 4k+6p byte max
-  422 A:a842                                    ; 1st 256 byte is ipl
+  427 A:a828                                    ; this is 4k+6p byte max
+  428 A:a828                                    ; 1st 256 byte is ipl
 
-  424 A:a842  ff fe 90 00 01 ff 1e ...           .dsb RUNADDR+30*256-*,$ff
-  425 A:ae00                                     .) 
+  430 A:a828  ff fe 90 00 01 ff 1e ...           .dsb RUNADDR+30*256-*,$ff
+  431 A:ae00                                     .) 

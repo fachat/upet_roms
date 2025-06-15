@@ -86,6 +86,12 @@ BOOTCOL	=$05	; black background with light green text
 
 BRDCOL	=0	; border colour = black
 
+		; temporary fix for a (potential) issue in xa2.4.1 when a
+		; 24 bit value is used before it is defined
+lock 	  	=$0700ff        ; last byte in zeropage in bank 7/block 14
+VCOUNT        	=$0700fe
+;tmp		=$0700fd
+
 	; ------------------------
 	; this is the actual boot code, 
 	; loaded from Flash via SPI to $9000 by above ipl code
@@ -420,7 +426,7 @@ sl	sta VICCY
 
 	; this is 4k+6p byte max
 	; 1st 256 byte is ipl
-
+#print *
 	.dsb RUNADDR+30*256-*,$ff
 	.)
 

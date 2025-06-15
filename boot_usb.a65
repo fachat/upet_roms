@@ -1,9 +1,9 @@
 
 .(
 
-&lock	=$0700ff	; last byte in zeropage in bank 7/block 14
-&VCOUNT	=$0700fe
-tmp	=$0700fd
+;&lock	=$0700ff	; last byte in zeropage in bank 7/block 14
+;&VCOUNT	=$0700fe
+;usbtmp	=$0700fd
 
 &MAP_USB	=USBBLK
 &MAP_BAS	=0
@@ -182,18 +182,6 @@ stop
 	plp
 	rts
         .)
-
-	.(
-#define	UPETROM
-&&startupetrom4
-	*=COMPADDR
-#print COMPADDR
-#include "usb65/platforms/upet/petromcomp.a65"
-#undef UPETROM
-#print COMPADDR
-	*=startupetrom4-COMPADDR+*
-&&endupetrom4
-	.)
 
 &tear_usb=t_uninstall
 .)

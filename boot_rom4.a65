@@ -6,6 +6,10 @@ SDC_COMPANION	=$fe30		; SD-Card link
 USB_COMPANION	=$df00		; USB link
 USB_CPAGE	=$1f	;$0f	; where USB companion is in flash
 
+MAP_USB		=15
+STPFL		=$9b
+driver_init	=$1000
+
 	; -----------------------
 	; copy over PET BASIC4 $b000-$dfff
 	lda #$c0
@@ -54,17 +58,11 @@ USB_CPAGE	=$1f	;$0f	; where USB companion is in flash
 	and #OPT2_USBHID
 	beq nousb
 dousb
-;	; copy over petromcomp to destination at $dfxx
-;	lda #USB_CPAGE		; page in flash
-;	ldx #USB_COMPANION	; target in bank 0
-;	ldy #$0100		; length
-;	jsr flash2direct_xl
-	
 	ldx #0
-:	lda startupetrom4,x
+:	lda usbcomp_start,x
 	sta USB_COMPANION,x
 	inx
-	cpx #endupetrom4-startupetrom4
+	cpx #usbcomp_end-usbcomp_start
 	bcc :-
 
         ; set X/Y registers to 8 bit ...
@@ -513,6 +511,31 @@ rompatch_end:
 #define	ROM
 #include "patch4.a65"
 #undef ROM
+
+#undef USB_PAUSE
+#undef USB_PRINT2
+#undef USB_NEWIRQ
+#undef USB_INIT
+#undef USB_INSTALL
+
+#define	USB_INIT
+#define	USB_INSTALL
+#include "usb65/platforms/upet/petrom_install.a65"
+#undef USB_INIT
+#undef USB_INSTALL
+
+usbcomp_start
+	*=USB_COMPANION
+#define	USB_PAUSE
+#define	USB_PRINT2
+#define	USB_NEWIRQ
+#include "usb65/platforms/upet/petrom_install.a65"
+#undef USB_PAUSE
+#undef USB_PRINT2
+#undef USB_NEWIRQ
+	*=usbcomp_start + * - USB_COMPANION
+usbcomp_end
+
 	.xl
 	.)		; end setup_basic4_xl
 
