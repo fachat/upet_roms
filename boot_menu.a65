@@ -1,10 +1,8 @@
 
 &do_menu_xl .(
-	;jsr clrscreen_xl
 	lda #BOOTCOL
 	jsr setcol_xl
 	jsr selecttext_xl
-
 	; switches to .xs
 	sep #%00010000
 	.xs
@@ -14,9 +12,6 @@
 
 chkloop	lda opt
 	beq chkloop
-
-	;jsr conv_char2opt
-	;bcc chkloop		; unknown option
 
 	rep #%00010000
 	.xl

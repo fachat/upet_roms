@@ -85,6 +85,17 @@ nohw
 
 	.xs                                                                         
 
+&usb_poll .(
+        lda #MAP_USB    
+        sta MAPREG      
+                       
+        jsr driver_poll 
+
+        lda #MAP_BAS     
+        sta MAPREG      
+	rts
+	.)
+
 romcomp	.(
 	*=COMPADDR
 ; ignored

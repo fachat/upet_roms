@@ -33,10 +33,18 @@ TC_FF     	=12		; form feed (clear scr)
 TC_CR     	=13		; carriage return
 TC_ESC    	=27		; escape
 
-TC_CLFT   	=$80		; cursor left
-TC_CRGT   	=$81		; cursor right
-TC_CUP    	=$82		; cursor up
-TC_CDWN   	=$83		; cursor down
+; PET (as USB kbd returns those
+TC_CLFT   	=$9d		; cursor left
+TC_CRGT   	=$1d		; cursor right
+TC_CUP    	=$91		; cursor up
+TC_CDWN   	=$11		; cursor down
+
+; GeckOS
+;TC_CLFT   	=$80		; cursor left
+;TC_CRGT   	=$81		; cursor right
+;TC_CUP    	=$82		; cursor up
+;TC_CDWN   	=$83		; cursor down
+
 TC_HOME   	=$84		; cursor home (top left of window)
 TC_CLR    	=$85		; clear window (FF)
 TC_DEL    	=$86		; delete char under cursor
@@ -52,14 +60,14 @@ TC_INSL		=$8e		; insert empty line under cursor
 TC_ECHO   	=$8f	/* device shall echo: terminal = full screen */
 TC_NOECHO 	=$90	/* appl. echos: full appl. control */
 
-TC_CPOS   	=$91		; set cursor pos - next chars are row and col
+;TC_CPOS   	=$91		; set cursor pos - next chars are row and col
 
 TC_ATTR		=$92		; next byte is attribute for display
 
 TC_FGCOL	=$93		; next byte is foreground colour
 
 TC_HELP   	=$9c		; C128 HELP key
-TC_ALT    	=$9d		; C128 ALT key
+;TC_ALT    	=$9d		; C128 ALT key
 TC_NOSCRL 	=$9e		; C128 NO SCROLL key
 
 

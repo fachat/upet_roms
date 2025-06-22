@@ -44,6 +44,12 @@ OFFCHAR	=46	;87
 	sep #%00010000
 	.xs
 
+	lda #0
+	sta opt0
+	sta opt1
+	sta opt2
+	sta optu
+
 	; detect hardware, set masks
 	jsr detect_xs
 
@@ -921,7 +927,6 @@ chars   .byt "124689"
         .byt "1"+128,"2"+128,"4"+128,"6"+128,"8"+128, "9"+128
         ; shifted keys from USB
         .byt "!",$22, "$", "^","*","("
-        .byt "o" 		; options menu
 opts
         .byt %00000001          ; patched basic1
         .byt %00000010          ; patched basic2

@@ -101,6 +101,7 @@ jmpboot
 	.(
 
 	; code runs in .xs/.as
+	sep #%00110000
 	.xs
 	.as
 
@@ -187,6 +188,10 @@ copy
 
 	jsr do_options_init_xl
 mloop
+	lda #0
+	sta opt
+	sta optkbd
+
 	jsr do_menu_xl
 
 	cmp #"o"
@@ -196,10 +201,6 @@ mloop
 	
 	cmp #"x"
 	bne doreal
-
-	lda #0
-	sta opt
-	sta optkbd
 
 	jmp mloop
 doreal
@@ -220,7 +221,6 @@ doreal
 	jsr boot_col
 	jsr setcol_xl
 	plp
-
 
 	; not found - something bad
 	bcs foundopt

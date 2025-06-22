@@ -12,7 +12,12 @@
 	; those are called from the interrupt routine
 key_usb	.(
 	;inc $8020
-	sta opt
+	cmp #%10000000
+	bcs :+
+	cmp #%01000000
+	bcc :+
+	ora #%00100000
+:	sta opt
 	lda #8
 	ora optkbd
 	sta optkbd

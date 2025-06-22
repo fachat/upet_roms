@@ -88,14 +88,15 @@ newirq	.(
 
         dec
         sta lock	; lock
-        
-        lda #MAP_USB
-        sta MAPREG
-
-        jsr driver_poll
-
-	lda #MAP_BAS
-        sta MAPREG
+       
+	jsr usb_poll 
+;        lda #MAP_USB
+;        sta MAPREG
+;
+;        jsr driver_poll
+;
+;	lda #MAP_BAS
+;        sta MAPREG
         
         lda lock
         inc
