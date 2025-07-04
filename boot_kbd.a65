@@ -117,7 +117,10 @@ nextr2	pla
 	bra nextr
 openshift
 	jsr shift_petn
-c64s	jsr shift_c64
+	jsr shift_c64x
+	bra nextr2
+c64s	
+	jsr shift_c64
 	bra nextr2
 
 shift_petn
@@ -129,11 +132,15 @@ shift_petn
 	bne gotchar
 	; C64
 shift_c64
-	cpx #55		; 3/1 = "R" = Left shift on C64 kbd
-	beq gotshift
+	cpx #42		; 3/1 = "R" = Left shift on C64 kbd
+	beq gotshift64
+shift_c64x
+	cpx #55
+	beq gotshift64
 gotchar
 	stx char
 	rts
+gotshift64
 gotshift
 	ror shift	; implicit sec after branch from cpx/beq
 	rts
@@ -201,8 +208,8 @@ openkbd
 	cpx #76		; 0/4 = "(" = "9" on C64 kbd
 	beq is9
 is9
-bloopx
 	pla		; get shift from stack and ignore
+bloopx
 	clc	
 	rts
 
@@ -254,24 +261,31 @@ dec_shiftpet
 	beq bloopx
 	sec
 	rts
-	
-ktab_c64  .byt "1_", 2 /* control */, "2 ", TC_HT /* C= */, "q", 3 /* stop */  
-          .byt "|*;", TC_HOME, 1 /* shift */, "=","^","/"                           
-          .byt "+pl-.:@,"                                                      
-          .byt "9ij0mkon"                                                      
-          .byt "7yg8bhuv"                                                      
-          .byt "5rd6cftx"                                                      
-          .byt "3wa4zse", 1 /* shift */                                        
-          .byt TC_BS, TC_CR, TC_CRGT, 0, 6 /* F1 */, 0, 0, TC_CDWN             
 
-stab_c64  .byt "!", TC_ESC, 2 /* control */, 34," ", 6 /* C= */, "Q", 3 /*stop*/
-          .byt "\\*]", TC_CLR, 1 /* shift */, "=^^?"
-          .byt "+PL_>[@<"
-          .byt ")IJ0MKON"
-          .byt "'YG(BHUV"
-          .byt "%RD&CFTX"
-          .byt "#WA$ZSE", 1 /* shift */
-	  .byt TC_INS, TC_LF, TC_CLFT, 0, 6 /* F1 */, 0, 0, TC_CUP
+
+ktab_c64 
+	.asc 0,0,0,0,0,0,0,0
+	.asc 0,0,0,0,0,0,0,0
+	.asc 0 /*f7*/,TC_HOME,"-","0","8","6","4","2"
+	.asc 0 /*f5*/,"^","@","o","u","t","e","q"
+	.asc 0 /*f3*/,"=",":","k","h","f","s",TC_HT /*C=*/
+	.asc 0 /*f1*/,1 /*r-shift*/,".","m","b","c","z"," "
+	.asc TC_CDWN,"/",",","n","v","x",1 /* l-shift */,3 /*stop*/
+	.asc TC_CRGT,";","l","j","g","d","a",2 /* ctrl */
+	.asc TC_CR,"*","p","i","y","r","w","~"
+	.asc TC_BS,"\\","+","9","7","5","3","1"
+
+stab_c64 
+	.asc 0,0,0,0,0,0,0,0
+	.asc 0,0,0,0,0,0,0,0
+	.asc 0 /*f7*/,TC_CLR,"-","0","(","&","$","\""
+	.asc 0 /*f5*/,"^","@","O","U","T","E","Q"
+	.asc 0 /*f3*/,"=","[","K","H","F","S",TC_HT /*C=*/
+	.asc 0 /*f1*/,1 /*r-shift*/,">","M","B","C","Z"," "
+	.asc TC_CUP,"?","<","N","V","X",1 /* l-shift */,3 /*stop*/
+	.asc TC_CLFT,"]","L","J","G","D","A",2 /* ctrl */
+	.asc TC_LF,"*","P","I","Y","R","W","~"
+	.asc TC_INS,"\\","+","9","7","5","3","1"
 
 ;key number is (9-row)*8+(7-col)+1
 ktab_petn .asc "=.",0,3,"< [", TC_HT

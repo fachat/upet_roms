@@ -187,10 +187,12 @@ copy
 	cli
 
 	jsr do_options_init_xl
+
+	lda #0
+	sta optkbd
 mloop
 	lda #0
 	sta opt
-	sta optkbd
 
 	jsr do_menu_xl
 
