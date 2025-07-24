@@ -78,10 +78,10 @@ newirq	.(
 	jsr checkkbd_xs
 	jsr key_pet
 
-	lda VCOUNT	; vertical screen interrupt
+	lda BOOT_VCOUNT	; vertical screen interrupt
 	clc
 	adc #1
-	sta VCOUNT
+	sta BOOT_VCOUNT
 
         lda lock        ; check lock so we don't get into poll again on pause
 	bmi nopoll

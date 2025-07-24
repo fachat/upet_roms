@@ -2,7 +2,7 @@
 .(
 
 ;&lock	=$0700ff	; last byte in zeropage in bank 7/block 14
-;&VCOUNT	=$0700fe
+;&VCOUNT=$0700fe
 ;usbtmp	=$0700fd
 
 &MAP_USB	=USBBLK
@@ -159,8 +159,8 @@ t_pause .(
 	
 	tax                             
 	inx           ; full retraces, s
-p0	lda VCOUNT                      
-p1	cmp VCOUNT                      
+p0	lda BOOT_VCOUNT                      
+p1	cmp BOOT_VCOUNT                      
 	beq p1                          
 	dex                             
 	bne p0                          

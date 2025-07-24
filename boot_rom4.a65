@@ -6,6 +6,8 @@ SDC_COMPANION	=$fe30		; SD-Card link
 USB_COMPANION	=$df00		; USB link
 USB_CPAGE	=$1f	;$0f	; where USB companion is in flash
 
+VCOUNT		=$99
+
 MAP_USB		=15
 STPFL		=$9b
 driver_init	=$1000

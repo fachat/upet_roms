@@ -89,7 +89,7 @@ BRDCOL	=0	; border colour = black
 		; temporary fix for a (potential) issue in xa2.4.1 when a
 		; 24 bit value is used before it is defined
 lock 	  	=$0700ff        ; last byte in zeropage in bank 7/block 14
-VCOUNT        	=$0700fe
+BOOT_VCOUNT   	=$0700fe
 ;tmp		=$0700fd
 
 	; ------------------------
