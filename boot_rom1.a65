@@ -1,8 +1,5 @@
 
 setup_basic1_xl	.(
-	; save patch bit (ac.7)
-	pla
-
 	; -----------------------
 	; copy over BASIC 1 charrom to RAM
 	; $14000-$15fff in flash img
@@ -28,8 +25,8 @@ copy
 	ldy #$4000	; len
 	jsr flash2direct_xl
 	
-	pla
-	bmi b1_orig	; check BASIC1 patch
+	lda opt1
+	bpl b1_orig	; check KERNEL patch
 
 	; apply BASIC1 patch like in VICE
 	jsr patch_rom1_xl

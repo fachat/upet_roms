@@ -76,28 +76,27 @@ newirq	.(
 #endif
 
 	jsr checkkbd_xs
-	bcc nokey
 	jsr key_pet
-nokey
 
-	lda VCOUNT	; vertical screen interrupt
+	lda BOOT_VCOUNT	; vertical screen interrupt
 	clc
 	adc #1
-	sta VCOUNT
+	sta BOOT_VCOUNT
 
         lda lock        ; check lock so we don't get into poll again on pause
 	bmi nopoll
 
         dec
         sta lock	; lock
-        
-        lda #MAP_USB
-        sta MAPREG
-
-        jsr driver_poll
-
-	lda #MAP_BAS
-        sta MAPREG
+       
+	jsr usb_poll 
+;        lda #MAP_USB
+;        sta MAPREG
+;
+;        jsr driver_poll
+;
+;	lda #MAP_BAS
+;        sta MAPREG
         
         lda lock
         inc

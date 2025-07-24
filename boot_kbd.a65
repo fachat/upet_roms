@@ -1,0 +1,315 @@
+
+	; opt is
+	; bit 7   - 1=80 cols
+	; bit 6   - 1=C64
+	; bit 5   - 1=8296 ext.
+	; bit 4   - USB kbd support (only BASIC4, only w/ option from USB)
+	; bit 3   - option menu
+	; bit 2/1 - model (01=basic1, 10=basic2, 11=basic4) 
+
+	.xs
+
+	; those are called from the interrupt routine
+key_usb	.(
+	;inc $8020
+	cmp #%10000000
+	bcs :+
+	cmp #%01000000
+	bcc :+
+	ora #%00100000
+:	sta opt
+	lda #8
+	ora optkbd
+	sta optkbd
+	rts
+	.)
+
+	; AC has 
+key_pet	.(
+	bcc nolast
+	jsr conv_pet2char
+	bcc nolast
+	cmp lastopt
+	beq noopt
+	sta opt
+	sta lastopt
+	tya
+	ora optkbd
+	sta optkbd
+sameopt	rts
+nolast	lda #0
+	sta lastopt
+noopt 	;lda #0
+	;sta opt
+	rts
+	.)
+
+	; ----------------------------
+	; check keyboard for input
+	; returns
+	; c=0	- no key pressed
+	; c=1	- key pressed
+	;	xr=number of key
+	;	ac=shift flag
+	.xs
+
+checkkbd_xs .(
+	lda #0
+	sta char
+	sta shift
+	; init
+	lda #$38	; DDR, CA2 output hi
+	sta PIA1+PIA_CRA; $e811
+	lda #$0f	; set keybd row select to output
+	sta PIA1+PIA_PA	; $e810
+	lda #$3c	; Port A, CA2 output hi
+	sta PIA1+PIA_CRA; $e811
+	lda #$38	; DDR, CB2 output hi
+	sta PIA1+PIA_CRB; $e813
+	lda #0		; all bits input PB
+	sta PIA1+PIA_PB	; $e812
+#if VICCY_IRQ
+	lda #$3c	; Port B, CB2 output hi
+#else
+	lda #$3d	; Port B, CB2 output hi
+#endif
+	sta PIA1+PIA_CRB; $e813
+
+	; init scan
+	lda $e810
+	and #$F0
+
+	sta $e810
+
+	; scan
+	ldx #$50
+rloop	ldy #8
+ioloop	lda $e812
+	cmp $e812
+	bne ioloop
+bloop	lsr
+	bcc gotone
+nextr	dex
+	beq done
+	dey
+	bne bloop
+	inc $e810
+	bra rloop	; always
+
+done	ldx char
+	clc
+	beq ret	
+	lda shift
+	sec		; got one
+ret	rts
+
+gotone	; x has number of key
+	; save AC
+	pha
+	lda optkbd
+	beq openshift
+	lsr
+	and #%00010000
+	bne c64s
+	bcc openshift
+	jsr shift_petn
+nextr2	pla
+	bra nextr
+openshift
+	jsr shift_petn
+	jsr shift_c64x
+	bra nextr2
+c64s	
+	jsr shift_c64
+	bra nextr2
+
+shift_petn
+	; PET-N
+	cpx #16		; left shift (8/0)
+	beq gotshift
+	cpx #11		; right shift (8/5) (works, but not on a C64 keybd)
+	beq gotshift
+	bne gotchar
+	; C64
+shift_c64
+	cpx #42		; 3/1 = "R" = Left shift on C64 kbd
+	beq gotshift64
+shift_c64x
+	cpx #55
+	beq gotshift64
+gotchar
+	stx char
+	rts
+gotshift64
+gotshift
+	ror shift	; implicit sec after branch from cpx/beq
+	rts
+	.)
+
+	;---------------------------------------
+	; convert checkkbd output to option char
+	; in: a/x from checkkbd
+	; out:
+	;	c=0: no option identified
+	;	c=1: option char in AC,
+	;		YR= kbd flag: 32=C64 kbd, 0=N-type
+	;
+conv_pet2char .(
+	pha		; save shift flag	
+	lda optkbd	; check detected keyboard
+	beq openkbd
+
+	and #%00100000
+	beq notc64
+	jmp decode_c64
+notc64
+	lda optkbd
+	and #1
+	beq openkbd
+	jmp decode_petn
+openkbd
+	; PET N-type keyboard
+	ldy #1
+
+	; key number is (9-row)*8+(7-col)+1 where row/col are from www.6502.org/users/andre/petindex/keymap/petgraph.png
+	cpx #41		; 4/7 = "6"
+	beq is8296
+	cpx #18		; 7/6 = "2"
+	beq is2
+	cpx #42		; 4/6 = "4"
+	beq is4
+	cpx #50		; 3/6 = "8"
+	beq is8
+	cpx #26		; 6/6 = "1"
+	beq is1
+	cpx #57		; 2/7 = "9"
+	beq is9
+	cpx #60		; 2/4 = "o" for options
+	beq isopt
+
+	; C64 keyboard
+	ldy #32
+
+	; derived from https://www.keymmodore.com/the-matrix/
+;	cpx #42		; 4/6 = "4" = Right shift on C64 - clash with N-type "4"
+;	beq gotshift
+	cpx #22		; 7/2 = "N" = "6" on C64 kbd 
+	beq is8296
+;	cpx #24		; 7/0 = "X" = "2" on C64 kbd - no C64 kbd option
+;	beq is2
+	cpx #23		; 7/1 = "V" = "4" on C64 kbd
+	beq is4
+	cpx #21		; 7/3 = "," = "8" on C64 kbd
+	beq is8
+;	cpx #80		; 0/0 = "!" = "1" on C64 kbd - no C64 kbd option
+;	beq is1c64
+	cpx #28		; 6/4 = ";" = "o" on C64 kbd
+	beq isopt
+	cpx #76		; 0/4 = "(" = "9" on C64 kbd
+	beq is9
+is9
+	pla		; get shift from stack and ignore
+bloopx
+	clc	
+	rts
+
+is8296	ldx #"6"		;128+32+6
+	.byt $2c
+is8	ldx #"8"		; 128+6
+	.byt $2c
+is4	ldx #"4"		; 6
+	.byt $2c
+is2	ldx #"2"		; 4
+	.byt $2c
+is1	ldx #"1"		; 2
+	.byt $2c
+isopt	ldx #"o"
+addshift
+	pla	; restore shift flag
+	bpl nosh
+	txa	; restore option byte
+	ora #128
+	tax
+nosh	txa
+	sec
+	rts
+
+decode_c64
+	dex
+	pla
+	bmi dec_shift64
+	lda ktab_c64,x
+	beq bloopx
+	sec
+	rts
+dec_shift64
+	lda stab_c64,x
+	beq bloopx
+	sec
+	rts
+
+decode_petn
+	dex
+	pla
+	bmi dec_shiftpet
+	lda ktab_petn,x
+	beq bloopx
+	sec
+	rts
+dec_shiftpet
+	lda stab_petn,x
+	beq bloopx
+	sec
+	rts
+
+
+ktab_c64 
+	.asc 0,0,0,0,0,0,0,0
+	.asc 0,0,0,0,0,0,0,0
+	.asc 0 /*f7*/,TC_HOME,"-","0","8","6","4","2"
+	.asc 0 /*f5*/,"^","@","o","u","t","e","q"
+	.asc 0 /*f3*/,"=",":","k","h","f","s",TC_HT /*C=*/
+	.asc 0 /*f1*/,1 /*r-shift*/,".","m","b","c","z"," "
+	.asc TC_CDWN,"/",",","n","v","x",1 /* l-shift */,3 /*stop*/
+	.asc TC_CRGT,";","l","j","g","d","a",2 /* ctrl */
+	.asc TC_CR,"*","p","i","y","r","w","~"
+	.asc TC_BS,"\\","+","9","7","5","3","1"
+
+stab_c64 
+	.asc 0,0,0,0,0,0,0,0
+	.asc 0,0,0,0,0,0,0,0
+	.asc 0 /*f7*/,TC_CLR,"-","0","(","&","$","\""
+	.asc 0 /*f5*/,"^","@","O","U","T","E","Q"
+	.asc 0 /*f3*/,"=","[","K","H","F","S",TC_HT /*C=*/
+	.asc 0 /*f1*/,1 /*r-shift*/,">","M","B","C","Z"," "
+	.asc TC_CUP,"?","<","N","V","X",1 /* l-shift */,3 /*stop*/
+	.asc TC_CLFT,"]","L","J","G","D","A",2 /* ctrl */
+	.asc TC_LF,"*","P","I","Y","R","W","~"
+	.asc TC_INS,"\\","+","9","7","5","3","1"
+
+;key number is (9-row)*8+(7-col)+1
+ktab_petn .asc "=.",0,3,"< [", TC_HT
+          .asc "-0",0,">",0,"]@",0
+          .asc "+2",0,"?,nvx"                                 
+          .asc "31",TC_CR,";mbcz"
+          .asc "*5",0,":khfs"                                        
+          .asc "64",0,"ljgda"
+          .asc "/8",0,"piyrw"                                        
+          .asc "97","^","outeq"
+	  .asc TC_BS,TC_CDWN,0,")\\'$":.byt $22   
+	  .asc TC_CRGT,TC_HOME,"~(&%#!"
+
+stab_petn .asc "=.",0,TC_ESC,"< {", TC_HT
+          .asc "-0",0,">",0,"}@",0
+	  .asc "+","2"+128, 0,"?,NVX"
+          .asc "3"+128, "1"+128, TC_LF,";MBCZ"
+	  .asc "*", "5"+128, 0,":KHFS"
+          .asc "6"+128,"4"+128,0,"LJGDA"
+	  .asc "/","8"+128,0,"PIYRW"
+          .asc "9"+128,"7"+128,"^","OUTEQ"
+	  .asc TC_INS,TC_CUP,0,")\\'$":.byt $22
+          .asc TC_CLFT,TC_CLR,"|(&%#!"
+
+	.)
+
+	.xl

@@ -29,6 +29,7 @@
 ; $1c000  SD-Card DOS (16k) to be run in bank 7
 
 #include "viccy.i65"
+#include "tcdefs.i65"
 
 VBANK	=$080000
 
@@ -60,6 +61,13 @@ RUNADDR	=$9000
 shift	=$87ff
 char	=$87fe
 opt	=$87fd
+optkbd	=$87fc
+lastopt	=$87fb
+
+&opt0	=$87f8
+&opt1	=$87f7
+&opt2	=$87f6
+&optu	=$87f5
 
 VCTRL   =$e800
 MCTRL   =$e801
@@ -78,6 +86,12 @@ BOOTCOL	=$05	; black background with light green text
 
 BRDCOL	=0	; border colour = black
 
+		; temporary fix for a (potential) issue in xa2.4.1 when a
+		; 24 bit value is used before it is defined
+lock 	  	=$0700ff        ; last byte in zeropage in bank 7/block 14
+BOOT_VCOUNT   	=$0700fe
+;tmp		=$0700fd
+
 	; ------------------------
 	; this is the actual boot code, 
 	; loaded from Flash via SPI to $9000 by above ipl code
@@ -87,6 +101,7 @@ jmpboot
 	.(
 
 	; code runs in .xs/.as
+	sep #%00110000
 	.xs
 	.as
 
@@ -165,23 +180,55 @@ copy
 
 	jsr clrscreen_xl
 
+	jsr setup_sdcard_xl
+
 	jsr setup_usb_xl
+
+	cli
+
+	jsr do_options_init_xl
+
+	lda #0
+	sta optkbd
+mloop
+	lda #0
+	sta opt
 
 	jsr do_menu_xl
 
-	; save config byte
+	cmp #"o"
+	bne doreal
+
+	jsr do_options_xl
+	
+	cmp #"x"
+	bne doreal
+
+	jmp mloop
+doreal
+	; save config char ("1", "2", ..)
 	pha
 
-	jsr usb_uninst
+	jsr tear_usb	;usb_uninst
 
 	jsr irq_uninstall
 
+	pla
+	; convert selected boot option to config bits (opt0-2,u)
+	jsr conv_char2opt_xl
+
+	php
 	; set screen to green-on-black
 	; before we set mode, as 8296 disables col mem access
-	lda #$05
+	jsr boot_col
 	jsr setcol_xl
+	plp
 
-	pla
+	; not found - something bad
+	bcs foundopt
+	jmp jmpboot
+foundopt
+
        ; ----------------------------                                        
        ; In: AC has key in ASCII                                             
        ;                                                                     
@@ -196,7 +243,7 @@ copy
 
 	;----------------------------------------------------
 	; 1= Basic1, 2=Basic2, 3=Basic4
-	pha	
+	lda opt0	
 	and #%00000011	; ROM version
 
 	cmp #1
@@ -226,6 +273,15 @@ end
 	; ... and tell the assembler about it
 	.xs
 
+	lda optu
+	lsr
+	lsr
+	lsr
+	lsr
+	lsr
+	lsr
+	sta SPEED
+
 	; switch to native mode
 	sec
 	xce
@@ -241,12 +297,18 @@ end
 	; YR = number of bytes (16 bit)
 	; flash bank 0
 flash2direct_xl 
-	clc		; first 64k in Flash
-	.byt $24
+	pha
+	lda #0
+	beq doflash
 	; flash bank 1
 flash2direct2_xl
-	sec		; second 64k in Flash
-
+	pha
+	lda #1		; second 64k in Flash
+	bne doflash
+flash2direct3_xl
+	pha
+	lda #2
+doflash
 	; C is A16 for address in Flash
 	.(
 	pha
@@ -254,8 +316,7 @@ flash2direct2_xl
 	sta SPICTRL	; enable Flash
 	lda #3
 	sta SPIDATA	; READ command
-	lda #0
-	rol		; rotate carry into A16
+	pla
 	sta SPIDATA	; bits 23-16
 	pla
 	sta SPIDATA	; bits 15-8
@@ -356,16 +417,18 @@ sl	sta VICCY
 
 
 #include "boot_menu.a65"
+#include "boot_kbd.a65"
+#include "boot_opts.a65"
 #include "boot_rom1.a65"
 #include "boot_rom2.a65"
 #include "boot_rom4.a65"
 #include "boot_usb.a65"
+#include "boot_sdcard.a65"
 #include "boot_irq.a65"
 
-	; this is 4k-512 byte max
+	; this is 4k+6p byte max
 	; 1st 256 byte is ipl
-	; 2nd 256 byte is USB companion
-
-	.dsb RUNADDR+14*256-*,$ff
+#print *
+	.dsb RUNADDR+30*256-*,$ff
 	.)
 

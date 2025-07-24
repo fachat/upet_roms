@@ -16,6 +16,11 @@
  *	commands. This allows just typing DLOAD in front of
  *	a line from the directory listing - ignoring the PRG
  *	output of the DIRECTORY/CATALOG command.
+ * 5)   POKE addr, val1 [,val2][,val3]...
+ *
+ * TODO: 
+ *	- disable ATN on IEEE break
+ *	- if C64 start address detected, change BASIC start
  *
  * TODO: shorten code by using long registers
  */
@@ -30,6 +35,10 @@ IOBASE		=$e800
 
 curdev		=$d4	; current device number
 
+CHRGOT		=$0076
+CHRGET		=$0070
+EVALBYTE	=$c8d4
+
 #ifndef ROM
 	.word $0401
 	*=$0401
@@ -40,18 +49,35 @@ curdev		=$d4	; current device number
 link	.word 0
 
 	.dsb $0410-*
-#else
-opt_install:
+
+	jsr patch_rom4_init
+	jsr patch_kernal4
+	jsr patch_basic4
+	jmp patch_rom4_end
 #endif
+
+	.(
+
+&patch_rom4_init .(
+	sei
+	lda #0		; write-enable all ROMs
+	sta $e801
+	jsr patch_in_code
+	rts
+.)
+
+&patch_rom4_end .(
+	lda #$f0	; write protect all ROMs
+	sta $e801
+	cli
+	rts
+.)
+
+&patch_kernal4 .(	
 	; clear out the jump table from unrelated BASIC jumps
 	; Note that those are referenced in the BASIC token 
 	; list, so we need to patch in address minus 1
-
-
-	sei
-
-	lda #0		; write-enable all ROMs
-	sta $e801
+	jsr patch_in_jmptbl
 
 	; remove the page FF jmp table entries that are only used from
 	; BASIC
@@ -63,6 +89,19 @@ opt_install:
 	; This also frees zeropage location $99/$9a
 	jsr remove_timerfix
 
+	; pass all calls to STOP through FFE1
+	jsr use_jmptable_stop
+
+	; link in check for STOP in IEEE
+	jsr link_ieee_stop
+
+	; add missing ATN disable
+	;jsr disable_atn
+
+	rts
+	.)
+
+&patch_basic4 .(
 	; convenience: remove check for D drive parameters
 	; being 0/1 only.
 	jsr remove_d01_check
@@ -71,23 +110,10 @@ opt_install:
 	; in disk basic commands
 	jsr ignore_after_filename
 
-	; pass all calls to STOP through FFE1
-	jsr use_jmptable_stop
-
-	; patch in extra code
-	jsr patch_in_code
-
-	; link in check for STOP in IEEE
-	jsr link_ieee_stop
-
-	; add missing ATN disable
-	;jsr disable_atn
-
-	lda #$f0	; write protect all ROMs
-	sta $e801
-
-	cli	
+	; convenience: allow consecutive bytes in POKE command
+	jsr set_poke
 	rts
+	.)
 
 	; --------------------------------------------------------------	
 	; in some cases ATN is active after a STOP, which prevents
@@ -118,13 +144,16 @@ link_ieee_stop .(
 
 	; --------------------------------------------------------------	
 	; patch in extra code
-patch_in_code .(
+&patch_in_code .(
 	ldy #patch1len
 l1	lda patch1code-1,y
 	sta PATCH1-1,y
 	dey
 	bne l1
+	rts
+	.)
 
+patch_in_jmptbl .(
 	ldy #patch2len
 l2	lda patch2code-1,y
 	sta PATCH2-1,y
@@ -168,6 +197,18 @@ use_jmptable_stop .(
 	.)
 
 	; --------------------------------------------------------------	
+	; convenience: consecutive bytes in POKE
+set_poke .(
+	lda #$4c
+	sta $c960
+	lda #<XPOKE
+	sta $c961
+	lda #>XPOKE
+	sta $c962
+	rts
+	.)
+
+	; --------------------------------------------------------------	
 	; convenience: ignore extra characters after filename
 	; in disk basic commands
 ignore_after_filename .(
@@ -205,13 +246,13 @@ remove_timerfix .(
 	; remove the counter code on $f768-$f779
 	lda #$ea	; NOP
 	ldy #$f77a-$f768
-l1	sta $f767,y
+l1;	sta $f767,y
 	dey
 	bne l1
 
 	; also remove the counter reset at $f799-$f7a0
 	ldy #$f7a0-$f799
-l2	sta $f798,y
+l2;	sta $f798,y
 	dey
 	bne l2
 	rts
@@ -546,6 +587,24 @@ SETTIM	; SETTIM	set time
 	rts
 	.)
 
+	; extend POKE to accept multiple values poked to 
+	; consecutive memory locations
+XPOKE	.(
+	; jmp from $c960
+l0	sta ($11),y
+	jsr CHRGOT
+	cmp #","
+	bne pe
+	inc $11
+	bne l1
+	inc $12
+l1	jsr CHRGET
+	jsr EVALBYTE
+	txa
+	ldy #0
+	beq l0
+pe	rts
+	.)
 
 lFF84	; IOINIT	init all other I/O
 lFF87	; RAMTAS	RAM test and find end of RAM
@@ -608,6 +667,9 @@ patch4code
 	jmp SETLFS	; SETLFS	set logical/first/second address
 	jmp SETNAM	; SETNAM	set filename
 	jmp $f563	; OPEN		open a file after using SETLFS/SETNAM
+	jmp $f2e2	; CLOSE		close a file, LFN in AC
 	patch4len = *-PATCH4
 	*=patch4code + patch4len
+
+	.)
 

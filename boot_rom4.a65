@@ -1,18 +1,17 @@
 
 setup_basic4_xl	.(
-
 	; where do we store the extra patch code
-IEEE_PATCH		=$fe20		; IEEE fix for faster CPU clocks
+IEEE_PATCH	=$fe20		; IEEE fix for faster CPU clocks
 SDC_COMPANION	=$fe30		; SD-Card link
 USB_COMPANION	=$df00		; USB link
+USB_CPAGE	=$1f	;$0f	; where USB companion is in flash
 
-	; -----------------------
-	; copy over @MON 
-	lda #$10
-	ldx #$a000
-	ldy #$1000
-	jsr flash2direct_xl
-	
+VCOUNT		=$99
+
+MAP_USB		=15
+STPFL		=$9b
+driver_init	=$1000
+
 	; -----------------------
 	; copy over PET BASIC4 $b000-$dfff
 	lda #$c0
@@ -26,7 +25,7 @@ USB_COMPANION	=$df00		; USB link
 	ldy #$1000
 	jsr flash2direct_xl
 
-	pla		; bits 7/6/5 have number of editor ROM
+	lda opt0	; bits 7/6/5 have number of editor ROM
 			; bit 7: 1=orig, 0=patched
 			; bit 6: 1=80 col, 0=40 col
 			; bit 5: 1=c64, 0=PET-N kbd
@@ -38,55 +37,76 @@ USB_COMPANION	=$df00		; USB link
 			; 101 = C64,   40 col, orig
 			; 110 = PET-N, 80 col, orig
 			; 111 = C64,   80 col, orig
-	pha
 	and #%11100000
 	lsr
 	ldx #$e000
 	ldy #$1000
 	jsr flash2direct2_xl
 
-	; check USB patch
-	pla
-	pha
-	and #%00001000
-	beq nousb
+	; -----------------------
+	; TODO check monitor bit
+	; TODO overwrites boot code! needs some relocation!
+;	lda #0
+;	ldx #$a000
+;	ldy #$1000
+;	jsr flash2direct3_xl
 
-	; copy over petromcomp to destination at $dfxx
-	lda #$0f		; page in flash
-	ldx #USB_COMPANION	; target in bank 0
-	ldy #$0100		; length
-	jsr flash2direct_xl
+	; ------------------
+	; check USB patch
+	lda opt0		; from keyboard selection
+	and #OPT0_USBKBD
+	bne dousb
+	lda opt2		; from options menu
+	and #OPT2_USBHID
+	beq nousb
+dousb
+	ldx #0
+:	lda usbcomp_start,x
+	sta USB_COMPANION,x
+	inx
+	cpx #usbcomp_end-usbcomp_start
+	bcc :-
 
         ; set X/Y registers to 8 bit ...
         sep #%00010000
         .xs
 	
 	; install it into the ROM
-	jsr $df03
-
+	jsr USB_COMPANION+3
 	rep #%00010000
 	.xl
 
 	; reverse write protect done there
 	lda #0
 	sta $e801
+
+	; ------------------
+	; check SD Card
 nousb	
+	lda opt1
+	and #OPT1_SDCARD
+	beq nosd
+	jsr patch_sdcard4_xl
+nosd
+	; ------------------
 	; check BASIC4 patch
-	pla
-	pha
-	bmi b4_orig
+	; uses kernel, basic, siec patch bits
 	jsr patch_rom4_xl
+
+
+	; ------------------
+	; memory map setup
 b4_orig
 	; check 80 column bit
-	pla
-	pha
+	; TODO move to Viccy on FPGA machines
+	lda opt0
 	and #%01000000
 	beq col40
 	lda #%00000010
 	sta VCTRL
 col40
 	; check 8296 bit
-	pla
+	lda opt0
 	and #%00010000
 	beq not_96
 	; 8296
@@ -97,34 +117,46 @@ not_96	lda #%11100000
 	jmp end
 
 
-patch_rom4_xl .(
+patch_sdcard4_xl .(
 
 	; -------------------------------
 	; SD Card patch
-
-	; copy over SD-Card code
-	lda #$c0	; page $c0 on 2nd 64k flash bank
-	ldx #$4000	; to $4000
-	ldy #$4000	; copy $4000 bytes
-	jsr flash2direct2_xl
-	
-	ldx #$4000
-l	lda $4000-1,x
-	sta $074000-1,x
-	dex
-	bne l
 
   	; set X/Y registers to 8 bit ...
         sep #%00010000
         .xs
 
+	lda optu
+	and #3
+	ora #8
 	jsr sdcard_install
-
-	jsr opt_install
 
 	rep #%00010000
 	.xl
+	rts
+	.)
 
+patch_rom4_xl .(
+  	; set X/Y registers to 8 bit ...
+        sep #%00010000
+        .xs
+
+	jsr patch_rom4_init
+
+	lda opt1
+	and #OPT1_KERNAL
+	beq nokern
+	jsr patch_kernal4
+nokern
+	lda opt1
+	and #OPT1_BASIC
+	beq nobasic
+	jsr patch_basic4
+nobasic
+	jsr patch_rom4_end
+
+	rep #%00010000
+	.xl
 	; -------------------------------
 	; IEEE speed patch
 
@@ -168,11 +200,348 @@ l1	sec
 
 	.xs
 
-#include "dosromcomp.a65"
+; --------------------------------------------------------
+; This installs the patches to link the CMDR-DOS into the
+; PET BASIC 4 ROM. It requires that the DOS "rom.bin" is
+; loaded into the bank 7 (14 as value for $e802) at $4000.
+; Also, it must run in the upper half of bank 0, as it
+; switches the lower half to bank 7, to run the dos_init.
+; 
+; It also requires the value of "SDC_COMPANION" to be set
+; to the place in the ROM where to copy the link code.
+
+.(
+
+; address of the DOS in DOSBANK
+DOS	=$4000
+
+; DOS jumptable
+dos_seclstn	=DOS + 3 * 0
+dos_sectlk	=DOS + 3 * 1
+dos_iecin	=DOS + 3 * 2
+dos_iecout	=DOS + 3 * 3
+dos_untlk	=DOS + 3 * 4	; note: currently no-op
+dos_unlsn	=DOS + 3 * 5
+dos_listn	=DOS + 3 * 6
+dos_talk	=DOS + 3 * 7	; note: currently same as listn
+
+dos_init	=DOS + 3 * 8
+
+; banking
+
+#ifldef BANK
+.assert BANK == $e802, "BANK register incorrectly defined"
+#else
+BANK		=$e802
+#endif
+
+
+DOSBANK		=15	; DOS runs in memory mapped from $078000-$07ffff
+BASBANK		=0	; BASIC runs in bank 0
+
+; variables in BASIC address space
+
+flags		=$03fe	; for testing for now
+
+curdev		=$d4	; current device (unit) number
+cursec		=$d3	; current secondary address
+
+status		=$96	; IEEE status
+
+; DOS bank vars
+
+dos_status	=$0287	; from dos inc/banks.inc
+
+; constants (flags) - checked for with BVx/BPL/BMI
+
+DOS_TALK	=$80
+DOS_LISTEN	=$40
+
+; install the patch and binding
+	
+&sdcard_install .(
+	pha
+
+	lda #%01100000
+	sta $e801	; make ROM writable
+
+	; copy over the patch into ROM
+	ldx #rompatch_end - rompatch_start
+l0	lda PATCH-1,x
+	sta SDC_COMPANION-1,x
+	dex
+	bne l0
+
+	lda #$4c	; JMP
+	ldx #<talk_listn_unlstn
+	ldy #>talk_listn_unlstn
+	sta $f0d8	; note this is called for TALK, LISTEN and UNLISTEN
+	stx $f0d9	; with either $20, $40, or $3F in A (and PHA'd)
+	sty $f0da
+
+	ldx #<seclstn
+	ldy #>seclstn
+	sta $f145
+	stx $f146
+	sty $f147
+
+	ldx #<untlk
+	ldy #>untlk
+	sta $f1ae
+	stx $f1af
+	sty $f1b0
+
+	ldx #<iecin
+	ldy #>iecin
+	sta $f1c2
+	stx $f1c3
+	sty $f1c4
+
+	ldx #<sectlk
+	ldy #>sectlk
+	sta $f195
+	stx $f196
+	sty $f197
+
+	ldx #<iecout
+	ldy #>iecout
+	sta $f19e
+	stx $f19f
+	sty $f1a0
+	lda #$ea	; NOP
+	sta $f1a1
+
+	lda #%11100000
+	sta $e801	; write protect ROM
+
+	; init the DOS
+
+	pla		; dos unit
+
+	php
+	sei
+	ldx #DOSBANK
+	stx BANK
+	jsr dos_init
+	lda #BASBANK
+	sta BANK
+	plp
+	rts
+	.)
+
+	; -------------------------------------------------------
+	; the following code is copied into the ROM and called
+	; from the patches into the IEEE code
+
+PATCH:
+	; assemble for ROM address
+
+	*=SDC_COMPANION
+rompatch_start:
+
+	; AC is free. It needs to be #$40 when going back
+talk_listn_unlstn .(
+	cmp #$3f
+	beq unlisten
+
+	php
+	phx
+	sei
+	lda curdev
+	ldx #DOSBANK
+	stx BANK
+	jsr dos_talk	; note: DOS currently has same code for talk && listen 
+	ldx #BASBANK
+	stx BANK
+	tsx
+
+	lda flags
+	and #%00111111
+	bcs no_dev
+	; move the IEEE TALK/LISTEN commands into right bits for flags
+	.assert DOS_LISTEN == $40, "check on flag"
+	.assert DOS_TALK == $80, "check on flag"
+	lsr		; keep C for bit 0 ...
+	ora $0103,x 	; $40 for talk, $20 for listen
+	rol		; ... restore bit 0
+	sta flags
+	plx
+	plp
+	pla		; pop TALK/LISTEN flag saved by ROM 
+	clc
+	rts
+
+no_dev	sta flags
+	plx
+	plp
+orig_unlsn
+	lda $e840
+	jmp $f0db
+
+unlisten
+	.assert DOS_LISTEN == $40, "check on flag"
+	bit flags
+	bvc orig_unlsn
+	php
+	sei
+	lda #DOSBANK
+	sta BANK
+	jsr dos_unlsn
+	lda #BASBANK
+	sta BANK
+	plp
+	pla
+	rts
+	.)
+
+sectlk	.(
+	.assert DOS_TALK == $80, "check on flag"
+	bit flags
+	bpl not_dos
+&fix_sectalk
+	phx
+	php
+	sei
+	ldx #DOSBANK
+	stx BANK
+	jsr dos_sectlk
+	ldx #BASBANK
+	stx BANK
+	plp
+	plx
+	rts
+not_dos
+	jsr $f109
+	jmp $f198	
+	.)
+
+iecout	.(
+	.assert DOS_LISTEN == $40, "check on flag"
+	bit flags
+	bvc not_dos
+	phx
+	php
+	sei
+	ldx #DOSBANK
+	stx BANK
+	jsr dos_iecout
+	lda dos_status
+	ldx #BASBANK
+	stx BANK
+	ora status
+	sta status
+	plp
+	plx
+	rts
+not_dos
+	bit $a0
+	bmi l1
+	jmp $f1a2
+l1	jmp $f1a6
+	.)
+
+untlk	.(
+	.assert DOS_TALK == $80, "check on flag"
+	bit flags
+	bpl not_dos
+	; no-op
+	rts
+not_dos	
+	lda $e840
+	jmp $f1b1	
+	rts
+	.)
+
+seclstn	.(
+	.assert DOS_LISTEN == $40, "check on flag"
+	bit flags
+	bmi fix_sectalk		; catch buggy softare calling seclisten instead of sectalk
+	bvc not_dos
+	phx
+	php
+	sei
+	ldx #DOSBANK
+	stx BANK
+	jsr dos_seclstn
+	ldx #BASBANK
+	stx BANK
+	plp
+	plx
+	rts
+
+not_dos	jsr $f109
+	jmp $f148
+	.)
+
+iecin	.(
+	.assert DOS_TALK == $80, "check on flag"
+	bit flags
+	bpl not_dos
+	php
+	phx
+	phy
+	sei
+	ldx #DOSBANK
+	stx BANK
+	jsr dos_iecin
+	ldy dos_status
+	ldx #BASBANK
+	stx BANK
+	pha
+	tya
+	ora status
+	sta status
+	pla
+	ply
+	plx
+	plp
+	rts
+not_dos
+	sta $e821
+	jmp $f1c5
+	.)
+
+
+rompatch_end:
+
+	; fix up PC	
+	*=PATCH + (rompatch_end - rompatch_start)
+
+.)
 
 #define	ROM
 #include "patch4.a65"
 #undef ROM
+
+#undef USB_PAUSE
+#undef USB_PRINT2
+#undef USB_NEWIRQ
+#undef USB_INIT
+#undef USB_INSTALL
+
+#define	USB_INIT
+#define	USB_INSTALL
+#include "usb65/platforms/upet/petrom_install.a65"
+#undef USB_INIT
+#undef USB_INSTALL
+
+usbcomp_start
+	*=USB_COMPANION
+	jmp usb_init
+	jmp usb_install
+	nop:nop:nop
+	jmp pause
+	jmp printc2
+#define	USB_PAUSE
+#define	USB_PRINT2
+#define	USB_NEWIRQ
+#include "usb65/platforms/upet/petrom_install.a65"
+#undef USB_PAUSE
+#undef USB_PRINT2
+#undef USB_NEWIRQ
+	*=usbcomp_start + * - USB_COMPANION
+usbcomp_end
+
 	.xl
 	.)		; end setup_basic4_xl
 

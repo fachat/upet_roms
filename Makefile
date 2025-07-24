@@ -1,12 +1,12 @@
 
 BASE=$(shell git remote -v | cut -f 2- | sed -e "s%fachat/.*%fachat%g" | uniq )
 
-all: spiimg spiimg70m loadrom.bin loadrom
+all: spiimg loadrom.bin loadrom 
 
 ########################################################
 # sub-repos
 
-REPOS=cbm-edit-rom cbm-x16dos usb65
+REPOS=cbm-edit-rom cbm-x16dos usb65 cbm-fastiec
 
 # downloads all the repos it depends on
 clone: $(REPOS)
@@ -27,14 +27,13 @@ EDITROMS=edit40_c64kb.bin \
 
 TOOLS=romcheck
 
-spiimgc: rebuildclean spiimg spiimg70m
+spiimgc: rebuildclean spiimg 
 
 spiimg: zero boot basic1 edit1 kernal1 basic2 edit2g kernal2 chargen_pet16 chargen_pet1_16 basic4 kernal4 edit40g edit80g iplldr $(EDITROMS) apmonax edit80_grfkb_ext_chk.bin edit80_chk.bin usbcode usbcomp dos.bin
 	# ROM images
 	cat iplldr					> $@	# 256b   : IPL loader
 	cat boot					>> $@	# 2k+6*256  : boot code
 	cat usbcomp					>> $@	# 256b	 : 
-	cat apmonax					>> $@	# 4-8k   : @MON monitor (sys40960)
 	# standard character ROM (converted to 16 byte/char)
 	cat chargen_pet16 				>> $@	# 8-16k  : 8k 16bytes/char PET character ROM
 	# BASIC 1
@@ -59,37 +58,9 @@ spiimg: zero boot basic1 edit1 kernal1 basic2 edit2g kernal2 chargen_pet16 charg
 	cat usbcode					>> $@	# 8k USB code
 	# SD-Card support
 	cat dos.bin					>> $@	# 16k SD-Card DOS
+	# @MON (note to be replaced)
+	cat apmonax					>> $@	# 4k MON
 
-spiimg70m: zero boot70m basic1 edit1 kernal1 basic2 edit2g kernal2 chargen_pet16 chargen_pet1_16 basic4 kernal4 edit40g edit80g iplldr $(EDITROMS) apmonax edit80_grfkb_ext_chk.bin edit80_chk.bin usbcode usbcomp dos.bin
-	# ROM images
-	cat iplldr					> $@		# 256b   : IPL loader
-	cat boot70m					>> $@		# 2k+6*256  : boot code
-	cat usbcomp					>> $@		# 256b	 : 
-	cat apmonax					>> $@		# 4-8k   : @MON monitor (sys40960)
-	# standard character ROM (converted to 16 byte/char)
-	cat chargen_pet16 				>> $@		# 8-16k  : 8k 16bytes/char PET character ROM
-	# BASIC 1
-	cat basic1 edit1 zero kernal1			>> $@		# 16-32k : BASIC1/Edit/Kernel ROMs (16k $c000-$ffff)
-	# BASIC 2
-	cat basic2 edit2g zero kernal2 			>> $@		# 32-48k : BASIC2/Edit/Kernel ROMs (16k $c000-$ffff)
-	# BASIC 4
-	cat basic4 					>> $@		# 48-60k : BASIC4 ROMS (12k $b000-$dfff)
-	cat kernal4					>> $@		# 60-64k : BASIC4 kernel (4k)
-	# editor ROMs (each line 4k)
-	cat edit40_grfkb_ext.bin  			>> $@		# sjgray ext 40 column editor w/ wedge by for(;;)
-	cat edit40_c64kb_ext.bin	 		>> $@		# sjgray ext 40 column editor for C64 kbd (experimental)
-	cat edit80_grfkb_ext_chk.bin			>> $@		# sjgray ext 80 column editor w/ wedge by for(;;)
-	cat edit80_c64kb_ext.bin	 		>> $@		# sjgray ext 80 column editor for C64 kbd (experimental)
-	cat edit40g zero 				>> $@		# original BASIC 4 editor ROM graph keybd
-	cat edit40_c64kb.bin 		 		>> $@		# sjgray base 40 column editor for C64 kbd (experimental)
-	cat edit80_chk.bin zero				>> $@		# (original) BASIC 4 80 column editor ROM (graph keybd)
-	cat edit80_c64kb.bin zero	 		>> $@		# sjgray base 80 column editor for C64 kbd (experimental)
-	# alternate BASIC 1 character ROM (as 16 bytes/char)
-	cat chargen_pet1_16				>> $@		# BASIC 1 character set (8k)
-	# USB support
-	cat usbcode					>> $@		# 8k USB code
-	# SD-Card support
-	cat dos.bin					>> $@		# 16k SD-Card DOS
 
 zero: 
 	dd if=/dev/zero of=zero bs=2048 count=1
@@ -107,13 +78,10 @@ char8to16: char8to16.c
 	gcc -o char8to16 char8to16.c
 
 iplldr: iplldr.a65
-	xa -XMASM -w -o $@ $<
-
-boot: boot.a65 boot_menu.a65 boot_rom1.a65 boot_rom2.a65 boot_rom4.a65 boot_usb.a65 dosromcomp.a65 patch4.a65
 	xa -w -XMASM -P $@.lst -o $@ $<
 
-boot70m: boot.a65 boot_menu.a65 boot_rom1.a65 boot_rom2.a65 boot_rom4.a65 boot_usb.a65 dosromcomp.a65 patch4.a65
-	xa -w -XMASM -DCLK70M -P $@.lst -o $@ $<
+boot: boot.a65 boot_menu.a65 boot_kbd.a65 boot_opts.a65 boot_rom1.a65 boot_rom2.a65 boot_rom4.a65 boot_usb.a65 dosromcomp.a65 patch4.a65
+	xa -w -XCA65 -XMASM -k -P $@.lst -o $@ $<
 
 romtest02: romtest02.a65
 	xa -w -o romtest02 romtest02.a65
@@ -224,6 +192,13 @@ dos.bin: cbm-x16dos/build/UPET/dos.bin
 dosromcomp.a65: cbm-x16dos
 
 ##########################################################################	
+# Fast IEC driver code
+
+cbm-fastiec:
+	git clone $(BASE)/cbm-fastiec.git
+	#(cd cbm-fastiec; git checkout upet)
+
+##########################################################################	
 # USB driver code
 	
 usb65/platforms/upet/petromcomp usb65/platforms/upet/petrom: usb65
@@ -236,7 +211,7 @@ usb65:
 usbcode: usbcode.a65 usb65/platforms/upet/petrom
 	xa -o $@ $<
 
-usbcomp: usbcomp.a65 usb65/platforms/upet/petromcomp
+usbcomp: usbcomp.a65 usb65/platforms/upet/petromcomp.a65
 	xa -o $@ $<
 
 ##########################################################################	
@@ -257,8 +232,9 @@ clean:
 	rm -f romtest01 romtest01a romtest02 romtest02a zero chargen_pet16 char8to16 charPet2Invers
 	rm -f basic2 edit2g kernal2 chargen_pet basic4 kernal4 edit40g edit80g basic1 edit1 kernal1 chargen_pet1 chargen_pet1_16
 	rm -f iplldr edit80_chk.bin edit80_grfkb_ext_chk.bin kernal4t
-	rm -f romcheck loadrom loadrom.bin boot boot70m
+	rm -f romcheck loadrom loadrom.bin boot 
 	rm -f usbcode usbcomp 
+	rm -f dos.bin iplldr.lst 
 
 rebuildclean:
 	rm -f $(EDITROMS)
