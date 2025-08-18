@@ -29,11 +29,10 @@ TOOLS=romcheck
 
 spiimgc: rebuildclean spiimg 
 
-spiimg: zero boot basic1 edit1 kernal1 basic2 edit2g kernal2 chargen_pet16 chargen_pet1_16 basic4 kernal4 edit40g edit80g iplldr $(EDITROMS) apmonax edit80_grfkb_ext_chk.bin edit80_chk.bin usbcode usbcomp dos.bin
+spiimg: zero boot basic1 edit1 kernal1 basic2 edit2g kernal2 chargen_pet16 chargen_pet1_16 basic4 kernal4 edit40g edit80g iplldr $(EDITROMS) apmonax edit80_grfkb_ext_chk.bin edit80_chk.bin usbcode dos.bin
 	# ROM images
 	cat iplldr					> $@	# 256b   : IPL loader
-	cat boot					>> $@	# 2k+6*256  : boot code
-	cat usbcomp					>> $@	# 256b	 : 
+	cat boot					>> $@	# 8k-256 : boot code
 	# standard character ROM (converted to 16 byte/char)
 	cat chargen_pet16 				>> $@	# 8-16k  : 8k 16bytes/char PET character ROM
 	# BASIC 1
@@ -59,7 +58,7 @@ spiimg: zero boot basic1 edit1 kernal1 basic2 edit2g kernal2 chargen_pet16 charg
 	# SD-Card support
 	cat dos.bin					>> $@	# 16k SD-Card DOS
 	# @MON (note to be replaced)
-	cat apmonax					>> $@	# 4k MON
+	#cat apmonax					>> $@	# 4k MON
 
 
 zero: 
@@ -211,9 +210,6 @@ usb65:
 usbcode: usbcode.a65 usb65/platforms/upet/petrom
 	xa -o $@ $<
 
-usbcomp: usbcomp.a65 usb65/platforms/upet/petromcomp.a65
-	xa -o $@ $<
-
 ##########################################################################	
 # load other PET Editor ROM and reboot
 
@@ -233,7 +229,7 @@ clean:
 	rm -f basic2 edit2g kernal2 chargen_pet basic4 kernal4 edit40g edit80g basic1 edit1 kernal1 chargen_pet1 chargen_pet1_16
 	rm -f iplldr edit80_chk.bin edit80_grfkb_ext_chk.bin kernal4t
 	rm -f romcheck loadrom loadrom.bin boot 
-	rm -f usbcode usbcomp 
+	rm -f usbcode 
 	rm -f dos.bin iplldr.lst 
 
 rebuildclean:

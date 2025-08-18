@@ -1,4 +1,6 @@
 
+	;.asc "BASIC4"
+
 setup_basic4_xl	.(
 	; where do we store the extra patch code
 IEEE_PATCH	=$fe20		; IEEE fix for faster CPU clocks
@@ -8,7 +10,7 @@ USB_CPAGE	=$1f	;$0f	; where USB companion is in flash
 
 VCOUNT		=$99
 
-MAP_USB		=15
+;MAP_USB		=15
 STPFL		=$9b
 driver_init	=$1000
 

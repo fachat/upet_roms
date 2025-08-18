@@ -419,16 +419,19 @@ sl	sta VICCY
 #include "boot_menu.a65"
 #include "boot_kbd.a65"
 #include "boot_opts.a65"
+#include "boot_usb.a65"
+#include "boot_irq.a65"
+#include "boot_sdcard.a65"
+
+	;.asc "BOOTROMS1TO4"
+
 #include "boot_rom1.a65"
 #include "boot_rom2.a65"
 #include "boot_rom4.a65"
-#include "boot_usb.a65"
-#include "boot_sdcard.a65"
-#include "boot_irq.a65"
 
 	; this is 4k+6p byte max
 	; 1st 256 byte is ipl
 #print *
-	.dsb RUNADDR+30*256-*,$ff
+	.dsb RUNADDR+31*256-*,$ff
 	.)
 
