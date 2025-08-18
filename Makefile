@@ -23,13 +23,21 @@ EDITROMS=edit40_c64kb.bin \
 	edit40_grfkb_ext.bin \
 	edit80_grfkb_ext.bin \
 	edit40_c64kb_ext.bin \
-	edit80_c64kb_ext.bin 
+	edit80_c64kb_ext.bin \
+	edit40_b_ext.bin \
+	edit80_b_ext.bin \
+
+ORIGROMS=edit40g edit40b \
+	edit80g edit80b \
+	basic1 edit1 kernal1 \
+	basic2 edit2g kernal2 \
+	basic4 kernal4
 
 TOOLS=romcheck
 
 spiimgc: rebuildclean spiimg 
 
-spiimg: zero boot basic1 edit1 kernal1 basic2 edit2g kernal2 chargen_pet16 chargen_pet1_16 basic4 kernal4 edit40g edit80g iplldr $(EDITROMS) apmonax edit80_grfkb_ext_chk.bin edit80_chk.bin usbcode dos.bin
+spiimg: zero boot chargen_pet16 chargen_pet1_16 iplldr $(EDITROMS) $(ORIGROMS) edit80_grfkb_ext_chk.bin edit80_chk.bin usbcode dos.bin
 	# ROM images
 	cat iplldr					> $@	# 256b   : IPL loader
 	cat boot					>> $@	# 8k-256 : boot code
@@ -150,9 +158,13 @@ kernal4: kernal4t romcheck
 
 edit40g:
 	curl -o edit40g $(ARCHIVE)/firmware/computers/pet/edit-4-40-n-50Hz.901498-01.bin
+edit40b:
+	curl -o edit40b $(ARCHIVE)/firmware/computers/pet/edit-4-40-b-60Hz.ts.bin
 	
 edit80g:
 	curl -o edit80g $(ARCHIVE)/firmware/computers/pet/edit-4-80-n-50Hz.4016_to_8016.bin
+edit80b:
+	curl -o edit80b $(ARCHIVE)/firmware/computers/pet/edit-4-80-b-60Hz.901474-03.bin
 
 ##########################################################################	
 # Steve's modified/re-created editor ROMs
@@ -226,13 +238,13 @@ ${TOOLS}: % : %.c
 
 clean:
 	rm -f romtest01 romtest01a romtest02 romtest02a zero chargen_pet16 char8to16 charPet2Invers
-	rm -f basic2 edit2g kernal2 chargen_pet basic4 kernal4 edit40g edit80g basic1 edit1 kernal1 chargen_pet1 chargen_pet1_16
+	rm -f chargen_pet1 chargen_pet1_16
 	rm -f iplldr edit80_chk.bin edit80_grfkb_ext_chk.bin kernal4t
 	rm -f romcheck loadrom loadrom.bin boot 
 	rm -f usbcode 
 	rm -f dos.bin iplldr.lst 
 
 rebuildclean:
-	rm -f $(EDITROMS)
+	rm -f $(EDITROMS) $(ORIGROMS)
 
 
