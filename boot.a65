@@ -196,7 +196,7 @@ mloop
 
 	jsr do_menu_xl
 
-	cmp #"o"
+	cmp #"s"
 	bne doreal
 
 	jsr do_options_xl

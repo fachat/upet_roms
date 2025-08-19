@@ -184,7 +184,8 @@ openkbd
 	beq is1
 	cpx #57		; 2/7 = "9"
 	beq is9
-	cpx #60		; 2/4 = "o" for options
+	;cpx #60		; 2/4 = "o" for options
+	cpx #40		; "S" for Settings
 	beq isopt
 
 	; C64 keyboard
@@ -203,7 +204,8 @@ openkbd
 	beq is8
 ;	cpx #80		; 0/0 = "!" = "1" on C64 kbd - no C64 kbd option
 ;	beq is1c64
-	cpx #28		; 6/4 = ";" = "o" on C64 kbd
+	;cpx #28		; 6/4 = ";" = "o" on C64 kbd
+	cpx #39		; "S" on C64 kbd
 	beq isopt
 	cpx #76		; 0/4 = "(" = "9" on C64 kbd
 	beq is9
@@ -223,7 +225,7 @@ is2	ldx #"2"		; 4
 	.byt $2c
 is1	ldx #"1"		; 2
 	.byt $2c
-isopt	ldx #"o"
+isopt	ldx #"s"
 addshift
 	pla	; restore shift flag
 	bpl nosh
