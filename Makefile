@@ -3,6 +3,11 @@ BASE=$(shell git remote -v | cut -f 2- | sed -e "s%fachat/.*%fachat%g" | uniq )
 
 all: spiimg loadrom.bin loadrom 
 
+deep: usb65 cbm-x16dos
+	make -C cbm-x16dos
+	make -C usb65/platforms/upet
+	make all
+
 ########################################################
 # sub-repos
 
