@@ -111,7 +111,13 @@ col40
 	lda opt0
 	and #%00010000
 	beq not_96
-	; 8296
+	lda opt0
+	bpl patched96
+	; 8296 video mapping, disable colram
+	lda VCTRL
+	ora #8
+	sta VCTRL
+patched96 ; ... but not if we use the patched, col-enabled editor
 	lda #%11101000
 	.byt $2c
 not_96	lda #%11100000

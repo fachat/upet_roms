@@ -11,7 +11,6 @@
 
 	; those are called from the interrupt routine
 key_usb	.(
-	;inc $8020
 	cmp #%10000000
 	bcs :+
 	cmp #%01000000
@@ -26,6 +25,7 @@ key_usb	.(
 
 	; AC has 
 key_pet	.(
+	jsr checkkbd_xs
 	bcc nolast
 	jsr conv_pet2char
 	bcc nolast
@@ -113,36 +113,33 @@ gotone	; x has number of key
 	bne c64s
 	bcc openshift
 	jsr shift_petn
+pcheck	beq pshift
+pchar	stx char
+	bne nextr2
+pshift	ror shift
 nextr2	pla
 	bra nextr
 openshift
 	jsr shift_petn
+	beq pshift
 	jsr shift_c64x
-	bra nextr2
+	bra pcheck
 c64s	
 	jsr shift_c64
-	bra nextr2
+	bra pcheck
 
 shift_petn
 	; PET-N
 	cpx #16		; left shift (8/0)
-	beq gotshift
+	beq r
 	cpx #11		; right shift (8/5) (works, but not on a C64 keybd)
-	beq gotshift
-	bne gotchar
+r	rts
 	; C64
 shift_c64
 	cpx #42		; 3/1 = "R" = Left shift on C64 kbd
-	beq gotshift64
+	beq r
 shift_c64x
 	cpx #55
-	beq gotshift64
-gotchar
-	stx char
-	rts
-gotshift64
-gotshift
-	ror shift	; implicit sec after branch from cpx/beq
 	rts
 	.)
 

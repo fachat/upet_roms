@@ -8,9 +8,7 @@
 ; PET ROM images to copy from in this order:
 ;
 ; $00000  IPL code (256 byte)
-; $00100  Boot code (2k+6*256) - this code
-; $00F00  USB BASIC 4 ROM patch code (usbcomp)
-; $01000  @MON (4k copied to $a000)
+; $00100  Boot code (6k+7*256) - this code
 ; $02000  charrom (8k)
 ; $04000  BASIC1 + EDIT1 + KERNEL1 (16k)
 ; $08000  BASIC2 + EDIT2 + KERNEL2 (16k)

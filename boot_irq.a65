@@ -75,7 +75,6 @@ rnewirq	.(
 	lda PIA1+PIA_PB	; clear VDRIVE interrupt
 #endif
 
-	jsr checkkbd_xs
 	jsr key_pet
 
 	lda BOOT_VCOUNT	; vertical screen interrupt

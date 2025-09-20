@@ -931,7 +931,7 @@ opts
         .byt %00000001          ; patched basic1
         .byt %00000010          ; patched basic2
         .byt %00000011          ; patched 40 col
-        .byt %01000011          ; patched 8296
+        .byt %01010011          ; patched 8296
         .byt %01000011          ; patched 80 col
 
         .byt %01000011          ; patched 80 col
