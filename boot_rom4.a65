@@ -80,7 +80,7 @@ dousb
 
 	; reverse write protect done there
 	lda #0
-	sta $e801
+	sta MCTRL
 
 	; ------------------
 	; check SD Card
@@ -99,28 +99,39 @@ nosd
 	; ------------------
 	; memory map setup
 b4_orig
+
 	; check 80 column bit
-	; TODO move to Viccy on FPGA machines
 	lda opt0
-	and #%01000000
-	beq col40
-	lda #%00000010
-	sta VCTRL
-col40
-	; check 8296 bit
+	bmi unpatched
+	and #OPT0_80COL
+	beq pcol40
+	bne pcol80
+unpatched
+	and #OPT0_80COL
+	beq ucol40
+	; 80 col unpatched - check 8296
 	lda opt0
-	and #%00010000
-	beq not_96
-	lda opt0
-	bpl patched96
-	; 8296 video mapping, disable colram
-	lda VCTRL
-	ora #8
-	sta VCTRL
-patched96 ; ... but not if we use the patched, col-enabled editor
-	lda #%11101000
+	and #OPT0_8296MAP
+	beq ucol80	; not an 8296
+	; 8296
+	ldx #%11101000
+	lda #%01101010	; 80 col, 8k vid window, no colram
 	.byt $2c
-not_96	lda #%11100000
+pcol80	lda #%01000010	; 80 col, 4k vid window, colram
+	.byt $2c
+pcol40	lda #%01000000	; 40 col, 4k vid window, colram
+	.byt $2c
+ucol80	lda #%00101010	; 80 col, 2k vid window, no colram
+	.byt $2c
+ucol40	lda #%00001000	; 40 col, 1k vid window, no colram
+	sta VCTRL
+
+	lda opt0
+	and #OPT0_8296MAP
+	beq no8296
+	lda #%11101000	; mem a-f wprot, 8296 map
+	.byt $2c
+no8296	lda #%11100000	; mem a-f wprot, no 8296
 
 	jmp end
 
@@ -271,7 +282,7 @@ DOS_LISTEN	=$40
 	pha
 
 	lda #%01100000
-	sta $e801	; make ROM writable
+	sta MCTRL	; make ROM writable
 
 	; copy over the patch into ROM
 	ldx #rompatch_end - rompatch_start
@@ -320,7 +331,7 @@ l0	lda PATCH-1,x
 	sta $f1a1
 
 	lda #%11100000
-	sta $e801	; write protect ROM
+	sta MCTRL	; write protect ROM
 
 	; init the DOS
 

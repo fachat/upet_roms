@@ -108,8 +108,9 @@ jmpboot
 	sei
 
 	; init control registers
+	lda #%01000000
+	sta VCTRL	; $e800 - default to 40 column, 4k video window
 	lda #0
-	sta VCTRL	; $e800 - default to 40 column
 	sta MCTRL	; $e801
 	sta BANK	; $e802
 	sta SPEED	; $e803 - 1MHz
