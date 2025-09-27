@@ -117,24 +117,37 @@ gotone	; x has number of key
 	pha
 	lda optkbd
 	beq openshift
+
 	lsr
-	and #%00010000
-	bne c64s
+	bcs petn
+	lsr
+	lsr
+	bcs petb
+	lsr
+	lsr
 	bcc openshift
-	jsr shift_petn
+
+c64s	jsr shift_c64
+
 pcheck	beq pshift
 pchar	stx char
 	bne nextr2
 pshift	ror shift
 nextr2	pla
 	bra nextr
+
 openshift
 	jsr shift_petn
 	beq pshift
 	jsr shift_c64x
+	beq pshift
+	jsr shift_petbx
 	bra pcheck
-c64s	
-	jsr shift_c64
+
+petb	jsr shift_petb
+	bra pcheck
+
+petn	jsr shift_petn
 	bra pcheck
 
 shift_petn
@@ -145,10 +158,17 @@ shift_petn
 r	rts
 	; C64
 shift_c64
-	cpx #42		; 3/1 = "R" = Left shift on C64 kbd
+	cpx #42		; 3/1 = "R" = Right shift on C64 kbd (only if already detected)
 	beq r
 shift_c64x
 	cpx #55
+	rts
+
+shift_petb
+	cpx #26		; right shift on B (1 on N, so only when detected)
+	beq r
+shift_petbx
+	cpx #32		; left shift on B
 	rts
 	.)
 
@@ -165,17 +185,18 @@ conv_pet2char .(
 	lda optkbd	; check detected keyboard
 	beq openkbd
 
-	and #%00100000
-	beq notc64
-	jmp decode_c64
-notc64
-	lda optkbd
-	and #3
-	beq openkbd
 	lsr
-	bcc notb
+	bcs petn
+	lsr
+	lsr
+	bcs petb
+	lsr
+	lsr
+	bcc openkbd
+	jmp decode_c64
+petb
 	jmp decode_petb
-notb
+petn
 	jmp decode_petn
 openkbd
 	; PET N-type keyboard

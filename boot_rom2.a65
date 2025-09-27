@@ -11,6 +11,14 @@ setup_basic2_xl	.(
 	ldy #$4000
 	jsr flash2direct_xl
 
+	lda opt0
+	bmi orig
+
+	lda #%01000000	; 40 col, 4k vid window, colram
+	.byt $2c
+orig	lda #%00001000	; 40 col, 1k vid window, no colram
+	sta VCTRL
+
 	lda #%10000000	; write protect $c000-$ffff
 	jmp end
 	.)

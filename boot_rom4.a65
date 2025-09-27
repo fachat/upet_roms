@@ -138,7 +138,6 @@ unpatched
 	and #OPT0_8296MAP
 	beq ucol80	; not an 8296
 	; 8296
-	ldx #%11101000
 	lda #%01101010	; 80 col, 8k vid window, no colram
 	.byt $2c
 pcol80	lda #%01000010	; 80 col, 4k vid window, colram

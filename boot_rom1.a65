@@ -25,12 +25,18 @@ copy
 	ldy #$4000	; len
 	jsr flash2direct_xl
 	
-	lda opt1
-	bpl b1_orig	; check KERNEL patch
+	lda opt0
+	bmi b1_orig	; check KERNEL patch
 
 	; apply BASIC1 patch like in VICE
 	jsr patch_rom1_xl
+
+	lda #%01000000	; 40 col, 4k vid window, colram
+	.byt $2c
 b1_orig
+	lda #%00010000	; 40 col, 1k vid window, no colram
+	sta VCTRL
+
 	lda #%10000000	; write protect $c000-$ffff
 	jmp end
 	
