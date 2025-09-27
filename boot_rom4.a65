@@ -27,24 +27,48 @@ driver_init	=$1000
 	ldy #$1000
 	jsr flash2direct_xl
 
-	lda opt0	; bits 7/6/5 have number of editor ROM
-			; bit 7: 1=orig, 0=patched
-			; bit 6: 1=80 col, 0=40 col
-			; bit 5: 1=c64, 0=PET-N kbd
-			; 000 = PET-N, 40 col, patched
-			; 001 = C64,   40 col, patched
-			; 010 = PET-N, 80 col, patched
-			; 011 = C64,   80 col, patched
-			; 100 = PET-N, 40 col, orig
-			; 101 = C64,   40 col, orig
-			; 110 = PET-N, 80 col, orig
-			; 111 = C64,   80 col, orig
-	and #%11100000
-	lsr
+	; bits 7/6/5 have number of editor ROM
+	;
+	; bit 7: 1=orig, 0=patched
+	; bit 6: 1=80 col, 0=40 col
+	;
+	; bit 5: 1=c64, 0=PET-N kbd
+	; bit 2: 1=PET-B kbd
+	;
+	; bit 2 = 0 -> bits 7/6/5
+	; 000 = PET-N, 40 col, patched
+	; 001 = C64,   40 col, patched
+	; 010 = PET-N, 80 col, patched
+	; 011 = C64,   80 col, patched
+	; 100 = PET-N, 40 col, orig
+	; 101 = C64,   40 col, orig
+	; 110 = PET-N, 80 col, orig
+	; 111 = C64,   80 col, orig
+	;
+	; bit 2 = 1: -> bits 7/6
+	; 00 = PET-B, 40 col, patched
+	; 01 = PET-B, 80 col, patched
+	; 10 = PET-B, 40 col, orig
+	; 11 = PET-B, 80 col, orig
+	
 	ldx #$e000
 	ldy #$1000
-	jsr flash2direct2_xl
 
+	lda opt0
+	and #OPT0_BKBD
+	beq n_kbd
+	lda opt0
+	and #%11000000
+	lsr
+	lsr
+	jsr flash2direct3_xl
+	bra edit_done
+
+n_kbd 	lda opt0
+	and #%11100000
+	lsr
+	jsr flash2direct2_xl
+edit_done
 	; -----------------------
 	; TODO check monitor bit
 	; TODO overwrites boot code! needs some relocation!

@@ -11,7 +11,8 @@
 ;	bit 5: 1=c64 kbd, 0=pet-N kbd
 ;	bit 4: 1=8296 memory map, 0= normal
 ;	bit 3: 1=USB support enabled from keyboard select
-;	
+;	bit 0-1: BASIC select
+;
 ; opts1 bits are:
 ;	bit 7: SPEED flag (placeholder)
 ;	bit 6: KERNAL enhancements
@@ -891,7 +892,9 @@ found   cpx #MAX_KEYS*2
 	tax
 notusb
 	lda optkbd
-        and #%00101000  ; filter usb and c64 kbd flags
+	; filter usb, b-kbd and c64 kbd flags
+        ;and #%00101010  
+        and #OPT0_C64KBD | OPT0_USBKBD | OPT0_BKBD
         ora opts,x
 	sta opt0
 

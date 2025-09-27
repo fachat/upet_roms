@@ -95,7 +95,7 @@ The following table gives the identified unique keys with prefix
      2    B1*     NSR             BX  NSL
      3    B2* N2          C8  C6  C4  NX*
      4        N1+     CO+             BSL
-     5    B4                      BS  NS 
+     5    B4                      CS  NS 
      6    N6  N4*
      7    B6  N8              CX  CSL        
      8        N9      NO          BS

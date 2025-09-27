@@ -7,6 +7,15 @@
 	; bit 3   - option menu
 	; bit 2/1 - model (01=basic1, 10=basic2, 11=basic4) 
 
+	; optkbd is
+	; bit 7
+	; bit 6	  - C64 kbd
+	; bit 5
+	; bit 4
+	; bit 3	  - USB keyboard detected
+	; bit 2
+	; bit 1   - B-type kbd
+	; bit 0   - N-type kbd
 	.xs
 
 	; those are called from the interrupt routine
@@ -161,8 +170,12 @@ conv_pet2char .(
 	jmp decode_c64
 notc64
 	lda optkbd
-	and #1
+	and #3
 	beq openkbd
+	lsr
+	bcc notb
+	jmp decode_petb
+notb
 	jmp decode_petn
 openkbd
 	; PET N-type keyboard
@@ -179,10 +192,27 @@ openkbd
 	beq is8
 	cpx #26		; 6/6 = "1"
 	beq is1
-	cpx #57		; 2/7 = "9"
+	cpx #24		; "X"
 	beq is9
-	;cpx #60		; 2/4 = "o" for options
 	cpx #40		; "S" for Settings
+	beq isopt
+
+	; PET B-type keyboard
+	ldy #2
+
+	cpx #49		; "6" on B kbd
+	beq is8296
+	;cpx #18		; 7/6 = "2"
+	;beq is2
+	cpx #33		; "4" on B kbd
+	beq is4
+	cpx #76		; "8" on B kbd
+	beq is8
+	;cpx #26		; 6/6 = "1"
+	;beq is1
+	cpx #15		; "X" on B kbd
+	beq is9
+	cpx #63		; "S" on B kbd for Settings
 	beq isopt
 
 	; C64 keyboard
@@ -204,7 +234,7 @@ openkbd
 	;cpx #28		; 6/4 = ";" = "o" on C64 kbd
 	cpx #39		; "S" on C64 kbd
 	beq isopt
-	cpx #76		; 0/4 = "(" = "9" on C64 kbd
+	cpx #54		; "X" on C64 kbd
 	beq is9
 is9
 	pla		; get shift from stack and ignore
@@ -261,6 +291,20 @@ dec_shiftpet
 	sec
 	rts
 
+decode_petb
+	dex
+	pla
+	bmi dec_shiftpetb
+	lda ktab_petb,x
+	beq bloopx
+	sec
+	rts
+dec_shiftpetb
+	lda stab_petb,x
+	beq bloopx
+	sec
+	rts
+
 
 ktab_c64 
 	.asc 0,0,0,0,0,0,0,0
@@ -308,6 +352,30 @@ stab_petn .asc "=.",0,TC_ESC,"< {", TC_HT
           .asc "9"+128,"7"+128,"^","OUTEQ"
 	  .asc TC_INS,TC_CUP,0,")\\'$":.byt $22
           .asc TC_CLFT,TC_CLR,"|(&%#!"
+
+;key number is (9-row)*8+(7-col)+1
+ktab_petb .asc   0,  0,":",  3,"9","6","3",0
+          .asc "1","/",  0,TC_HOME,"m"," ","x",0
+          .asc "2",  0,  0,"0",",","n","v","z"
+          .asc "3",  0,  0,".",".","b","c",0
+          .asc "4","[","o",TC_CDWN,"u","t","e","q"
+          .asc TC_BS,"p","i","\\","y","r","w",  0
+          .asc "6","@","l",TC_CR,"j","g","d","a"
+          .asc "5",";","k","]","h","f","s",TC_ESC
+	  .asc "9",  0,  0,"7","0","7","4","1"
+	  .asc   0,  0,TC_CRGT,"8","-","8","5","2"
+
+stab_petb .asc   0,  0,":",  3,")","&","#",0
+          .asc "1","/",  0,TC_HOME,"M"," ","X",0
+          .asc "2",  0,  0,"0",",","N","V","Z"
+          .asc "3",  0,  0,".",".","B","C",0
+          .asc "4","[","O",TC_CDWN,"U","T","E","Q"
+          .asc TC_BS,"P","I","\\","Y","R","W",  0
+          .asc "6","@","L",TC_CR,"J","G","D","A"
+          .asc "5",";","K","]","H","F","S",TC_ESC
+	  .asc "9",  0,  0,"7","0","\\","$","!"
+	  .asc   0,  0,TC_CRGT,"8","-","(","%",$22
+
 
 	.)
 

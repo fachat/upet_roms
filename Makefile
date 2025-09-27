@@ -55,6 +55,7 @@ spiimg: zero boot chargen_pet16 chargen_pet1_16 iplldr $(EDITROMS) $(ORIGROMS) e
 	# BASIC 4
 	cat basic4 					>> $@	# 48-60k : BASIC4 ROMS (12k $b000-$dfff)
 	cat kernal4					>> $@	# 60-64k : BASIC4 kernel (4k)
+	#### 64k-
 	# editor ROMs (each line 4k)
 	cat edit40_grfkb_ext.bin  			>> $@	# sjgray ext 40 column editor w/ wedge by for(;;)
 	cat edit40_c64kb_ext.bin	 		>> $@	# sjgray ext 40 column editor for C64 kbd (experimental)
@@ -70,8 +71,11 @@ spiimg: zero boot chargen_pet16 chargen_pet1_16 iplldr $(EDITROMS) $(ORIGROMS) e
 	cat usbcode					>> $@	# 8k USB code
 	# SD-Card support
 	cat dos.bin					>> $@	# 16k SD-Card DOS
-	# @MON (note to be replaced)
-	#cat apmonax					>> $@	# 4k MON
+	#### 128k-
+	cat edit40_b_ext.bin	 			>> $@	# sjgray ext 40 column editor for biz kbd (experimental)
+	cat edit80_b_ext.bin	 			>> $@	# sjgray ext 80 column editor for biz kbd (experimental)
+	cat edit40b zero 				>> $@	# original BASIC 4 editor ROM graph keybd
+	cat edit80b zero 				>> $@	# original BASIC 4 editor ROM graph keybd
 
 
 zero: 
