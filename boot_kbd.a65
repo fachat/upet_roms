@@ -179,7 +179,7 @@ notb
 	jmp decode_petn
 openkbd
 	; PET N-type keyboard
-	ldy #1
+	ldy #OPT0_NKBD
 
 	; key number is (9-row)*8+(7-col)+1 where row/col are from www.6502.org/users/andre/petindex/keymap/petgraph.png
 	cpx #41		; 4/7 = "6"
@@ -198,7 +198,7 @@ openkbd
 	beq isopt
 
 	; PET B-type keyboard
-	ldy #2
+	ldy #OPT0_BKBD
 
 	cpx #49		; "6" on B kbd
 	beq is8296
@@ -216,7 +216,7 @@ openkbd
 	beq isopt
 
 	; C64 keyboard
-	ldy #32
+	ldy #OPT0_C64KBD
 
 	; derived from https://www.keymmodore.com/the-matrix/
 ;	cpx #42		; 4/6 = "4" = Right shift on C64 - clash with N-type "4"

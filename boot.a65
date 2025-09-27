@@ -243,7 +243,7 @@ foundopt
 	;----------------------------------------------------
 	; 1= Basic1, 2=Basic2, 3=Basic4
 	lda opt0	
-	and #%00000011	; ROM version
+	and #OPT0_SEL	; ROM version
 
 	cmp #1
 	bne not_b1	
