@@ -5,7 +5,7 @@ OPT0_80COL	=64
 OPT0_C64KBD	=32
 OPT0_8296MAP	=16
 OPT0_USBKBD	=8
-OPT0_BKBD	=4	; default
+OPT0_BKBD	=4
 OPT0_NKBD	=1	; default (temporary)
 OPT0_SEL	=3	; ROM select (1/2/4)
 

@@ -45,6 +45,7 @@ key_pet	.(
 	tya
 	ora optkbd
 	sta optkbd
+
 sameopt	rts
 nolast	lda #0
 	sta lastopt
@@ -125,6 +126,7 @@ gotone	; x has number of key
 	bcs petb
 	lsr
 	lsr
+	lsr
 	bcc openshift
 
 c64s	jsr shift_c64
@@ -182,6 +184,9 @@ shift_petbx
 	;
 conv_pet2char .(
 	pha		; save shift flag	
+
+	ldy #0		; no kbd type change 
+
 	lda optkbd	; check detected keyboard
 	beq openkbd
 
@@ -190,6 +195,7 @@ conv_pet2char .(
 	lsr
 	lsr
 	bcs petb
+	lsr
 	lsr
 	lsr
 	bcc openkbd
@@ -387,15 +393,15 @@ ktab_petb .asc   0,  0,":",  3,"9","6","3",0
 	  .asc   0,  0,TC_CRGT,"8","-","8","5","2"
 
 stab_petb .asc   0,  0,":",  3,")","&","#",0
-          .asc "1","/",  0,TC_HOME,"M"," ","X",0
+          .asc "1","/",  0,TC_CLR,"M"," ","X",0
           .asc "2",  0,  0,"0",",","N","V","Z"
           .asc "3",  0,  0,".",".","B","C",0
-          .asc "4","[","O",TC_CDWN,"U","T","E","Q"
-          .asc TC_BS,"P","I","\\","Y","R","W",  0
-          .asc "6","@","L",TC_CR,"J","G","D","A"
+          .asc "4","[","O",TC_CUP,"U","T","E","Q"
+          .asc TC_INS,"P","I","\\","Y","R","W",  0
+          .asc "6","@","L",TC_LF,"J","G","D","A"
           .asc "5",";","K","]","H","F","S",TC_ESC
 	  .asc "9",  0,  0,"7","0","\\","$","!"
-	  .asc   0,  0,TC_CRGT,"8","-","(","%",$22
+	  .asc   0,  0,TC_CLFT,"8","-","(","%",$22
 
 
 	.)
