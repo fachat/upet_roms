@@ -12,15 +12,11 @@
 
 #include "viccy.i65"
 
-;VBANK	=$080000
 
 SPICTRL	=$e808
 SPIDATA	=$e809
 SPIPEEK	=$e80a
 SPIOFF	=$07
-
-;VIA	=$e840
-;VIA_PCR	=12
 
 VICCY	=$e880
 
@@ -30,20 +26,6 @@ SID2	=$e8e0
 SID_VOL	=$18
 
 RUNADDR	=$9000
-
-;shift	=$87ff
-;char	=$87fe
-
-;VCTRL   =$e800
-;MCTRL   =$e801
-BANK    =$e802
-;SPEED   =$e803
-;R8296   =$fff0
-
-;BOOTCOL	=$15	; dark grey background, light green text
-;BOOTCOL	=$1f	; dark grey background, white text
-;BOOTCOL	=$50	; black text on light green background
-;BOOTCOL	=$05	; black background with light green text
 
 BOOTSTART	=$0100
 BOOTLEN		=$1e00

@@ -8,9 +8,7 @@
 ; PET ROM images to copy from in this order:
 ;
 ; $00000  IPL code (256 byte)
-; $00100  Boot code (2k+6*256) - this code
-; $00F00  USB BASIC 4 ROM patch code (usbcomp)
-; $01000  @MON (4k copied to $a000)
+; $00100  Boot code (6k+7*256) - this code
 ; $02000  charrom (8k)
 ; $04000  BASIC1 + EDIT1 + KERNEL1 (16k)
 ; $08000  BASIC2 + EDIT2 + KERNEL2 (16k)
@@ -110,8 +108,9 @@ jmpboot
 	sei
 
 	; init control registers
+	lda #%01000000
+	sta VCTRL	; $e800 - default to 40 column, 4k video window
 	lda #0
-	sta VCTRL	; $e800 - default to 40 column
 	sta MCTRL	; $e801
 	sta BANK	; $e802
 	sta SPEED	; $e803 - 1MHz
@@ -196,7 +195,7 @@ mloop
 
 	jsr do_menu_xl
 
-	cmp #"o"
+	cmp #"s"
 	bne doreal
 
 	jsr do_options_xl
@@ -244,7 +243,7 @@ foundopt
 	;----------------------------------------------------
 	; 1= Basic1, 2=Basic2, 3=Basic4
 	lda opt0	
-	and #%00000011	; ROM version
+	and #OPT0_SEL	; ROM version
 
 	cmp #1
 	bne not_b1	
@@ -419,16 +418,19 @@ sl	sta VICCY
 #include "boot_menu.a65"
 #include "boot_kbd.a65"
 #include "boot_opts.a65"
+#include "boot_usb.a65"
+#include "boot_irq.a65"
+#include "boot_sdcard.a65"
+
+	;.asc "BOOTROMS1TO4"
+
 #include "boot_rom1.a65"
 #include "boot_rom2.a65"
 #include "boot_rom4.a65"
-#include "boot_usb.a65"
-#include "boot_sdcard.a65"
-#include "boot_irq.a65"
 
 	; this is 4k+6p byte max
 	; 1st 256 byte is ipl
 #print *
-	.dsb RUNADDR+30*256-*,$ff
+	.dsb RUNADDR+31*256-*,$ff
 	.)
 

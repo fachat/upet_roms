@@ -4,9 +4,9 @@ irq_install .(
 	lda #<-1
 	sta lock
 
-	lda #<newirq
+	lda #<rnewirq
 	sta $ffee	; 65816 native interrupt vector(!)
-	lda #>newirq	; http://6502.org/tutorials/65c816interrupts.html#toc:interrupt_irq
+	lda #>rnewirq	; http://6502.org/tutorials/65c816interrupts.html#toc:interrupt_irq
 	sta $ffef
 
 	; once per screen interrupt (60Hz)
@@ -49,7 +49,7 @@ irq_uninstall .(
 
 	; interrupt state saving according to 
 	; http://6502.org/tutorials/65c816interrupts.html#toc:transparent
-newirq	.(
+rnewirq	.(
 	;phb
 	;phd
 	rep #%00110000
@@ -75,7 +75,6 @@ newirq	.(
 	lda PIA1+PIA_PB	; clear VDRIVE interrupt
 #endif
 
-	jsr checkkbd_xs
 	jsr key_pet
 
 	lda BOOT_VCOUNT	; vertical screen interrupt
@@ -90,13 +89,6 @@ newirq	.(
         sta lock	; lock
        
 	jsr usb_poll 
-;        lda #MAP_USB
-;        sta MAPREG
-;
-;        jsr driver_poll
-;
-;	lda #MAP_BAS
-;        sta MAPREG
         
         lda lock
         inc
@@ -118,4 +110,7 @@ nopoll
 	rti
 	.)
 
+
+	.xs
+	.as
 
