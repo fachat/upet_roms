@@ -76,6 +76,8 @@ spiimg: zero boot chargen_pet16 chargen_pet1_16 iplldr $(EDITROMS) $(ORIGROMS) e
 	cat edit80_b_ext.bin	 			>> $@	# sjgray ext 80 column editor for biz kbd (experimental)
 	cat edit40b zero 				>> $@	# original BASIC 4 editor ROM graph keybd
 	cat edit80b zero 				>> $@	# original BASIC 4 editor ROM graph keybd
+	#### Fast SIEC code
+	cat fieccode					>> $@	# 4k
 
 
 zero: 
@@ -216,8 +218,15 @@ dosromcomp.a65: cbm-x16dos
 
 cbm-fastiec:
 	git clone $(BASE)/cbm-fastiec.git
-	#(cd cbm-fastiec; git checkout upet)
+	(cd cbm-fastiec; git checkout upet)
 
+fieccode.o65: fieccode.a65 cbm-fastiec 
+	xa -R -c -XMASM -bz 48 -bt 8192 -bd 12032 -o $@ $<
+
+fieccode: fieccode.o65
+	reloc65 -X -v -o $@ $<
+	
+	
 ##########################################################################	
 # USB driver code
 	
@@ -252,6 +261,7 @@ clean:
 	rm -f romcheck loadrom loadrom.bin boot 
 	rm -f usbcode 
 	rm -f dos.bin iplldr.lst 
+	rm -f fieccode.o65 fieccode
 
 rebuildclean:
 	rm -f $(EDITROMS) $(ORIGROMS)

@@ -181,6 +181,8 @@ copy
 
 	jsr setup_sdcard_xl
 
+	jsr setup_fiec_xl
+
 	jsr setup_usb_xl
 
 	cli
@@ -421,6 +423,7 @@ sl	sta VICCY
 #include "boot_usb.a65"
 #include "boot_irq.a65"
 #include "boot_sdcard.a65"
+#include "boot_fiec.a65"
 
 	;.asc "BOOTROMS1TO4"
 

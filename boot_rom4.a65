@@ -245,7 +245,7 @@ l1	sec
 ; --------------------------------------------------------
 ; This installs the patches to link the CMDR-DOS into the
 ; PET BASIC 4 ROM. It requires that the DOS "rom.bin" is
-; loaded into the bank 7 (14 as value for $e802) at $4000.
+; loaded into the bank 7 lower half (14 as value for $e802) at $4000.
 ; Also, it must run in the upper half of bank 0, as it
 ; switches the lower half to bank 7, to run the dos_init.
 ; 
@@ -255,7 +255,10 @@ l1	sec
 .(
 
 ; address of the DOS in DOSBANK
-DOS	=$4000
+SDDOS	=$4000
+FIEC	=$2000
+
+DOS	=FIEC
 
 ; DOS jumptable
 dos_seclstn	=DOS + 3 * 0
@@ -269,6 +272,9 @@ dos_talk	=DOS + 3 * 7	; note: currently same as listn
 
 dos_init	=DOS + 3 * 8
 
+; todo
+; dos_miecin			; multiple iecin (LOAD)
+
 ; banking
 
 #ifldef BANK
@@ -278,7 +284,7 @@ BANK		=$e802
 #endif
 
 
-DOSBANK		=15	; DOS runs in memory mapped from $078000-$07ffff
+DOSBANK		=14	; DOS runs in memory mapped from $070000-$077fff
 BASBANK		=0	; BASIC runs in bank 0
 
 ; variables in BASIC address space

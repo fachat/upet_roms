@@ -1,0 +1,23 @@
+
+
+
+; -------------------------------------------------
+; IO
+
+        jmp SECLISTEN   ; fiec_secnd   ; 0
+        jmp SECTALK     ; fiec_tksa    ; 1
+        jmp IECIN       ; fiec_acptr   ; 2
+        jmp IECOUT      ; fiec_ciout   ; 3
+        jmp UNTALK      ; fiec_untlk   ; 4
+        jmp UNLISTEN    ; fiec_unlsn   ; 5
+        jmp LISTEN      ; fiec_listn   ; 6
+        jmp TALK        ; fiec_talk    ; 7
+
+; init/meta
+        jmp fiec_init              ; 8   ; 15
+
+; TODO multiple receive (LOAD)
+;       jmp fiec_MIECIN
+
+
+

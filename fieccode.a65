@@ -1,0 +1,26 @@
+
+	.data
+dstart	=*
+
+	.zero
+STATUS	.byt 0
+BUFFLG	.byt 0
+EOIFL	.byt 0
+BYTE	.byt 0
+BITCNT	.byt 0
+RXBYT	.byt 0
+BURST_FLG 
+	.byt 0
+	.text
+
+start	=*
+	.include "iecdispatch.a65"
+
+	.include "cbm-fastiec/upet-fiec-core.a65"
+
+	; note: build process adds a page for potential data segment
+	.dsb start + $0f00 - *, $ff
+
+	.data
+	.dsb dstart + 256 -*, $ff
+

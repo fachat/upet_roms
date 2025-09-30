@@ -3,17 +3,16 @@
 
 tmp	=$0780ff	; last byte in stack on BLK 15
 
-&MAP_SDC	=SDCBLK
+&MAP_SDC	=14	; bank 7, lower half
 
 SDCPAGE	=$c0
 
-SDCBLK  =15             ; bank 7 value for BANK  
 SDCBASE =$4000                                   
 
         ; -----------------------                                        
         ; copy over SD Card code to RAM                                      
         ; $1c000-$1dfff in flash img                                     
-        ; copy to USBBASE                                                
+        ; copy to SDCBASE                                                
 
 	.xl
 &setup_sdcard_xl
