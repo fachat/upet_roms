@@ -4,20 +4,70 @@
 ; -------------------------------------------------
 ; IO
 
-        jmp SECLISTEN   ; fiec_secnd   ; 0
-        jmp SECTALK     ; fiec_tksa    ; 1
-        jmp IECIN       ; fiec_acptr   ; 2
-        jmp IECOUT      ; fiec_ciout   ; 3
-        jmp UNTALK      ; fiec_untlk   ; 4
-        jmp UNLISTEN    ; fiec_unlsn   ; 5
-        jmp LISTEN      ; fiec_listn   ; 6
-        jmp TALK        ; fiec_talk    ; 7
+        jmp (v_slisten)   ; fiec_secnd   ; 0
+        jmp (v_stalk)     ; fiec_tksa    ; 1
+        jmp (v_iecin)     ; fiec_acptr   ; 2
+        jmp (v_iecout)    ; fiec_ciout   ; 3
+        jmp (v_untalk)    ; fiec_untlk   ; 4
+        jmp (v_unlisten)  ; fiec_unlsn   ; 5
+        jmp do_listen     ; fiec_listn   ; 6
+        jmp do_talk       ; fiec_talk    ; 7
 
 ; init/meta
-        jmp fiec_init              ; 8   ; 15
+        jmp do_init              ; 8   ; 15
 
 ; TODO multiple receive (LOAD)
 ;       jmp fiec_MIECIN
 
+do_init
+	; currently has SDCARD unit in AC
+	pha
+	jsr fiec_init
+	pla
+	jmp SDDOS+8*3
 
+do_talk
+	and #$1f
+	jmp SDDOS+7*3
+	;jmp TALK
+
+do_listen
+	jmp SDDOS+6*3
+	;jmp LISTEN
+
+	.data
+
+vectors	
+/*
+v_slisten	.word SECLISTEN
+v_stalk		.word SECTALK
+v_iecin		.word IECIN
+v_iecout	.word IECOUT
+v_untalk	.word UNTALK
+v_unlisten	.word UNLISTEN
+*/
+v_slisten	.word SDDOS+0
+v_stalk		.word SDDOS+3
+v_iecin		.word SDDOS+6
+v_iecout	.word SDDOS+9
+v_untalk	.word SDDOS+12
+v_unlisten	.word SDDOS+15
+
+fiec_vec	
+		.word SECLISTEN
+		.word SECTALK
+		.word IECIN
+		.word IECOUT
+		.word UNTALK
+		.word UNLISTEN
+
+sdcard_vec
+		.word SDDOS+0
+		.word SDDOS+3
+		.word SDDOS+6
+		.word SDDOS+9
+		.word SDDOS+12
+		.word SDDOS+15
+
+	.text
 

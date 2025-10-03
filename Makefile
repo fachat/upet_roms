@@ -42,7 +42,7 @@ TOOLS=romcheck
 
 spiimgc: rebuildclean spiimg 
 
-spiimg: zero boot chargen_pet16 chargen_pet1_16 iplldr $(EDITROMS) $(ORIGROMS) edit80_grfkb_ext_chk.bin edit80_chk.bin usbcode dos.bin
+spiimg: zero boot chargen_pet16 chargen_pet1_16 iplldr $(EDITROMS) $(ORIGROMS) edit80_grfkb_ext_chk.bin edit80_chk.bin usbcode dos.bin fieccode
 	# ROM images
 	cat iplldr					> $@	# 256b   : IPL loader
 	cat boot					>> $@	# 8k-256 : boot code
@@ -220,7 +220,7 @@ cbm-fastiec:
 	git clone $(BASE)/cbm-fastiec.git
 	(cd cbm-fastiec; git checkout upet)
 
-fieccode.o65: fieccode.a65 cbm-fastiec 
+fieccode.o65: fieccode.a65 iecdispatch.a65 cbm-fastiec 
 	xa -R -c -XMASM -bz 48 -bt 8192 -bd 12032 -o $@ $<
 
 fieccode: fieccode.o65

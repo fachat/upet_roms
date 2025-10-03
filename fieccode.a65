@@ -1,4 +1,6 @@
 
+SDDOS	=$4000
+
 	.data
 dstart	=*
 

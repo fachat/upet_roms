@@ -12,7 +12,7 @@ VCOUNT		=$99
 
 ;MAP_USB		=15
 STPFL		=$9b
-driver_init	=$1000
+driver_init	=$1000		; used in included USB installer
 
 	; -----------------------
 	; copy over PET BASIC4 $b000-$dfff
@@ -259,6 +259,7 @@ SDDOS	=$4000
 FIEC	=$2000
 
 DOS	=FIEC
+;DOS	=SDDOS
 
 ; DOS jumptable
 dos_seclstn	=DOS + 3 * 0
@@ -395,7 +396,7 @@ talk_listn_unlstn .(
 	php
 	phx
 	sei
-	lda curdev
+	ora curdev
 	ldx #DOSBANK
 	stx BANK
 	jsr dos_talk	; note: DOS currently has same code for talk && listen 
@@ -492,7 +493,14 @@ untlk	.(
 	.assert DOS_TALK == $80, "check on flag"
 	bit flags
 	bpl not_dos
-	; no-op
+	php
+	sei
+	lda #DOSBANK
+	sta BANK
+	jsr dos_untlk
+	lda #BASBANK
+	sta BANK
+	plp
 	rts
 not_dos	
 	lda $e840
