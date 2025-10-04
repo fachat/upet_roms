@@ -10,32 +10,119 @@
         jmp (v_iecout)    ; fiec_ciout   ; 3
         jmp (v_untalk)    ; fiec_untlk   ; 4
         jmp (v_unlisten)  ; fiec_unlsn   ; 5
-        jmp do_listen     ; fiec_listn   ; 6
-        jmp do_talk       ; fiec_talk    ; 7
-
+        jmp do_atn    	  ; fiec_listn   ; 6
 ; init/meta
         jmp do_init              ; 8   ; 15
 
 ; TODO multiple receive (LOAD)
 ;       jmp fiec_MIECIN
 
+	;---------------------------
+	; init 
 do_init
 	; currently has SDCARD unit in AC
-	pha
+	; and YR has
+	; 	b7 = SIEC should be supported
+	;	b6 = PIEC is upper units (+16 offset)
+	sta sd_unit
+	sty siec_fl
+
+	lda #0
+	sta last_unit
+
 	jsr fiec_init
-	pla
+
+	lda sd_unit
 	jmp SDDOS+8*3
 
-do_talk
+	;---------------------------
+	; handle ATN and prep for
+	; the followup calls
+	;
+	; 1. check if it SD Card UI
+	; 2. if SD detected, 
+	;    use it and setup vectors
+	; 3. if unit is in fiec range 
+	;    use it and setup vectors
+do_atn
+	stx x_tmp
+	sta atn_byt
 	and #$1f
-	jmp SDDOS+7*3
-	;jmp TALK
+	sta curunit
+	cmp sd_unit
+	bne no_sd
+	; check if SDCard is detected
+	jsr SDDOS+6*3
+	bcc is_sdcard
+no_sd
+	; here either fiec or piec
+	lda siec_fl
+	bpl no_siec
 
+	ldx curunit
+
+	; check unit if fiec should be used
+	; b6 in siec_fl
+	asl
+	bmi lower
+	; fiec is upper half
+	cpx #16
+	bcc no_siec
+	bcs do_siec
+lower
+	; fiec is lower half
+	cpx #16
+	bcs no_siec
+
+do_siec
+	ldx #6*2-1	; num of vectors
+l0	lda fiec_vec,x
+	sta vectors,x
+	dex
+	bpl l0
+
+	lda atn_byt
+	; fold upper/lower to lower half of units
+	and #%11101111
+	cmp #$40
+	bcc do_listen
+	jsr TALK
+	jmp do_end
 do_listen
-	jmp SDDOS+6*3
-	;jmp LISTEN
+	jsr LISTEN
+do_end
+	lda status
+	cmp #1
+	rts
+
+	;----------------------
+	; no SIEC enabled, just return 
+	; with Carry set, so further
+	; IEEE calls will not even come here
+no_siec	sec
+	rts
+
+	;----------------------
+	; setup sdcard vectors
+	; TODO cache
+is_sdcard
+	ldx #6*2-1	; num of vectors
+l1	lda sdcard_vec,x
+	sta vectors,x
+	dex
+	bpl l1
+	ldx x_tmp
+	lda atn_byt
+	clc
+	rts
 
 	.data
+
+curunit .byt 0
+sd_unit	.byt 0
+siec_fl	.byt 0
+atn_byt	.byt 0
+x_tmp	.byt 0
 
 vectors	
 /*

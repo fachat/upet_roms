@@ -98,7 +98,7 @@ char8to16: char8to16.c
 iplldr: iplldr.a65
 	xa -w -XMASM -P $@.lst -o $@ $<
 
-boot: boot.a65 boot_menu.a65 boot_kbd.a65 boot_opts.a65 boot_rom1.a65 boot_rom2.a65 boot_rom4.a65 boot_usb.a65 dosromcomp.a65 patch4.a65
+boot: boot.a65 boot_menu.a65 boot_kbd.a65 boot_opts.a65 boot_opts.i65 boot_rom1.a65 boot_rom2.a65 boot_rom4.a65 boot_usb.a65 dosromcomp.a65 patch4.a65
 	xa -w -XCA65 -XMASM -k -P $@.lst -o $@ $<
 
 romtest02: romtest02.a65

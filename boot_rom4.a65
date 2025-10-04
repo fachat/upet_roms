@@ -268,10 +268,9 @@ dos_iecin	=DOS + 3 * 2
 dos_iecout	=DOS + 3 * 3
 dos_untlk	=DOS + 3 * 4	; note: currently no-op
 dos_unlsn	=DOS + 3 * 5
-dos_listn	=DOS + 3 * 6
-dos_talk	=DOS + 3 * 7	; note: currently same as listn
+dos_atn		=DOS + 3 * 6	; note: currently talk same as listn
 
-dos_init	=DOS + 3 * 8
+dos_init	=DOS + 3 * 7
 
 ; todo
 ; dos_miecin			; multiple iecin (LOAD)
@@ -365,6 +364,12 @@ l0	lda PATCH-1,x
 
 	; init the DOS
 
+	lda opt1	; get enable seriec
+	lsr		; into carry
+	lda opt2	; bit 7 is 
+	ror
+	tay
+
 	pla		; dos unit
 
 	php
@@ -399,7 +404,7 @@ talk_listn_unlstn .(
 	ora curdev
 	ldx #DOSBANK
 	stx BANK
-	jsr dos_talk	; note: DOS currently has same code for talk && listen 
+	jsr dos_atn	; note: DOS currently has same code for talk && listen 
 	ldx #BASBANK
 	stx BANK
 	tsx
