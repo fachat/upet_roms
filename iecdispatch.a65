@@ -49,6 +49,7 @@ do_atn
 	sta atn_byt
 	and #$1f
 	sta curunit
+
 	cmp sd_unit
 	bne no_sd
 	; check if SDCard is detected
@@ -75,11 +76,13 @@ lower
 	bcs no_siec
 
 do_siec
-	ldx #6*2-1	; num of vectors
+	ldx #vectors_end-vectors-1	; num of vectors
 l0	lda fiec_vec,x
 	sta vectors,x
 	dex
 	bpl l0
+
+	ldx x_tmp
 
 	lda atn_byt
 	; fold upper/lower to lower half of units
@@ -91,22 +94,24 @@ l0	lda fiec_vec,x
 do_listen
 	jsr LISTEN
 do_end
-	lda status
-	cmp #1
+	lda atn_byt
+	clc
 	rts
 
 	;----------------------
 	; no SIEC enabled, just return 
 	; with Carry set, so further
 	; IEEE calls will not even come here
-no_siec	sec
+no_siec	ldx x_tmp
+	lda atn_byt
+	sec
 	rts
 
 	;----------------------
 	; setup sdcard vectors
 	; TODO cache
 is_sdcard
-	ldx #6*2-1	; num of vectors
+	ldx #vectors_end-vectors-1	; num of vectors
 l1	lda sdcard_vec,x
 	sta vectors,x
 	dex
@@ -125,20 +130,19 @@ atn_byt	.byt 0
 x_tmp	.byt 0
 
 vectors	
-/*
+;v_slisten	.word SDDOS+0
+;v_stalk		.word SDDOS+3
+;v_iecin		.word SDDOS+6
+;v_iecout	.word SDDOS+9
+;v_untalk	.word SDDOS+12
+;v_unlisten	.word SDDOS+15
 v_slisten	.word SECLISTEN
 v_stalk		.word SECTALK
 v_iecin		.word IECIN
 v_iecout	.word IECOUT
 v_untalk	.word UNTALK
 v_unlisten	.word UNLISTEN
-*/
-v_slisten	.word SDDOS+0
-v_stalk		.word SDDOS+3
-v_iecin		.word SDDOS+6
-v_iecout	.word SDDOS+9
-v_untalk	.word SDDOS+12
-v_unlisten	.word SDDOS+15
+vectors_end
 
 fiec_vec	
 		.word SECLISTEN
