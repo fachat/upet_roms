@@ -26,7 +26,7 @@
  */
 
 PATCH1		=$fd60	; extra code
-PATCH1END	=$ff80
+PATCH1END	=$fe30	; note here starts the SDC/FIEC patch (up to ff30
 PATCH2		=$ffed	; jmp table 1
 PATCH3		=$ffd5	; jmp table 2
 PATCH4		=$ff81	; jmp table 3

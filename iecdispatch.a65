@@ -45,7 +45,6 @@ do_init
 	; 3. if unit is in fiec range 
 	;    use it and setup vectors
 do_atn
-	stx x_tmp
 	sta atn_byt
 	and #$1f
 	sta curunit
@@ -82,8 +81,6 @@ l0	lda fiec_vec,x
 	dex
 	bpl l0
 
-	ldx x_tmp
-
 	lda atn_byt
 	; fold upper/lower to lower half of units
 	and #%11101111
@@ -94,7 +91,6 @@ l0	lda fiec_vec,x
 do_listen
 	jsr LISTEN
 do_end
-	lda atn_byt
 	clc
 	rts
 
@@ -102,9 +98,7 @@ do_end
 	; no SIEC enabled, just return 
 	; with Carry set, so further
 	; IEEE calls will not even come here
-no_siec	ldx x_tmp
-	lda atn_byt
-	sec
+no_siec	sec
 	rts
 
 	;----------------------
@@ -116,8 +110,6 @@ l1	lda sdcard_vec,x
 	sta vectors,x
 	dex
 	bpl l1
-	ldx x_tmp
-	lda atn_byt
 	clc
 	rts
 

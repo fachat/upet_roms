@@ -313,6 +313,9 @@ DOS_LISTEN	=$40
 	lda #%01100000
 	sta MCTRL	; make ROM writable
 
+	rep #%00010000
+	.xl
+
 	; copy over the patch into ROM
 	ldx #rompatch_end - rompatch_start
 l0	lda PATCH-1,x
@@ -320,12 +323,25 @@ l0	lda PATCH-1,x
 	dex
 	bne l0
 
+	sep #%00010000
+	.xs
+
 	lda #$4c	; JMP
 	ldx #<talk_listn_unlstn
 	ldy #>talk_listn_unlstn
 	sta $f0d8	; note this is called for TALK, LISTEN and UNLISTEN
 	stx $f0d9	; with either $20, $40, or $3F in A (and PHA'd)
 	sty $f0da
+
+	ldx opt2
+	bpl no_map	; if no SIEC support, no need to map
+	ldx #<map_unit
+	ldy #>map_unit
+	sta $f0fb
+	stx $f0fc
+	sty $f0fd
+	; NOP could be set to f0fe 
+no_map
 
 	ldx #<seclstn
 	ldy #>seclstn
@@ -404,14 +420,16 @@ talk_listn_unlstn .(
 	ora curdev
 	ldx #DOSBANK
 	stx BANK
-	jsr dos_atn	; note: DOS currently has same code for talk && listen 
+	; note: DOS currently has same code for talk && listen 
+	jsr dos_atn
 	ldx #BASBANK
 	stx BANK
-	tsx
 
 	lda flags
 	and #%00111111
 	bcs no_dev
+
+	tsx
 	; move the IEEE TALK/LISTEN commands into right bits for flags
 	.assert DOS_LISTEN == $40, "check on flag"
 	.assert DOS_TALK == $80, "check on flag"
@@ -432,6 +450,7 @@ orig_unlsn
 	lda $e840
 	jmp $f0db
 
+
 unlisten
 	.assert DOS_LISTEN == $40, "check on flag"
 	bit flags
@@ -446,6 +465,18 @@ unlisten
 	plp
 	pla
 	rts
+	.)
+
+map_unit .(		; jmp from $f0fb
+	ora $d4
+	sta $a5
+	and #%00011111	; untalk/unlisten = device $1f ?
+	cmp #%00011111
+	beq nofix
+	lda $a5
+	and #%11101111	; map upper units (>=16) to lower units (<16)
+	sta $a5
+nofix	jmp $f0ff
 	.)
 
 sectlk	.(
