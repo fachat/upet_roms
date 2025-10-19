@@ -42,7 +42,7 @@ TOOLS=romcheck
 
 spiimgc: rebuildclean spiimg 
 
-spiimg: zero boot chargen_pet16 chargen_pet1_16 iplldr $(EDITROMS) $(ORIGROMS) edit80_grfkb_ext_chk.bin edit80_chk.bin usbcode dos.bin
+spiimg: zero boot chargen_pet16 chargen_pet1_16 iplldr $(EDITROMS) $(ORIGROMS) edit80_grfkb_ext_chk.bin edit80_chk.bin usbcode dos.bin fieccode
 	# ROM images
 	cat iplldr					> $@	# 256b   : IPL loader
 	cat boot					>> $@	# 8k-256 : boot code
@@ -76,6 +76,8 @@ spiimg: zero boot chargen_pet16 chargen_pet1_16 iplldr $(EDITROMS) $(ORIGROMS) e
 	cat edit80_b_ext.bin	 			>> $@	# sjgray ext 80 column editor for biz kbd (experimental)
 	cat edit40b zero 				>> $@	# original BASIC 4 editor ROM graph keybd
 	cat edit80b zero 				>> $@	# original BASIC 4 editor ROM graph keybd
+	#### Fast SIEC code
+	cat fieccode					>> $@	# 4k
 
 
 zero: 
@@ -96,7 +98,7 @@ char8to16: char8to16.c
 iplldr: iplldr.a65
 	xa -w -XMASM -P $@.lst -o $@ $<
 
-boot: boot.a65 boot_menu.a65 boot_kbd.a65 boot_opts.a65 boot_rom1.a65 boot_rom2.a65 boot_rom4.a65 boot_usb.a65 dosromcomp.a65 patch4.a65
+boot: boot.a65 boot_menu.a65 boot_kbd.a65 boot_opts.a65 boot_opts.i65 boot_rom1.a65 boot_rom2.a65 boot_rom4.a65 boot_usb.a65 dosromcomp.a65 patch4.a65
 	xa -w -XCA65 -XMASM -k -P $@.lst -o $@ $<
 
 romtest02: romtest02.a65
@@ -216,8 +218,15 @@ dosromcomp.a65: cbm-x16dos
 
 cbm-fastiec:
 	git clone $(BASE)/cbm-fastiec.git
-	#(cd cbm-fastiec; git checkout upet)
+	(cd cbm-fastiec; git checkout upet)
 
+fieccode.o65: fieccode.a65 iecdispatch.a65 cbm-fastiec 
+	xa -R -c -XMASM -bz 48 -bt 8192 -bd 12032 -o $@ $<
+
+fieccode: fieccode.o65
+	reloc65 -X -v -o $@ $<
+	
+	
 ##########################################################################	
 # USB driver code
 	
@@ -252,6 +261,7 @@ clean:
 	rm -f romcheck loadrom loadrom.bin boot 
 	rm -f usbcode 
 	rm -f dos.bin iplldr.lst 
+	rm -f fieccode.o65 fieccode
 
 rebuildclean:
 	rm -f $(EDITROMS) $(ORIGROMS)

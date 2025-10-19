@@ -1,0 +1,34 @@
+
+.(
+
+; reuse from SDCard code, as this runs in same bank
+;&MAP_SDC	=14	; bank 7, lower half
+
+FIECPAGE	=$40	; in SPI image, 3rd bank
+
+FIECBASE 	=$2000                                   
+
+        ; -----------------------                                        
+        ; copy over code to RAM                                      
+        ; $24000-$24fff in flash img                                     
+        ; copy to FIECBASE                                                
+
+	.xl
+&setup_fiec_xl
+        .(
+        lda #MAP_SDC 	; which RAM bank to use for SDCard support
+        sta BANK        ; $e802                                           
+
+        lda #FIECPAGE    ; page in flash
+        ldx #FIECBASE    ; start in current bank                          
+        ldy #$1000      ; transfer len                                   
+        jsr flash2direct3_xl                                             
+
+        lda #MAP_BAS	; switch back to bank 0
+        sta BANK                                                         
+
+	rts
+        .)                                                               
+
+.)
+

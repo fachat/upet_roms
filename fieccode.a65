@@ -1,0 +1,29 @@
+
+SDDOS	=$4000
+
+	.data
+dstart	=*
+
+	.zero
+BUFFLG	.byt 0
+EOIFL	.byt 0
+BYTE	.byt 0
+BITCNT	.byt 0
+RXBYT	.byt 0
+BURST_FLG 
+	.byt 0
+	.text
+
+start	=*
+	.include "iecdispatch.a65"
+
+	; from the SDCard DOS, so same address is used
+STATUS	=$0287
+	.include "cbm-fastiec/upet-fiec-core.a65"
+
+	; note: build process adds a page for potential data segment
+	.dsb start + $0f00 - *, $ff
+
+	.data
+	.dsb dstart + 256 -*, $ff
+

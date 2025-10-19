@@ -42,7 +42,13 @@ rest of the boot code as loaded by the initial IPL loader.
 Then follow the various ROM images.
 
 	Boot Image
-        
+
+        +----+ $25000
+        |    |         Fast IEC code, incl dispatcher
+        +----+ $24000
+        |    |         4x EDITOR
+         ...           ROM images for
+        |    |         business keyboard (Ext./orig, 40/80 cols)
         +----+ $1ffff
         |    |         SD-Card DOS code
         |    |         (16k)
@@ -234,14 +240,17 @@ With BASIC 4 there are multiple options that need to be considered:
 	Fast RAM
 
         +----+ $07ffff
-        |    |         USB- and SD-Card support bank, mapped 
+        |    |         USB support bank, mapped 
+        |    |  	$1000-$3000	8k USB code
+        |    |  
+        |    |  	$0020-$002f 	USB code zeropage
+        +----+ $078000
+        |    |         IEC/SD-Card support bank, mapped 
         |    |  	$4000-$8000 	16k SD-Card code
         |    |  	$3000-$4000 	4k SD-Card buffers
-        |    |  	$1000-$3000	8k USB code
-        |    |  	$0020-$002f 	USB code zeropage
+        |    |          $2000-$3000     Fast SIEC code and IEC dispatch
+        |    |  	$0030-$0037 	SIEC zeropage
         |    |  	$0010-$001B 	SD-Card zeropage
-        +----+ $078000
-        |    |  
         +----+ $070000
         |    |  
          ...           free
