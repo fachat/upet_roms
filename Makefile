@@ -42,7 +42,7 @@ TOOLS=romcheck
 
 spiimgc: rebuildclean spiimg 
 
-spiimg: zero boot chargen_pet16 chargen_pet1_16 iplldr $(EDITROMS) $(ORIGROMS) edit80_grfkb_ext_chk.bin edit80_chk.bin usbcode dos.bin fieccode
+spiimg: zero boot chargen_pet16 chargen_pet1_16 iplldr $(EDITROMS) $(ORIGROMS) kernal4c edit80_grfkb_ext_chk.bin edit80_chk.bin usbcode dos.bin fieccode
 	# ROM images
 	cat iplldr					> $@	# 256b   : IPL loader
 	cat boot					>> $@	# 8k-256 : boot code
@@ -54,7 +54,7 @@ spiimg: zero boot chargen_pet16 chargen_pet1_16 iplldr $(EDITROMS) $(ORIGROMS) e
 	cat basic2 edit2g zero kernal2 			>> $@	# 32-48k : BASIC2/Edit/Kernel ROMs (16k $c000-$ffff)
 	# BASIC 4
 	cat basic4 					>> $@	# 48-60k : BASIC4 ROMS (12k $b000-$dfff)
-	cat kernal4					>> $@	# 60-64k : BASIC4 kernel (4k)
+	cat kernal4c					>> $@	# 60-64k : BASIC4 kernel (4k)
 	#### 64k-
 	# editor ROMs (each line 4k)
 	cat edit40_grfkb_ext.bin  			>> $@	# sjgray ext 40 column editor w/ wedge by for(;;)
@@ -160,11 +160,11 @@ basic4:
 	cat basic4b basic4c basic4d > basic4
 	rm basic4b basic4c basic4d
 
-kernal4t: 
-	curl -o kernal4t $(ARCHIVE)/firmware/computers/pet/kernal-4.901465-22.bin
+kernal4: 
+	curl -o kernal4 $(ARCHIVE)/firmware/computers/pet/kernal-4.901465-22.bin
 
-kernal4: kernal4t romcheck
-	./romcheck -s 0xf0 -i 0xdff -o kernal4 kernal4t
+kernal4c: kernal4 romcheck
+	./romcheck -s 0xf0 -i 0xdff -o kernal4c kernal4
 
 
 edit40g:
@@ -256,8 +256,8 @@ ${TOOLS}: % : %.c
 
 clean:
 	rm -f romtest01 romtest01a romtest02 romtest02a zero chargen_pet16 char8to16 charPet2Invers
-	rm -f chargen_pet1 chargen_pet1_16
-	rm -f iplldr edit80_chk.bin edit80_grfkb_ext_chk.bin kernal4t
+	rm -f chargen_pet1_16 kernal4c
+	rm -f iplldr edit80_chk.bin edit80_grfkb_ext_chk.bin 
 	rm -f romcheck loadrom loadrom.bin boot 
 	rm -f usbcode 
 	rm -f dos.bin iplldr.lst 
