@@ -11,7 +11,7 @@ deep: usb65 cbm-x16dos
 ########################################################
 # sub-repos
 
-REPOS=cbm-edit-rom cbm-x16dos usb65 cbm-fastiec
+REPOS=cbm-edit-rom cbm-x16dos usb65 cbm-fastiec cbm-burnin-tests
 
 # downloads all the repos it depends on
 clone: $(REPOS)
@@ -42,7 +42,7 @@ TOOLS=romcheck
 
 spiimgc: rebuildclean spiimg 
 
-spiimg: zero boot chargen_pet16 chargen_pet1_16 iplldr $(EDITROMS) $(ORIGROMS) kernal4c edit80_grfkb_ext_chk.bin edit80_chk.bin usbcode dos.bin fieccode
+spiimg: zero boot chargen_pet16 chargen_pet1_16 iplldr $(EDITROMS) $(ORIGROMS) kernal4c edit80_grfkb_ext_chk.bin edit80_chk.bin usbcode dos.bin fieccode cbm-burnin-tests/pet_burnin_rom
 	# ROM images
 	cat iplldr					> $@	# 256b   : IPL loader
 	cat boot					>> $@	# 8k-256 : boot code
@@ -78,6 +78,8 @@ spiimg: zero boot chargen_pet16 chargen_pet1_16 iplldr $(EDITROMS) $(ORIGROMS) k
 	cat edit80b zero 				>> $@	# original BASIC 4 editor ROM graph keybd
 	#### Fast SIEC code
 	cat fieccode					>> $@	# 4k
+	#### Burnin tests
+	cat cbm-burnin-tests/pet_burnin_rom		>> $@	# 8k
 
 
 zero: 
@@ -226,6 +228,16 @@ fieccode.o65: fieccode.a65 iecdispatch.a65 cbm-fastiec
 fieccode: fieccode.o65
 	reloc65 -X -v -o $@ $<
 	
+##########################################################################	
+# Burnin tests
+
+cbm-burnin-tests:
+	git clone $(BASE)/cbm-burnin-tests.git
+	(cd cbm-burnin-tests; git checkout)
+
+cbm-burnin-tests/pet_burnin_rom: cbm-burnin-tests 
+	(cd cbm-burnin-tests; make)
+
 	
 ##########################################################################	
 # USB driver code

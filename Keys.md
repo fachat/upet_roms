@@ -82,6 +82,7 @@ a key must be pressed that is valid in exactly
 one of the three matrices. For the N-type keyboard
 this must be 1,2,4,6,8,X, as well as left shift and S (for Settings). For the B- and C64 type
 keyboards this must at this time be 4,6,8,X left shift and S.
+Also, H is used to go into "hardware" more, i.e. burnin and diagnostics
 
 The following table gives the identified unique keys with prefix
 
@@ -95,10 +96,10 @@ The following table gives the identified unique keys with prefix
      2    B1*     NSR             BX  NSL
      3    B2* N2          C8  C6  C4  NX*
      4        N1+     CO+             BSL
-     5    B4                      CS  NS 
-     6    N6  N4*
+     5    B4              CH  NH  CS  NS 
+     6    N6  N4*                 
      7    B6  N8              CX  CSL        
-     8        N9      NO          BS
+     8        N9      NO  BH      BS
      9    B9  
     10                B8+             C1
 
