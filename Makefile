@@ -220,7 +220,7 @@ dosromcomp.a65: cbm-x16dos
 
 cbm-fastiec:
 	git clone $(BASE)/cbm-fastiec.git
-	(cd cbm-fastiec; git checkout upet)
+	(cd cbm-fastiec; git checkout)
 
 fieccode.o65: fieccode.a65 iecdispatch.a65 cbm-fastiec 
 	xa -R -c -XMASM -bz 48 -bt 8192 -bd 12032 -o $@ $<
