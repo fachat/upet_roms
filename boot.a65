@@ -183,6 +183,8 @@ copy
 
 	jsr setup_fiec_xl
 
+	jsr setup_ser_xl
+
 	jsr setup_usb_xl
 
 	cli
@@ -489,6 +491,7 @@ sl	sta VICCY
 #include "boot_kbd.a65"
 #include "boot_opts.a65"
 #include "boot_usb.a65"
+#include "boot_ser.a65"
 #include "boot_irq.a65"
 #include "boot_sdcard.a65"
 #include "boot_fiec.a65"

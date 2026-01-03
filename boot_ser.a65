@@ -1,0 +1,49 @@
+
+.(
+
+&MAP_SER	=USBBLK
+
+SERPAGE	=$70		; start of driver in Flash ROM
+
+USBBLK  =15             ; bank 7 value for BANK  
+
+DRIVERADDR      =$7000
+
+        ; -----------------------                                        
+        ; copy over USB code to RAM                                      
+        ; $1a000-$1bfff in flash img                                     
+        ; copy to DRIVERADDR                                                
+
+	.xl
+&setup_ser_xl                                                                         
+        .(                                                               
+        lda #MAP_SER 	; for the PET default VICCY base address of $1000 
+        sta BANK        ; $e802                                           
+
+        lda #SERPAGE    ; page in flash                                  
+        ldx #DRIVERADDR ; start in current bank                          
+        ldy #$1000      ; transfer len                                   
+        jsr flash2direct3_xl                                             
+
+	sep #%00010000
+	.xs
+
+	;jsr t_init
+    	;bcs nohw
+       
+	;jsr t_install
+ 
+nohw                                                               
+        lda #MAP_BAS
+        sta BANK                                                         
+
+	rep #%00010000
+	.xl
+	rts
+        .)                                                               
+
+	
+
+	.xs                                                                         
+.)
+

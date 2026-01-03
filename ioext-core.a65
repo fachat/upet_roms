@@ -1,0 +1,8 @@
+
+	*=$7000
+start
+
+#include "upet_ioext/ioext-core.a65"
+
+	.dsb start+$1000-*
+

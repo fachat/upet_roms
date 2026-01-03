@@ -46,29 +46,30 @@ TOOLS=romcheck
 
 spiimgc: rebuildclean spiimg 
 
-spiimg: zero boot chargen_pet16 chargen_pet1_16 iplldr $(EDITROMS) $(ORIGROMS) $(ROMDIR)/kernal4c $(ROMDIR)/edit80_grfkb_ext_chk.bin $(ROMDIR)/edit80_chk.bin usbcode dos.bin fieccode cbm-burnin-tests/pet_burnin_rom
+spiimg: zero boot chargen_pet16 chargen_pet1_16 iplldr $(EDITROMS) $(ORIGROMS) $(ROMDIR)/kernal4c $(ROMDIR)/edit80_grfkb_ext_chk.bin $(ROMDIR)/edit80_chk.bin \
+	usbcode dos.bin fieccode cbm-burnin-tests/pet_burnin_rom ioext-core.bin
 	# ROM images
 	cat iplldr					> $@	# 256b   : IPL loader
 	cat boot					>> $@	# 8k-256 : boot code
 	# standard character ROM (converted to 16 byte/char)
 	cat chargen_pet16 				>> $@	# 8-16k  : 8k 16bytes/char PET character ROM
 	# BASIC 1
-	cat $(ROMDIR)/basic1 $(ROMDIR)/edit1 zero $(ROMDIR)/kernal1			>> $@	# 16-32k : BASIC1/Edit/Kernel ROMs (16k $c000-$ffff)
+	cat $(ROMDIR)/basic1 $(ROMDIR)/edit1 zero $(ROMDIR)/kernal1	>> $@	# 16-32k : BASIC1/Edit/Kernel ROMs (16k $c000-$ffff)
 	# BASIC 2
-	cat $(ROMDIR)/basic2 $(ROMDIR)/edit2g zero $(ROMDIR)/kernal2 			>> $@	# 32-48k : BASIC2/Edit/Kernel ROMs (16k $c000-$ffff)
+	cat $(ROMDIR)/basic2 $(ROMDIR)/edit2g zero $(ROMDIR)/kernal2 	>> $@	# 32-48k : BASIC2/Edit/Kernel ROMs (16k $c000-$ffff)
 	# BASIC 4
-	cat $(ROMDIR)/basic4 					>> $@	# 48-60k : BASIC4 ROMS (12k $b000-$dfff)
-	cat $(ROMDIR)/kernal4c					>> $@	# 60-64k : BASIC4 kernel (4k)
+	cat $(ROMDIR)/basic4 				>> $@	# 48-60k : BASIC4 ROMS (12k $b000-$dfff)
+	cat $(ROMDIR)/kernal4c				>> $@	# 60-64k : BASIC4 kernel (4k)
 	#### 64k-
 	# editor ROMs (each line 4k)
-	cat $(ROMDIR)/edit40_grfkb_ext.bin  			>> $@	# sjgray ext 40 column editor w/ wedge by for(;;)
-	cat $(ROMDIR)/edit40_c64kb_ext.bin	 		>> $@	# sjgray ext 40 column editor for C64 kbd (experimental)
-	cat $(ROMDIR)/edit80_grfkb_ext_chk.bin			>> $@	# sjgray ext 80 column editor w/ wedge by for(;;)
-	cat $(ROMDIR)/edit80_c64kb_ext.bin	 		>> $@	# sjgray ext 80 column editor for C64 kbd (experimental)
-	cat $(ROMDIR)/edit40g zero 				>> $@	# original BASIC 4 editor ROM graph keybd
-	cat $(ROMDIR)/edit40_c64kb.bin 		 		>> $@	# sjgray base 40 column editor for C64 kbd (experimental)
-	cat $(ROMDIR)/edit80_chk.bin zero				>> $@	# (original) BASIC 4 80 column editor ROM (graph keybd)
-	cat $(ROMDIR)/edit80_c64kb.bin zero	 		>> $@	# sjgray base 80 column editor for C64 kbd (experimental)
+	cat $(ROMDIR)/edit40_grfkb_ext.bin  		>> $@	# sjgray ext 40 column editor w/ wedge by for(;;)
+	cat $(ROMDIR)/edit40_c64kb_ext.bin	 	>> $@	# sjgray ext 40 column editor for C64 kbd (experimental)
+	cat $(ROMDIR)/edit80_grfkb_ext_chk.bin		>> $@	# sjgray ext 80 column editor w/ wedge by for(;;)
+	cat $(ROMDIR)/edit80_c64kb_ext.bin	 	>> $@	# sjgray ext 80 column editor for C64 kbd (experimental)
+	cat $(ROMDIR)/edit40g zero 			>> $@	# original BASIC 4 editor ROM graph keybd
+	cat $(ROMDIR)/edit40_c64kb.bin 		 	>> $@	# sjgray base 40 column editor for C64 kbd (experimental)
+	cat $(ROMDIR)/edit80_chk.bin zero		>> $@	# (original) BASIC 4 80 column editor ROM (graph keybd)
+	cat $(ROMDIR)/edit80_c64kb.bin zero	 	>> $@	# sjgray base 80 column editor for C64 kbd (experimental)
 	# alternate BASIC 1 character ROM (as 16 bytes/char)
 	cat chargen_pet1_16				>> $@	# BASIC 1 character set (8k)
 	# USB support
@@ -76,14 +77,16 @@ spiimg: zero boot chargen_pet16 chargen_pet1_16 iplldr $(EDITROMS) $(ORIGROMS) $
 	# SD-Card support
 	cat dos.bin					>> $@	# 16k SD-Card DOS
 	#### 128k-
-	cat $(ROMDIR)/edit40_b_ext.bin	 			>> $@	# sjgray ext 40 column editor for biz kbd (experimental)
-	cat $(ROMDIR)/edit80_b_ext.bin	 			>> $@	# sjgray ext 80 column editor for biz kbd (experimental)
-	cat $(ROMDIR)/edit40b zero 				>> $@	# original BASIC 4 editor ROM graph keybd
-	cat $(ROMDIR)/edit80b zero 				>> $@	# original BASIC 4 editor ROM graph keybd
+	cat $(ROMDIR)/edit40_b_ext.bin	 		>> $@	# sjgray ext 40 column editor for biz kbd (experimental)
+	cat $(ROMDIR)/edit80_b_ext.bin	 		>> $@	# sjgray ext 80 column editor for biz kbd (experimental)
+	cat $(ROMDIR)/edit40b zero 			>> $@	# original BASIC 4 editor ROM graph keybd
+	cat $(ROMDIR)/edit80b zero 			>> $@	# original BASIC 4 editor ROM graph keybd
 	#### Fast SIEC code
 	cat fieccode					>> $@	# 4k
 	#### Burnin tests
 	cat cbm-burnin-tests/pet_burnin_rom		>> $@	# 8k
+	#### basic4 ioext
+	cat ioext-core.bin				>> $@	# 4k
 
 
 zero: 
@@ -104,7 +107,7 @@ char8to16: char8to16.c
 iplldr: iplldr.a65
 	xa -w -XMASM -P $@.lst -o $@ $<
 
-boot: boot.a65 boot_menu.a65 boot_kbd.a65 boot_opts.a65 boot_opts.i65 boot_rom1.a65 boot_rom2.a65 boot_rom4.a65 boot_usb.a65 dosromcomp.a65 patch4.a65
+boot: boot.a65 boot_menu.a65 boot_kbd.a65 boot_opts.a65 boot_opts.i65 boot_rom1.a65 boot_rom2.a65 boot_rom4.a65 boot_usb.a65 dosromcomp.a65 patch4.a65 boot_ser.a65
 	xa -w -XCA65 -XMASM -k -P $@.lst -o $@ $<
 
 romtest02: romtest02.a65
@@ -211,6 +214,8 @@ $(ROMDIR)/edit80_chk.bin: $(ROMDIR)/edit80g romcheck
 upet-ioext: 
 	git clone $(BASE)/upet_ioext.git
 
+ioext-core.bin: ioext-core.a65 upet_ioext/*
+	xa -XCA65 -DIOEXT_FILENAME=512 -I upet_ioext -o $@ ioext-core.a65
 
 
 ##########################################################################	

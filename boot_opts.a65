@@ -24,8 +24,8 @@
 ;	bit 0: enable serial IEC support
 ; opts2 bits are:
 ;	bit 7: IEC/IEEE prio
-;	bit 6: enable RS232 port A support
-;	bit 5: enable RS232 port B support
+;	bit 6: enable RS232 / I2C support
+;	bit 5: n/a
 ;	bit 4: enable USB support (mouse/kbd)
 ;	bit 3: default screen col (placeholder)
 ; optu bits are:
@@ -421,8 +421,8 @@ text	.asc "           MICRO-/ULTI-PET              "
         .asc "SD UNIT                                 "
 	.asc "SER IEC                                 "
 	.asc "UNIT +16                                "
-	.asc "RS232 A                                 "
-	.asc "RS232 B                                 "
+	.asc "RS232/I2C                               "
+	.asc "--                                      "
         .asc "USB HID                                 "
         .asc "SCREEN COL                              "
 	.asc 0
@@ -706,82 +706,48 @@ reset	jsr load_from_rom_xs
 left 	ldx x
 	beq endo
 	ldy y
-	cpy #8
-	bcs nxleft2
 nxleft	dex
-	lda opts_mask,x
-	and pow2,y
-	bne goleft
-	txa
-	bne nxleft
-	beq endo
 goleft	stx x
-	bne endo
-nxleft2	dex
-	lda opts_mask2,x
-	and pow2-8,y
-	bne goleft
-	txa
-	bne nxleft2
-	beq endo
+	bra endo
 
 right 	ldx x
 nxrght	cpx #OPT_MAX_X_I-1
 	bcs endo
 	inx
 	ldy y
-	cpy #8
-	bcs nxrght2
-	lda opts_mask,x
-	and pow2,y
-	beq nxrght
 gorght	stx x
-	bne endo2
-nxrght2	lda opts_mask2,x
-	and pow2-8,y
-	bne gorght
-	beq nxrght
+	bra endo2
 
 up	ldy y
 	beq endo2
 nxup	dey
 	ldx x
-	cpy #8
-	bcs nxup2
-	lda opts_mask,x
-	and pow2,y
-	bne goup
-nxup2a	tya
-	bne nxup
-	beq endo2
-nxup2	lda opts_mask2,x
-	and pow2-8,y
-	beq nxup2a
 goup	sty y
-	bne endo2
+	bra endo2
 
 down	ldy y
 nxdown	cpy #OPT_MAX_Y_I-1
 	bcs endo2
 	ldx x
 	iny
-	cpy #8
-	bcs nxd2
-	lda opts_mask,x
-	and pow2,y
-	beq nxdown
 godo	sty y
 endo2	jmp endo
-nxd2	lda opts_mask2,x
-	and pow2-8,y
-	bne godo
-	beq nxdown
 
 	; --------------------------
 	; handle actual change
 
 action	ldx x
 	ldy y
+	; check mask
+	cpy #8
+	bcs mask8
+	lda opts_mask,x
+	and pow2,y
+	bra maskchk
+mask8	lda opts_mask2,x
+	and pow2-8,y
+maskchk	beq noact
+	; check action
 	cpy #OPT1_SPEED_I
 	beq actspeed
 	cpy #OPT1_SDUNIT_I
@@ -802,7 +768,7 @@ act2	cpy #OPT2_SCRCOL_I
 	sta opts_vals2,x
 	and pow2-8,y
 act2b	jsr showopt
-	jmp act
+noact	jmp act
 &showopt
 	beq notset
 	lda #ONCHAR
@@ -983,17 +949,17 @@ pow2	.byt %10000000
 &opts_mask2
 	.byt %00001000		; 1
 	.byt %00001000		; 2
-	.byt %10011000		; 4
-	.byt %10011000		; 6
-	.byt %10011000		; 8
+	.byt %11011000		; 4
+	.byt %11011000		; 6
+	.byt %11011000		; 8
 
 	.byt %00000000		; 9
 
 	.byt %00001000		; 1
 	.byt %00001000		; 2
-	.byt %10011000		; 4
-	.byt %10011000		; 6
-	.byt %10011000		; 8
+	.byt %11011000		; 4
+	.byt %11011000		; 6
+	.byt %11011000		; 8
 
 	.byt %00000000		; X
 
@@ -1021,9 +987,9 @@ opts_vals_dflt
 opts_vals2_dflt
 	.byt %00000000		; 1
 	.byt %00000000		; 2
-	.byt %00010000		; 4
-	.byt %00010000		; 6
-	.byt %00010000		; 8
+	.byt %01010000		; 4
+	.byt %01010000		; 6
+	.byt %01010000		; 8
 
 	.byt %00010000		; X
 
@@ -1036,14 +1002,14 @@ opts_vals2_dflt
 	.byt %00000000		; X
 
 unit_vals_dflt
-	.byt %00000000		; 1 - 1 MHz, unit 8
+	.byt %00100000		; 1 - 1 MHz, unit 8
 	.byt %00000000		; 2
 	.byt %00000000		; 4
 	.byt %00000000		; 6
 	.byt %00000000		; 8
 	.byt %00000000		; X
 
-	.byt %00000000		; 1
+	.byt %00100000		; 1
 	.byt %00000000		; 2
 	.byt %00000000		; 4
 	.byt %00000000		; 6
