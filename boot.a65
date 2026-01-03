@@ -183,6 +183,8 @@ copy
 
 	jsr setup_fiec_xl
 
+	jsr setup_ser_xl
+
 	jsr setup_usb_xl
 
 	cli
@@ -198,14 +200,20 @@ mloop
 	jsr do_menu_xl
 
 	cmp #"s"
-	bne doreal
+	bne checkhw
 
 	jsr do_options_xl
 	
 	cmp #"x"
-	bne doreal
+	bne checkhw
 
 	jmp mloop
+
+checkhw
+	cmp #"h"
+	bne doreal
+
+	jmp hwcheck_xl
 doreal
 	; save config char ("1", "2", ..)
 	pha
@@ -289,10 +297,72 @@ end
 
 	jmp ($fffc)	; RESET vector
 
+	.xl
+
 	; ----------------------------
+	; HW debug
+hwcheck_xl
+	sei
+
+	lda #BOOTCOL
+	jsr setcol_xl
+
+	jsr clrscreen_xl
+
+	; kernal4 and editor for interrupt code
+	lda #$f0
+	ldx #$f000
+	ldy #$1000
+	jsr flash2direct_xl
+
+	lda #$70
+	ldx #$e000
+	ldy #$1000
+	jsr flash2direct2_xl
+
+	lda #$c0
+	ldx #$b000
+	ldy #$3000
+	jsr flash2direct2_xl
+	
+	; pet_burnin
+	lda #$50
+	ldx #$1000
+	ldy #$2000
+	jsr flash2direct3_xl
+
+	ldx #$e455
+	stx $90		; interrupt vector
+	stx $92		; BRK vector
+
+	; code runs in .xs/.as
+	sep #%00110000
+	.xs
+	.as
+
+	; switch to native mode
+	sec
+	xce
+
+	; 80 col screen
+	lda #%01100010
+	sta $e800
+
+	; 1 MHz entry
+	lda #0
+	sta SPEED
+
+	; ROM write protected
+	lda #%11000000
+	sta $e801
+
+	jmp $1000
+
+	; ----------------------------
+	.xl
+
 	; copy an area from flash to bank 0 RAM
 
-	.xl
 	; AC = page in Flash (8bit -> A8-15)
 	; XR = start in bank 0 (16bit)
 	; YR = number of bytes (16 bit)
@@ -421,6 +491,7 @@ sl	sta VICCY
 #include "boot_kbd.a65"
 #include "boot_opts.a65"
 #include "boot_usb.a65"
+#include "boot_ser.a65"
 #include "boot_irq.a65"
 #include "boot_sdcard.a65"
 #include "boot_fiec.a65"

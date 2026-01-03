@@ -223,6 +223,8 @@ openkbd
 	beq is9
 	cpx #40		; "S" for Settings
 	beq isopt
+	cpx #38		; "H" for HW debug
+	beq ishwdebug
 
 	; PET B-type keyboard
 	ldy #OPT0_BKBD
@@ -241,6 +243,8 @@ openkbd
 	beq is9
 	cpx #63		; "S" on B kbd for Settings
 	beq isopt
+	cpx #61		; "H" on B kbd for HW debug
+	beq ishwdebug
 
 	; C64 keyboard
 	ldy #OPT0_C64KBD
@@ -263,12 +267,17 @@ openkbd
 	beq isopt
 	cpx #54		; "X" on C64 kbd
 	beq is9
+	cpx #37		; "H on C64 kbd
+	beq ishwdebug
 is9
 	pla		; get shift from stack and ignore
 bloopx
 	clc	
 	rts
 
+ishwdebug
+	ldx #"h"
+	.byt $2c
 is8296	ldx #"6"		;128+32+6
 	.byt $2c
 is8	ldx #"8"		; 128+6
