@@ -28,7 +28,7 @@ SID_VOL	=$18
 RUNADDR	=$9000
 
 BOOTSTART	=$0100
-BOOTLEN		=$1e00
+BOOTLEN		=$1f00
 
 	*=$ff00
 vreset	.(

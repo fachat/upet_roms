@@ -23,27 +23,48 @@ DRIVERADDR      =$7000
         lda #SERPAGE    ; page in flash                                  
         ldx #DRIVERADDR ; start in current bank                          
         ldy #$1000      ; transfer len                                   
-        jsr flash2direct3_xl                                             
+        jsr flash2direct3_xl
 
-	sep #%00010000
-	.xs
-
-	;jsr t_init
-    	;bcs nohw
-       
-	;jsr t_install
- 
-nohw                                                               
         lda #MAP_BAS
-        sta BANK                                                         
+        sta BANK
+	rts
+	.)
 
-	rep #%00010000
-	.xl
+&ser_install_basic4_xl .(
+	; install the code into ROM
+	jsr ioext_install4_xl
+	; patch it in
+	jsr ioext_patch4_xl
+
 	rts
         .)                                                               
 
 	
 
 	.xs                                                                         
+
+IOEXT_BANK	=MAP_SER
+DEFAULT_BANK	=MAP_BAS
+BANKREG		=BANK
+IOEXT_FILENAME	=512
+IOEXT_COMP	=$d4c0
+
+IO_RESET	=DRIVERADDR+0
+IO_IRQ		=DRIVERADDR+3
+IO_OPEN		=DRIVERADDR+6
+IO_CLOSE	=DRIVERADDR+9
+IO_CHKOUT	=DRIVERADDR+12
+IO_CHKIN	=DRIVERADDR+15
+IO_CLRCH_OUT	=DRIVERADDR+18
+IO_CLRCH_IN	=DRIVERADDR+21
+IO_OUT		=DRIVERADDR+24
+IO_IN		=DRIVERADDR+27
+
+#include "upet_ioext/ioext-install4.a65"
+
+MOVE	*=IOEXT_COMP
+#include "upet_ioext/ioext-comp4.a65"
+	*=*-IOEXT_COMP+MOVE
+dosrom
 .)
 

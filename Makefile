@@ -272,7 +272,7 @@ usbcode: usbcode.a65 usb65/platforms/upet/petrom
 ##########################################################################	
 # load other PET Editor ROM and reboot
 
-loadrom: loadrom.lst
+loadrom: loadrom.bas
 	petcat -w40 -o $@ $<
 
 loadrom.bin: loadrom.a65
@@ -291,9 +291,12 @@ clean:
 	rm -f usbcode 
 	rm -f dos.bin iplldr.lst 
 	rm -f fieccode.o65 fieccode
+	rm -f zero usbcode upet.log romcheck loadrom loadrom.bin iplldr ioext-core.bin
+	rm -f *.lst
 
-rebuildclean:
+rebuildclean: clean
 	rm -f $(EDITROMS) $(ORIGROMS)
-	rm -f $(ROMDIR)/chargen_pet $(ROMDIR)/chargen_pet1
+	rm -f $(ROMDIR)/chargen_pet $(ROMDIR)/chargen_pet1 $(ROMDIR)/kernal4c
+	rm -f $(ROMDIR)/edit80_grfkb_ext_chk.bin $(ROMDIR)/edit80_chk.bin
 
 

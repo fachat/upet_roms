@@ -318,6 +318,7 @@ nodev	sty UART+UART_MCR	; restore potential PIA register
 	ldy #255-OPT2_SERA
 	jsr clrmask2
 dev	.)
+#if 0
 	.(
 UART	=$e828
         ldy UART+UART_MCR
@@ -336,6 +337,7 @@ nodev	sty UART+UART_MCR	; restore potential PIA register
 	ldy #255-OPT2_SERB
 	jsr clrmask2
 dev	.)
+#endif
 	; --
 	; detect 2nd VIA
 	.(
