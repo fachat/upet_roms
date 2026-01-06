@@ -11,7 +11,7 @@ deep: usb65 cbm-x16dos
 ########################################################
 # sub-repos
 
-REPOS=cbm-edit-rom cbm-x16dos usb65 cbm-fastiec cbm-burnin-tests upet-ioext
+REPOS=cbm-edit-rom cbm-x16dos usb65 cbm-fastiec cbm-burnin-tests upet_ioext
 
 # downloads all the repos it depends on
 clone: $(REPOS)

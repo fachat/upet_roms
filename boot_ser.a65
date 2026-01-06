@@ -25,6 +25,12 @@ DRIVERADDR      =$7000
         ldy #$1000      ; transfer len                                   
         jsr flash2direct3_xl
 
+	sep #$10
+	.xs
+	jsr DRIVERADDR	; reset the code
+	rep #$10
+	.xl
+
         lda #MAP_BAS
         sta BANK
 	rts
@@ -48,6 +54,7 @@ DEFAULT_BANK	=MAP_BAS
 BANKREG		=BANK
 IOEXT_FILENAME	=512
 IOEXT_COMP	=$d4c0
+STATUS		=$96
 
 IO_RESET	=DRIVERADDR+0
 IO_IRQ		=DRIVERADDR+3
