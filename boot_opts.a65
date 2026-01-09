@@ -806,10 +806,25 @@ found   cpx #MAX_KEYS*2
 	sbc #MAX_KEYS
 	tax
 notusb
-	lda optkbd
-	; filter usb, b-kbd and c64 kbd flags
-        ;and #%00101010  
-        and #OPT0_C64KBD | OPT0_USBKBD | OPT0_BKBD
+	; identify alternative keyboards
+	;
+	; needs to set
+	; OPT0_BKBD when a B keyboard is used
+	; OPT0_C64KBD when a C64 keyboard is used
+	;
+	; note that USB and serial IO is 
+	; patched in separately later based on conf_bootkbd
+	lda conf_bootkbd
+	lsr
+	bcs c64kbd
+	lsr
+	bcs bkbd
+	lda #0
+	.byt $2c
+bkbd	lda #OPT0_BKBD
+	.byt $2c
+c64kbd	lda #OPT0_C64KBD
+	
         ora opts,x
 	sta opt0
 

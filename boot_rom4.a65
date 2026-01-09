@@ -60,6 +60,10 @@ driver_init	=$1000		; used in included USB installer
 	lda opt0
 	and #OPT0_BKBD
 	beq n_kbd
+	; we know we have the B keyboard
+	; so the upper 2 bits in opt0
+	; are used to select the editor ROM
+	; and include 80COL and ORIGEDIT
 	lda opt0
 	and #%11000000
 	lsr
@@ -67,8 +71,12 @@ driver_init	=$1000		; used in included USB installer
 	jsr flash2direct3_xl
 	bra edit_done
 
+	; here the upper 3 bits are used
+	; to select the editor rom, combining the
+	; detected bits for C64KBD, 80COL, and ORIGEDIT
+	.assert OPT0_EDITMASK == %11100000, "edit mask required"
 n_kbd 	lda opt0
-	and #%11100000
+	and #OPT0_EDITMASK
 	lsr
 	jsr flash2direct2_xl
 edit_done
@@ -85,8 +93,8 @@ edit_done
 	; --------------------------------------------
 	; check USB patch
 	.(
-	lda opt0		; from keyboard selection
-	and #OPT0_USBKBD
+	lda conf_bootkbd	; from keyboard selection
+	and #BOOTKBD_USB
 	bne dousb
 	lda opt2		; from options menu
 	and #OPT2_USBHID

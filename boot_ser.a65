@@ -40,6 +40,29 @@ DRIVERADDR      =$7000
 	rts
 	.)
 
+	; if serial was not used during boot,
+	; tear it down
+&tear_ser_xl .(
+	lda conf_bootkbd
+	and #BOOTKBD_SER1+BOOTKBD_SER2
+	bne was_used
+
+	sei
+        lda #MAP_SER 	; for the PET default VICCY base address of $1000 
+        sta BANK        ; $e802                                           
+	sep #$10
+	.xs
+	clc
+	jsr BOOT_ENABLE	; stop receiving
+	rep #$10
+	.xl
+        lda #MAP_BAS
+        sta BANK
+	cli
+was_used
+	rts
+	.)
+
 &ser_install_basic4_xl .(
 	; install the code into ROM
 	jsr ioext_install4_xl
@@ -60,9 +83,15 @@ DRIVERADDR      =$7000
 	jsr BOOT_GET
 	bcs nokey
 	sta opt
-nokey	lda #MAP_BAS
+
+	; TODO identify the actual serial being used
+	ldx #BOOTKBD_SER1+BOOTKBD_SER2
+	.byt $2c
+nokey	ldx #0
+	lda #MAP_BAS
 	sta BANK
-	rts
+	txa
+	jmp add_bootkbd
 	.)	
 
 	.xs                                                                         

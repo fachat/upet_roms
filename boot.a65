@@ -61,7 +61,6 @@ RUNADDR	=$9000
 shift	=$87ff
 char	=$87fe
 opt	=$87fd
-optkbd	=$87fc
 lastopt	=$87fb
 
 &opt0	=$87f8
@@ -200,7 +199,7 @@ copy
 	cli
 
 	lda #0
-	sta optkbd
+	sta conf_bootkbd
 mloop
 	lda #0
 	sta opt
@@ -225,6 +224,8 @@ checkhw
 doreal
 	; save config char ("1", "2", ..)
 	pha
+
+	jsr tear_ser_xl
 
 	jsr tear_usb	;usb_uninst
 

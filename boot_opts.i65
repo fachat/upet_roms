@@ -1,20 +1,39 @@
 
-DETECT_UART1	=128
-DETECT_UART2	=64
-DETECT_VIA2	=32
-DETECT_SID1	=16
-DETECT_SID2	=8
+	; --------------------------------------------
+	; output from the detect_xs routine that
+	; detects the installed hardware
+
+DETECT_UART1	=128	; UART at $e818
+DETECT_UART2	=64	; UART at $e828
+DETECT_VIA2	=32	; VIA2 at $e850 (VIA1 is the original at $e840)
+DETECT_SID1	=16	; SID1 at $e860
+DETECT_SID2	=8	; SID2 at $e8e0
 ;DETECT_DAC	=4	; reserved for alternative variants
 ;DETECT_USB	=2	; reserved for alternative variants
 
+	; --------------------------------------------
+	; detected keyboard on the boot menu
+
+BOOTKBD_USB	=128	; USB keyboard has been used
+BOOTKBD_SER1	=64	; serial 1 has been used
+BOOTKBD_SER2	=32	; serial 2 has been used
+BOOTKBD_PETN	=4	; PET-N has been used and detected
+BOOTKBD_PETB	=2	; PET-B has been used and detected
+BOOTKBD_C64	=1	; C64 has been used and detected
+
+			; mask for matrix kbds (PET-N, PET-B, C64)
+BOOTKBD_MASK	=BOOTKBD_C64 + BOOTKBD_PETB + BOOTKBD_PETN	
+
+	; --------------------------------------------
 OPT0_ORIGEDIT	=128
 OPT0_80COL	=64
 OPT0_C64KBD	=32
 OPT0_8296MAP	=16
-OPT0_USBKBD	=8
+;OPT0_USBKBD	=8	; USB boot kbd
 OPT0_BKBD	=4
-OPT0_NKBD	=1	; default (temporary)
 OPT0_SEL	=3	; ROM select (1/2/4)
+
+OPT0_EDITMASK	=OPT0_ORIGEDIT + OPT0_80COL + OPT0_C64KBD
 
 OPT1_SPEED	=128
 OPT1_SPEED_I	=0	; index in OPT1/2 from b7 down to b0

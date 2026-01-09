@@ -7,16 +7,17 @@
 	; bit 3   - option menu
 	; bit 2/1 - model (01=basic1, 10=basic2, 11=basic4) 
 
-	; optkbd is
-	; bit 7
-	; bit 6	  - C64 kbd
-	; bit 5
-	; bit 4
-	; bit 3	  - USB keyboard detected
-	; bit 2
-	; bit 1   - B-type kbd
-	; bit 0   - N-type kbd
 	.xs
+
+	; ------------------------------
+	; store which keyboard has been used
+	; during the boot menu, so it can
+	; be enabled in the further configuration
+	; process.
+	;
+	; definitions are in boot_opts.i65
+conf_bootkbd
+	.byt 0
 
 	; those are called from the interrupt routine
 key_usb	.(
@@ -26,9 +27,9 @@ key_usb	.(
 	bcc :+
 	ora #%00100000
 :	sta opt
-	lda #8
-	ora optkbd
-	sta optkbd
+
+	lda #BOOTKBD_USB
+	jmp add_bootkbd
 	rts
 	.)
 
@@ -43,14 +44,15 @@ key_pet	.(
 	sta opt
 	sta lastopt
 	tya
-	ora optkbd
-	sta optkbd
-
-sameopt	rts
+	jmp add_bootkbd
 nolast	lda #0
 	sta lastopt
-noopt 	;lda #0
-	;sta opt
+noopt 	rts
+	.)
+
+add_bootkbd .(
+	ora conf_bootkbd
+	sta conf_bootkbd
 	rts
 	.)
 
@@ -116,18 +118,15 @@ ret	rts
 gotone	; x has number of key
 	; save AC
 	pha
-	lda optkbd
-	beq openshift
 
+	lda conf_bootkbd
+	and #BOOTKBD_MASK
+	beq openshift	; nothing detected yet
 	lsr
-	bcs petn
-	lsr
+	bcs c64s
 	lsr
 	bcs petb
-	lsr
-	lsr
-	lsr
-	bcc openshift
+	bcc petn
 
 c64s	jsr shift_c64
 
@@ -187,26 +186,25 @@ conv_pet2char .(
 
 	ldy #0		; no kbd type change 
 
-	lda optkbd	; check detected keyboard
-	beq openkbd
+	lda conf_bootkbd
+	and #BOOTKBD_MASK
+	beq openkbd	; nothing detected yet
+
+	.assert BOOTKBD_C64 == 1, "algo expects c64 at bit 0"	
+	.assert BOOTKBD_PETB == 2, "algo expects pet-b at bit 1"	
+	.assert BOOTKBD_PETN == 4, "algo expects pet-n at bit 1"	
 
 	lsr
-	bcs petn
-	lsr
+	bcs c64
 	lsr
 	bcs petb
-	lsr
-	lsr
-	lsr
-	bcc openkbd
-	jmp decode_c64
-petb
-	jmp decode_petb
-petn
 	jmp decode_petn
+petb	jmp decode_petb
+c64	jmp decode_c64
+
 openkbd
 	; PET N-type keyboard
-	ldy #OPT0_NKBD
+	ldy #BOOTKBD_PETN
 
 	; key number is (9-row)*8+(7-col)+1 where row/col are from www.6502.org/users/andre/petindex/keymap/petgraph.png
 	cpx #41		; 4/7 = "6"
@@ -227,7 +225,7 @@ openkbd
 	beq ishwdebug
 
 	; PET B-type keyboard
-	ldy #OPT0_BKBD
+	ldy #BOOTKBD_PETB
 
 	cpx #49		; "6" on B kbd
 	beq is8296
@@ -247,7 +245,7 @@ openkbd
 	beq ishwdebug
 
 	; C64 keyboard
-	ldy #OPT0_C64KBD
+	ldy #BOOTKBD_C64
 
 	; derived from https://www.keymmodore.com/the-matrix/
 ;	cpx #42		; 4/6 = "4" = Right shift on C64 - clash with N-type "4"
