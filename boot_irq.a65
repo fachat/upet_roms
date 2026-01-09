@@ -77,6 +77,8 @@ rnewirq	.(
 
 	jsr key_pet
 
+	jsr key_ser
+
 	lda BOOT_VCOUNT	; vertical screen interrupt
 	clc
 	adc #1

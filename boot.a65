@@ -183,13 +183,16 @@ copy
 
 	jsr setup_fiec_xl
 
-	jsr setup_ser_xl
 
 	jsr setup_usb_xl
 
-	cli
-
 	jsr do_options_init_xl
+
+	; needs to be after do_options_init,
+	; as do_options_init detects hardware and resets RS232
+	jsr setup_ser_xl
+
+	cli
 
 	lda #0
 	sta optkbd
