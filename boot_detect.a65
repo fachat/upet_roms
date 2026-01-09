@@ -1,0 +1,99 @@
+
+; code to detect hardware and set appropriate detection bits
+; in 
+;	conf_detect
+
+conf_detect
+	.byt 0
+
+	.xs
+	; ----------------------------
+	; detect logic
+detect_xs .(
+
+	lda #0
+	sta conf_detect
+
+	;-- detect UART 1 at $e818
+	; to detect a UART 16550 
+
+	; ---------------------
+	.(
+UART	=$e818
+        ldy UART+UART_MCR
+        lda #$10
+        sta UART+UART_MCR
+        lda UART+UART_MSR
+        and #$f0
+        bne nodev
+        lda #$1f
+        sta UART+UART_MCR
+        lda UART+UART_MSR
+        and #$f0
+        cmp #$f0
+        bne nodev
+
+	lda #DETECT_UART1
+	jsr add_detect
+
+nodev	sty UART+UART_MCR	; restore potential PIA register
+	.)
+
+	; ---------------------
+	.(
+UART	=$e828
+        ldy UART+UART_MCR
+        lda #$10
+        sta UART+UART_MCR
+        lda UART+UART_MSR
+        and #$f0
+        bne nodev
+        lda #$1f
+        sta UART+UART_MCR
+        lda UART+UART_MSR
+        and #$f0
+        cmp #$f0
+        bne nodev
+
+	lda #DETECT_UART2
+	jsr add_detect
+
+nodev	sty UART+UART_MCR	; restore potential PIA register
+	.)
+
+	; ---------------------
+	; detect 2nd VIA
+	.(
+VIA2	=$e850
+	lda VIA2+VIA_PCR
+	and #%00010001
+	sta VIA2+VIA_PCR
+	cmp VIA2+VIA_PCR
+	bne nodev
+	ora #%01100110
+	sta VIA2+VIA_PCR
+	cmp VIA2+VIA_PCR
+	bne nodev
+
+	lda #DETECT_VIA2
+	jsr add_detect
+nodev	
+	.)
+
+	; ---------------------
+	; TODO
+	; detect SID1
+	; detect SID2
+	lda #DETECT_SID1 + DETECT_SID2
+	jsr add_detect
+
+	rts
+
+	; ---------------------
+add_detect .(
+	ora conf_detect
+	sta conf_detect
+	rts
+	.)
+
+.)

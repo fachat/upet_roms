@@ -1,6 +1,4 @@
 
-	.include "boot_opts.i65"
-
 	.xl
 
 	.(
@@ -52,18 +50,66 @@ OFFCHAR	=46	;87
 	sta optu
 
 	; detect hardware, set masks
-	jsr detect_xs
+	jsr mask_unavail_hw
 
+	; try to load actual config from eeprom
 	jsr load_from_eeprom_xs
 	bcc loadok
 
+	; if eeprom fails, init from rom defaults
 	jsr load_from_rom_xs
 loadok
 	; switches to .xl
 	rep #%00010000
-	.xl
 	rts
 	.)
+
+	; take conf_detect bits and mask unavailable options
+mask_unavail_hw .(
+	; check rs232 interfaces
+	; if any of the UARTs is there, enable the option.
+	; the included code will also check conf_detect 
+	; to see which uarts are available
+	lda conf_detect
+	and #DETECT_UART1 + DETECT_UART2
+	bne ser_ok
+	ldy #255-OPT2_SERA
+	jsr clrmask2
+ser_ok
+	lda conf_detect
+	and #DETECT_VIA2
+	bne via_ok
+	ldy #255-OPT1_SIEC
+	jsr clrmask
+	ldy #255-OPT2_UNITOFF_M
+	jsr clrmask2
+via_ok
+	rts
+	.)
+
+clrmask .(
+        ldx #0            
+sm2     tya               
+        and opts_mask,x  
+        sta opts_mask,x  
+        inx               
+        cpx #OPT_MAX_X_I  
+        bcc sm2           
+        rts               
+	.)
+
+clrmask2 .(
+        ldx #0            
+sm2     tya               
+        and opts_mask2,x  
+        sta opts_mask2,x  
+        inx               
+        cpx #OPT_MAX_X_I  
+        bcc sm2           
+        rts               
+	.)
+
+	.xl
 
 &&do_options_xl .(
 	; clear the screen
@@ -275,105 +321,6 @@ load_from_rom_xs .(
 	sta opts_vals,y
 	dey
 	bpl @1
-	rts
-	.)
-
-	; ==========================================================
-	; detect hardware and handle option masks
-
-	.xs
-	; ----------------------------
-	; detect logic
-detect_xs .(
-	;-- detect UART 1 at $e818
-; to detect a UART 16550 
-
-UART_RXTX       =0               ; DLAB=0 
-UART_IER        =1               ; DLAB=0 
-UART_DLL        =0               ; divisor latch low, DLAB=1 
-UART_DLH        =1               ; divisor latch high, DLAB=1 
-UART_IIR        =2               ; Irq Ident. Reg., read only 
-UART_FCR        =2               ; FIFO Ctrl Reg., write only 
-UART_LCR        =3               ; Line Ctrl Reg 
-UART_MCR        =4               ; Modem Ctrl Reg 
-UART_LSR        =5               ; Line Status Reg 
-UART_MSR        =6               ; Modem Status Reg 
-UART_SCR        =7               ; 'scratchpad', i.e. unused 
-
-	.(
-UART	=$e818
-        ldy UART+UART_MCR
-        lda #$10
-        sta UART+UART_MCR
-        lda UART+UART_MSR
-        and #$f0
-        bne nodev
-        lda #$1f
-        sta UART+UART_MCR
-        lda UART+UART_MSR
-        and #$f0
-        cmp #$f0
-        beq dev
-nodev	sty UART+UART_MCR	; restore potential PIA register
-	ldy #255-OPT2_SERA
-	jsr clrmask2
-dev	.)
-#if 0
-	.(
-UART	=$e828
-        ldy UART+UART_MCR
-        lda #$10
-        sta UART+UART_MCR
-        lda UART+UART_MSR
-        and #$f0
-        bne nodev
-        lda #$1f
-        sta UART+UART_MCR
-        lda UART+UART_MSR
-        and #$f0
-        cmp #$f0
-        beq dev
-nodev	sty UART+UART_MCR	; restore potential PIA register
-	ldy #255-OPT2_SERB
-	jsr clrmask2
-dev	.)
-#endif
-	; --
-	; detect 2nd VIA
-	.(
-VIA2	=$e850
-	lda VIA2+VIA_PCR
-	and #%00010001
-	sta VIA2+VIA_PCR
-	cmp VIA2+VIA_PCR
-	bne nodev
-	ora #%01100110
-	sta VIA2+VIA_PCR
-	cmp VIA2+VIA_PCR
-	beq dev
-nodev	ldy #255-OPT1_SIEC
-	jsr clrmask
-	ldy #255-OPT2_UNITOFF_M
-	jsr clrmask2
-dev	.)
-	rts
-
-clrmask	ldx #0
-sm1	tya
-	and opts_mask,x
-	sta opts_mask,x
-	inx
-	cpx #OPT_MAX_X_I
-	bcc sm1
-	rts
-clrmask2
-	ldx #0
-sm2	tya
-	and opts_mask2,x
-	sta opts_mask2,x
-	inx
-	cpx #OPT_MAX_X_I
-	bcc sm2
 	rts
 	.)
 

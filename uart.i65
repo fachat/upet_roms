@@ -1,0 +1,14 @@
+
+UART_RXTX       =0               ; DLAB=0                        
+UART_IER        =1               ; DLAB=0                        
+UART_DLL        =0               ; divisor latch low, DLAB=1     
+UART_DLH        =1               ; divisor latch high, DLAB=1    
+UART_IIR        =2               ; Irq Ident. Reg., read only    
+UART_FCR        =2               ; FIFO Ctrl Reg., write only    
+UART_LCR        =3               ; Line Ctrl Reg                 
+UART_MCR        =4               ; Modem Ctrl Reg                
+UART_LSR        =5               ; Line Status Reg               
+UART_MSR        =6               ; Modem Status Reg              
+UART_SCR        =7               ; 'scratchpad', i.e. unused     
+
+

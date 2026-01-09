@@ -1,4 +1,11 @@
 
+DETECT_UART1	=128
+DETECT_UART2	=64
+DETECT_VIA2	=32
+DETECT_SID1	=16
+DETECT_SID2	=8
+;DETECT_DAC	=4	; reserved for alternative variants
+;DETECT_USB	=2	; reserved for alternative variants
 
 OPT0_ORIGEDIT	=128
 OPT0_80COL	=64

@@ -27,7 +27,9 @@
 ; $1c000  SD-Card DOS (16k) to be run in bank 7
 
 #include "viccy.i65"
+#include "uart.i65"
 #include "tcdefs.i65"
+#include "boot_opts.i65"
 
 VBANK	=$080000
 
@@ -118,6 +120,9 @@ jmpboot
 
 	lda #VIDBLK	; for the PET default VICCY base address of $1000
 	sta VMAP
+
+	; detect hardware capabilities
+	jsr detect_xs
 
 	; init the VICCY emulation (also disables Viccy interrupts)
 	jsr setviccy_xs
@@ -490,6 +495,7 @@ sl	sta VICCY
 	; ---------------------------------------------------------
 
 
+#include "boot_detect.a65"
 #include "boot_menu.a65"
 #include "boot_kbd.a65"
 #include "boot_opts.a65"
