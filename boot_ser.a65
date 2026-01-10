@@ -69,6 +69,12 @@ was_used
 	; patch it in
 	jsr ioext_patch4_xl
 
+	lda conf_bootkbd
+	and #BOOTKBD_SER1+BOOTKBD_SER2
+	beq no_serkbd
+
+	jsr ioext_patch4_serkbd_xl
+no_serkbd
 	rts
         .)                                                               
 
