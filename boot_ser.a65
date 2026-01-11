@@ -88,6 +88,10 @@ no_serkbd
 
 	jsr BOOT_GET
 	bcs nokey
+
+	cmp #13		; CR
+	beq output_serinfo
+
 	sta opt
 
 	; TODO identify the actual serial being used
@@ -98,7 +102,19 @@ nokey	ldx #0
 	sta BANK
 	txa
 	jmp add_bootkbd
-	.)	
+
+output_serinfo 
+	ldy #0
+l	lda msg,y
+	beq nokey
+	phy
+	jsr BOOT_PUT
+	ply
+	iny
+	bne l
+
+msg	.asc "ULTI-PET BOOT (4,6,8)",13,10,0
+	.)
 
 	.xs                                                                         
 
