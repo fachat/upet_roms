@@ -17,7 +17,7 @@ DRIVERADDR      =$7000
 	.xl
 &setup_ser_xl                                                                         
         .(                                                               
-        lda #MAP_SER 	; for the PET default VICCY base address of $1000 
+        lda #MAP_SER 	; 
         sta BANK        ; $e802                                           
 
         lda #SERPAGE    ; page in flash                                  
@@ -28,10 +28,8 @@ DRIVERADDR      =$7000
 	sep #$10
 	.xs
 	jsr DRIVERADDR	; reset the code
-
 	sec
 	jsr BOOT_ENABLE	; start receiving
-	
 	rep #$10
 	.xl
 
@@ -40,26 +38,24 @@ DRIVERADDR      =$7000
 	rts
 	.)
 
-	; if serial was not used during boot,
 	; tear it down
 &tear_ser_xl .(
-	lda conf_bootkbd
-	and #BOOTKBD_SER1+BOOTKBD_SER2
-	bne was_used
-
+	clc
+	.byt $24
+&enable_xl
+	sec
 	sei
-        lda #MAP_SER 	; for the PET default VICCY base address of $1000 
+	php
+        lda #MAP_SER 	; 
         sta BANK        ; $e802                                           
 	sep #$10
 	.xs
-	clc
-	jsr BOOT_ENABLE	; stop receiving
+	jsr BOOT_ENABLE	; start / stop receiving
 	rep #$10
 	.xl
         lda #MAP_BAS
         sta BANK
-	cli
-was_used
+	plp
 	rts
 	.)
 
@@ -73,6 +69,7 @@ was_used
 	and #BOOTKBD_SER1+BOOTKBD_SER2
 	beq no_serkbd
 
+	jsr enable_xl
 	jsr ioext_patch4_serkbd_xl
 no_serkbd
 	rts
@@ -113,7 +110,7 @@ l	lda msg,y
 	iny
 	bne l
 
-msg	.asc "ULTI-PET BOOT (4,6,8)",13,10,0
+msg	.asc 13, "ULTI-PET BOOT (4,6,8)",13,10,0
 	.)
 
 	.xs                                                                         

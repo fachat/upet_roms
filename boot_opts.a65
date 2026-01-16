@@ -849,7 +849,15 @@ c64kbd	lda #OPT0_C64KBD
 
 	lda unit_vals,x
 	sta optu
-        sec
+
+	lda conf_bootkbd
+	and #BOOTKBD_SER1+BOOTKBD_SER2
+	beq noser
+	lda #OPT2_SERA
+	and opts_mask2,x
+	ora opt2
+	sta opt2
+noser   sec
         rts
 	.)
 
