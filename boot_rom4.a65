@@ -11,8 +11,7 @@ USB_CPAGE	=$1f	;$0f	; where USB companion is in flash
 VCOUNT		=$99
 
 ;MAP_USB		=15
-STPFL		=$9b
-driver_init	=$1000		; used in included USB installer
+;STPFL		=$9b
 
 	; -----------------------
 	; copy over PET BASIC4 $b000-$dfff
@@ -112,7 +111,7 @@ dousb
         .xs
 	
 	; install it into the ROM
-	jsr USB_COMPANION+3
+	jsr usb_init
 	rep #%00010000
 	.xl
 
@@ -632,39 +631,25 @@ rompatch_end:
 
 .)
 
+;---------------------------------------------------
+; BASIC4 fixes and mod patch
+
 #define	ROM
 #include "patch4.a65"
 #undef ROM
 
-#undef USB_PAUSE
-#undef USB_PRINT2
-#undef USB_NEWIRQ
-#undef USB_INIT
-#undef USB_INSTALL
+;---------------------------------------------------
+; USB install and companion for BASIC4
 
-#define	USB_INIT
-#define	USB_INSTALL
-#include "usb65/platforms/upet/petrom_install.a65"
-#undef USB_INIT
-#undef USB_INSTALL
+#include "usb65/platforms/upet/petrom4_install.a65"
 
 usbcomp_start
 	*=USB_COMPANION
-	jmp usb_init
-	jmp usb_install
-	nop:nop:nop
-	jmp pause
-	jmp printc2
-#define	USB_PAUSE
-#define	USB_PRINT2
-#define	USB_NEWIRQ
-#include "usb65/platforms/upet/petrom_install.a65"
-#undef USB_PAUSE
-#undef USB_PRINT2
-#undef USB_NEWIRQ
+#include "usb65/platforms/upet/petrom4_comp.a65"
 	*=usbcomp_start + * - USB_COMPANION
 usbcomp_end
 
+;---------------------------------------------------
 	.xl
 	.)		; end setup_basic4_xl
 

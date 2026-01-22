@@ -1,4 +1,7 @@
 
+USB_DRIVERADDRESS	=$1000
+#include "usb65/platforms/upet/usbrom.i65"
+
 .(
 
 ;&lock	=$0700ff	; last byte in zeropage in bank 7/block 14
@@ -13,16 +16,7 @@ USBPAGE	=$a0		; start of driver in Flash ROM
 
 USBBLK  =15             ; bank 7 value for BANK  
 
-DRIVERADDR      =$1000
-COMPADDR        =$df00
-
-driver_init	=DRIVERADDR                                               
-&driver_poll	=DRIVERADDR+3                                             
-
-pause_ax        =COMPADDR+9
-driver_pause_a  =DRIVERADDR+6+1
-print_ax        =COMPADDR+12
-driver_print_a  =DRIVERADDR+9+1
+;COMPADDR        =$df00
 
         ; -----------------------                                        
         ; copy over USB code to RAM                                      
@@ -36,22 +30,15 @@ driver_print_a  =DRIVERADDR+9+1
         sta BANK        ; $e802                                           
 
         lda #USBPAGE    ; page in flash                                  
-        ldx #DRIVERADDR ; start in current bank                          
+        ldx #USB_DRIVERADDRESS ; start in current bank                          
         ldy #$2000      ; transfer len                                   
         jsr flash2direct2_xl                                             
 
-	; copy over boot companion
-	ldy #romcompend-romcomp-1
-l	lda romcomp,y
-	sta COMPADDR,y
-	dey
-	bpl l
-
 	; link companion and driver
-	ldx #pause_ax
-	stx driver_pause_a
-	ldx #print_ax
-	stx driver_print_a
+	ldx #t_pause
+	stx usb_drv_pause_cb_addr
+	ldx #t_printc2
+	stx usb_drv_print_cb_addr
 
 	sep #%00010000
 	.xs
@@ -89,25 +76,12 @@ nohw
         lda #MAP_USB    
         sta MAPREG      
                        
-        jsr driver_poll 
+        jsr usb_drv_polldev 
 
         lda #MAP_BAS     
         sta MAPREG      
 	rts
 	.)
-
-romcomp	.(
-	*=COMPADDR
-; ignored
-        jmp t_init        ; init the USB stack               
-        jmp t_install     ; patch in USB interrupt into ROM  
-        jmp t_uninstall   ; remove USB patch                 
-; called from USB driver interrupt routine                         
-&usb_pause      jmp t_pause       ;                                  
-&usb_appendkey  jmp t_printc2                                        
-	*=*-COMPADDR+romcomp
-	.)
-romcompend
 
 t_install .(
 	; interrupt is already established for key scanning
@@ -126,7 +100,7 @@ t_init    .(
 	lda #<-1                    
 	sta lock                    
 	
-	jsr driver_init             
+	jsr usb_drv_init             
 	
 	bcs locked                  
 	plp                         
