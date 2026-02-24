@@ -108,7 +108,7 @@ iplldr: iplldr.a65
 	xa -w -XMASM -P $@.lst -o $@ $<
 
 boot: boot.a65 boot_menu.a65 boot_kbd.a65 boot_opts.a65 boot_opts.i65 boot_rom1.a65 boot_rom2.a65 boot_rom4.a65 boot_usb.a65 dosromcomp.a65 patch4.a65 boot_ser.a65
-	xa -w -XCA65 -XMASM -Iusb65/platforms/upet -k -P $@.lst -o $@ $<
+	xa -w -XCA65 -XMASM -Iupet_ioext -Iusb65/platforms/upet -k -P $@.lst -o $@ $<
 
 romtest02: romtest02.a65
 	xa -w -o romtest02 romtest02.a65
