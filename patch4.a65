@@ -434,7 +434,7 @@ OPEN	=$f560
 
 	; CLOSE
 	; FFC3 JMP F2DD
-CLOSE	=$f2e0
+CLOSE	=$f2dd
 	lda #<CLOSE-1
 	sta TOKADDR+$40
 	lda #>CLOSE-1
@@ -605,6 +605,7 @@ l1	jsr CHRGET
 	beq l0
 pe	rts
 	.)
+
 
 lFF84	; IOINIT	init all other I/O
 lFF87	; RAMTAS	RAM test and find end of RAM
