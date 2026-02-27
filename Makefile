@@ -11,7 +11,7 @@ deep: usb65 cbm-x16dos
 ########################################################
 # sub-repos
 
-REPOS=cbm-edit-rom cbm-x16dos usb65 cbm-fastiec cbm-burnin-tests upet_ioext
+REPOS=cbm-edit-rom cbm-x16dos usb65 cbm-fastiec cbm-burnin-tests upet_ioext upet_supermon816
 
 # downloads all the repos it depends on
 clone: $(REPOS)
@@ -207,6 +207,16 @@ $(ROMDIR)/edit80_grfkb_ext_chk.bin: $(ROMDIR)/edit80_grfkb_ext.bin romcheck
 
 $(ROMDIR)/edit80_chk.bin: $(ROMDIR)/edit80g romcheck
 	./romcheck -s 0xe0 -l 0x800 -i 0x7ff -o $@ $<
+
+##########################################################################	
+# file handling for devices like I2C, serial
+
+upet_supermon816: 
+	git clone $(BASE)/upet_supermon816.git
+
+#ioext-core.bin: ioext-core.a65 upet_ioext/*
+#	xa -XCA65 -DIOEXT_FILENAME=512 -I upet_ioext -o $@ ioext-core.a65
+
 
 ##########################################################################	
 # file handling for devices like I2C, serial

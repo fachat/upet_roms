@@ -200,9 +200,9 @@ When the different ROM versions are used, the memory map is installed as follows
          ...           free
         |    |
         +----+ $009000
-        |    |         Video window (mapped from Video RAM
+        |    |         Video window (mapped from Video RAM)
         +----+ $008000
-        |    |         32k BASIC RAM
+        |    |         31k BASIC RAM
          ...          
         |    |        
         +----+ $000400
@@ -239,19 +239,20 @@ With BASIC 4 there are multiple options that need to be considered:
 
 	Fast RAM
 
-        +----+ $07ffff
+        +----+ $07ffff 
         |    |         USB support bank, mapped 
         |    |  	$1000-$3000	8k USB code
         |    |  
         |    |  	$0020-$002f 	USB code zeropage
-        +----+ $078000
+        +----+ $078000 (^ bank 15)
         |    |         IEC/SD-Card support bank, mapped 
         |    |  	$4000-$8000 	16k SD-Card code
         |    |  	$3000-$4000 	4k SD-Card buffers
         |    |          $2000-$3000     Fast SIEC code and IEC dispatch
+        |    |          $1800-$2000     supermon816 code and direct page
         |    |  	$0030-$0037 	SIEC zeropage
         |    |  	$0010-$001B 	SD-Card zeropage
-        +----+ $070000
+        +----+ $070000 (^ bank 14)
         |    |  
          ...           free
         |    |
