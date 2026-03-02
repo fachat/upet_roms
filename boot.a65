@@ -502,6 +502,7 @@ sl	sta VICCY
 #include "boot_opts.a65"
 #include "boot_usb.a65"
 #include "boot_ser.a65"
+#include "boot_mon.a65"
 #include "boot_irq.a65"
 #include "boot_sdcard.a65"
 #include "boot_fiec.a65"

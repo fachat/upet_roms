@@ -47,7 +47,7 @@ TOOLS=romcheck
 spiimgc: rebuildclean spiimg 
 
 spiimg: zero boot chargen_pet16 chargen_pet1_16 iplldr $(EDITROMS) $(ORIGROMS) $(ROMDIR)/kernal4c $(ROMDIR)/edit80_grfkb_ext_chk.bin $(ROMDIR)/edit80_chk.bin \
-	usbcode dos.bin fieccode cbm-burnin-tests/pet_burnin_rom ioext-core.bin
+	usbcode dos.bin fieccode cbm-burnin-tests/pet_burnin_rom ioext-core.bin smon.bin
 	# ROM images
 	cat iplldr					> $@	# 256b   : IPL loader
 	cat boot					>> $@	# 8k-256 : boot code
@@ -87,6 +87,8 @@ spiimg: zero boot chargen_pet16 chargen_pet1_16 iplldr $(EDITROMS) $(ORIGROMS) $
 	cat cbm-burnin-tests/pet_burnin_rom		>> $@	# 8k
 	#### basic4 ioext
 	cat ioext-core.bin				>> $@	# 4k
+	#### supermon
+	cat smon.bin					>> $@	# 6k
 
 
 zero: 
@@ -214,8 +216,9 @@ $(ROMDIR)/edit80_chk.bin: $(ROMDIR)/edit80g romcheck
 upet_supermon816: 
 	git clone $(BASE)/upet_supermon816.git
 
-#ioext-core.bin: ioext-core.a65 upet_ioext/*
-#	xa -XCA65 -DIOEXT_FILENAME=512 -I upet_ioext -o $@ ioext-core.a65
+smon.bin: upet_supermon816/*
+	make -C upet_supermon816
+	ln -sf upet_supermon816/tsrmon smon.bin
 
 
 ##########################################################################	

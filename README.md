@@ -241,6 +241,8 @@ With BASIC 4 there are multiple options that need to be considered:
 
         +----+ $07ffff 
         |    |         USB support bank, mapped 
+        |    |          $7000-$8000     serial (rs232) and I2C driver
+        |    |          $5000-$6800     supermon816 code and direct page
         |    |  	$1000-$3000	8k USB code
         |    |  
         |    |  	$0020-$002f 	USB code zeropage
@@ -249,7 +251,6 @@ With BASIC 4 there are multiple options that need to be considered:
         |    |  	$4000-$8000 	16k SD-Card code
         |    |  	$3000-$4000 	4k SD-Card buffers
         |    |          $2000-$3000     Fast SIEC code and IEC dispatch
-        |    |          $1800-$2000     supermon816 code and direct page
         |    |  	$0030-$0037 	SIEC zeropage
         |    |  	$0010-$001B 	SD-Card zeropage
         +----+ $070000 (^ bank 14)
