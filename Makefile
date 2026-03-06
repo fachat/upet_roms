@@ -211,7 +211,7 @@ $(ROMDIR)/edit80_chk.bin: $(ROMDIR)/edit80g romcheck
 ##########################################################################	
 # file handling for devices like I2C, serial
 
-upet-ioext: 
+upet_ioext: 
 	git clone $(BASE)/upet_ioext.git
 
 ioext-core.bin: ioext-core.a65 upet_ioext/*
