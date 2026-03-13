@@ -141,13 +141,14 @@ nosd	.)
 	.(
 	lda opt2
 	and #OPT2_SERA
-	beq no_ser
+;	beq no_ser
 
 	; reverse write protect done there
 	lda #0
 	sta MCTRL
 	
 	jsr ser_install_basic4_xl
+	jsr mon_install_basic4_xl
 no_ser 	.)
 
 	; --------------------------------------------

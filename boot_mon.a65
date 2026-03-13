@@ -1,7 +1,9 @@
 
 .(
 
-MONBANK	=14
+MONBANK	=15
+
+directpage=$1f00
 
 MONPAGE	=$80		; start of driver in Flash ROM
 MONBASE	=$5000
@@ -31,10 +33,9 @@ MONCOMP	=$d6b0
 	.)
 
 
-&mon_install_basic4_xl .(
 	; install the code into ROM
-	jmp mon_install4_xl
-        .)                                                               
+&mon_install_basic4_xl =\
+	mon_install4_xl
 
 	.xs                                                                         
 
@@ -61,11 +62,19 @@ BOOT_GET	=DRIVERADDR+33
 BOOT_PUT	=DRIVERADDR+36
 */
 
+#print *
+
 #include "upet_supermon816/tsrinst4.a65"
 
+#print *
 MOVE	*=MONCOMP
+#print MOVE
+#print MONCOMP
+#print MONBANK
 #include "upet_supermon816/tsrcomp4.a65"
+#print *
 	*=*-MONCOMP+MOVE
+#print *
 MOVEND
 .)
 
