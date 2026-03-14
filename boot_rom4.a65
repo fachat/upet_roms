@@ -82,14 +82,6 @@ edit_done
 	.)
 
 	; --------------------------------------------
-	; TODO check monitor bit
-	; TODO overwrites boot code! needs some relocation!
-;	lda #0
-;	ldx #$a000
-;	ldy #$1000
-;	jsr flash2direct3_xl
-
-	; --------------------------------------------
 	; check USB patch
 	.(
 	lda conf_bootkbd	; from keyboard selection
@@ -148,6 +140,10 @@ nosd	.)
 	sta MCTRL
 	
 	jsr ser_install_basic4_xl
+
+	lda opt0
+	and #OPT0_80COL
+	cmp #OPT0_80COL		; sets c=1 on 80 cols
 	jsr mon_install_basic4_xl
 no_ser 	.)
 
