@@ -9,7 +9,9 @@ MONPAGE	=$80		; start of driver in Flash ROM
 MONBASE	=$5000
 MONLEN	=$1800
 
-MONCOMP	=$d6b0
+	; start of monitor code in existing ROM
+	; note that d478 is the BRK entry point
+MONCOMP	=$d472
 
         ; -----------------------                                        
         ; copy over USB code to RAM                                      

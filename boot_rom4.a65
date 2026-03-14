@@ -139,7 +139,7 @@ nosd	.)
 	lda #0
 	sta MCTRL
 	
-	jsr ser_install_basic4_xl
+;	jsr ser_install_basic4_xl
 
 	lda opt0
 	and #OPT0_80COL
