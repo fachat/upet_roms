@@ -129,22 +129,38 @@ nosd	.)
 	.)
 
 	; --------------------------------------------
-	; install serial / i2c code
+	; install serial / i2c code, and monitor
+	;
+	; note: if installing serial/i2c, monitor MUST
+	; be installed as the serial/i2c companion
+	; replaces the built-in monitor code
 	.(
-	lda opt2
-	and #OPT2_SERA
-;	beq no_ser
-
 	; reverse write protect done there
 	lda #0
 	sta MCTRL
 	
-;	jsr ser_install_basic4_xl
+	; check monitor option
+	lda opt1
+	and #OPT1_816MON
+	bne do_mon		; set, then install monitor
+	; mon not explicitely set
 
+	; check serial
+	lda opt2
+	and #OPT2_SERA
+	beq no_ser		; both not set, then end
+
+do_mon	; install the monitor
 	lda opt0
 	and #OPT0_80COL
 	cmp #OPT0_80COL		; sets c=1 on 80 cols
 	jsr mon_install_basic4_xl
+
+	; mon done, check/install ser again
+	lda opt2
+	and #OPT2_SERA
+	;beq no_ser
+	jsr ser_install_basic4_xl
 no_ser 	.)
 
 	; --------------------------------------------
