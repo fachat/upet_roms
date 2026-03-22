@@ -454,7 +454,9 @@ rompatch_start:
 
 	; AC is free. It needs to be #$40 when going back
 talk_listn_unlstn .(
-	cmp #$3f
+	cmp #$5f	; untalk
+	beq unlisten
+	cmp #$3f	; unlisten
 	beq unlisten
 
 	php
