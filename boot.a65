@@ -26,6 +26,10 @@
 ; $1a000  USB code (8k) to be run in bank 7 (usbcode)
 ; $1c000  SD-Card DOS (16k) to be run in bank 7
 
+RUNADDR	=$9000
+	*=RUNADDR
+#include "boot_start.a65"
+
 #include "viccy.i65"
 #include "uart.i65"
 #include "tcdefs.i65"
@@ -56,7 +60,6 @@ DAC_CTRL=15
 
 VICCY	=$e880
 
-RUNADDR	=$9000
 
 shift	=$87ff
 char	=$87fe
@@ -95,7 +98,6 @@ BOOT_VCOUNT   	=$0700fe
 	; this is the actual boot code, 
 	; loaded from Flash via SPI to $9000 by above ipl code
 
-	*=RUNADDR
 jmpboot
 	.(
 

@@ -1,0 +1,136 @@
+;
+; This file is included in the main boot code as well
+; as in the overlay module.
+;
+; In the main boot code it actually provides the
+; routines and variable space.
+; In the overlay modules it just defines the
+; addresses of the shared code and variables.
+;
+
+BOOT_LENGTH	=256
+
+;--------------------------------------------------------
+; overlay code
+
+	; actual boot code
+boot	=*
+
+        ; copy an area from flash to bank 0 RAM	
+	; Note: can only write to page starts
+
+        ; AC = page in bank 0 (8bit -> A8-15)
+        ; XR = start in flash (bits 23-8)
+        ; YR = number of bytes (16 bit)
+loadfromflash_xl 	=boot+3
+
+	; similar to loadfromflash, but
+	; target address is overlay_start
+loadoverlay_xl		=loadfromflash_xl+3
+
+	; the hardware DETECT_* bits
+detect_bits		=boot+9
+	; the keyboard BOOTKBD_* bits
+bootkbd_bits		=detect_bits+1
+	; the keyboard OPT?_* bits
+opt0_bits		=bootkbd_bits+1
+opt1_bits		=opt0_bits+1
+opt2_bits		=opt1_bits+1
+	; 
+
+	overlay_start=boot+BOOT_LENGTH
+
+#ifdef OVERLAY
+	*=overlay_start
+
+#else
+;--------------------------------------------------------
+; actual boot code
+
+	.(
+	.assert boot = *, "address mismatch"
+	jmp overlay_start
+
+        ; copy an area from flash to bank 0 RAM	
+	; Note: can only write to page starts
+	;
+	; Needs to be called with Mx,
+	; i.e. 8 bit AC, 16 bit index registers
+
+        ; AC = page in bank 0 (8bit -> A8-15)
+        ; XR = start in flash (bits 23-8)
+        ; YR = number of bytes (16 bit)
+	.assert loadfromflash_xl = *, "address mismatch"
+	jmp jmploadspi_xl
+
+	; similar to loadfromflash, but
+	; target address is overlay_start
+	.assert loadoverlay_xl = *, "address mismatch"
+	jmp jmploadoverlay_xl
+
+	; the DETECT_* bits
+	.assert detect_bits = *, "address mismatch"
+	.byt 0
+	; the keyboard BOOTKBD_* bits
+	.assert bootkbd_bits = *, "address mismatch"
+	.byt 0
+	; the keyboard OPT?_* bits
+	.assert opt0_bits = *, "address mismatch"
+	.byt 0,0,0
+
+	; -----------------------------------------------
+	.xl
+	.as
+
+jmploadoverlay_xl
+	.assert (overlay_start & $ff) = 0, "overlay_start mismatch"
+	lda #>overlay_start
+jmploadspi_xl .(
+        pha
+	
+        lda #1
+        sta SPICTRL     ; enable Flash
+        lda #3
+        sta SPIDATA     ; READ command
+
+	rep #%00100000
+	.al
+	txa		; 16 bit transfer
+	sep #%00100000
+	.as		; back to 8bit
+	xba		; switch upper and lower bytes
+        sta SPIDATA     ; bits 23-16
+	xba		; switch upper and lower bytes
+        sta SPIDATA     ; bits 15-8
+        lda #0
+        sta SPIDATA     ; bits 7-0
+
+        lda SPIDATA     ; trigger shift in of first byte into SR (value read is still invalid)
+	pla		; page in bank 0
+	xba		; to upper 16 bit
+	lda #0		; clear low addr byte
+	tax		; 16 bit transfer
+readloop
+        lda SPIDATA     ; read byte, trigger shift in of next byte
+        cpx #$e800      ; skip I/O window
+        bcc ok
+        cpx #$e900
+        bcc nok
+ok      sta 0,x
+nok     inx
+        dey
+        bne readloop
+
+        lda #SPIOFF
+        sta SPICTRL     ; deselect Flash
+        rts
+        .)
+	.)
+	 
+	; fill rest of page
+	.dsb boot+BOOT_LENGTH-*,$ff
+
+	.as
+	.xs
+#endif
+;--------------------------------------------------------
