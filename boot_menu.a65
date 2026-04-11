@@ -102,7 +102,7 @@ text	.asc "           MICRO-/ULTI-PET              "
 	.asc "EXPERIMENTAL USB KBD SUPPORT ON BASIC4  "
 	.asc "                                        "
 	.asc "EDIT ROMS: SJGRAY   USB: A.FACHAT       "
-	.asc "SD/FAT32: MIST64, ZEROBYTEORG           "
+	.asc "SD/FAT32: MIST64, ZEROBYTEORG"
 	.asc 0
 
 	.)

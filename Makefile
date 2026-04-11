@@ -11,7 +11,7 @@ deep: usb65 cbm-x16dos
 ########################################################
 # sub-repos
 
-REPOS=cbm-edit-rom cbm-x16dos usb65 cbm-fastiec cbm-burnin-tests upet_ioext
+REPOS=cbm-edit-rom cbm-x16dos usb65 cbm-fastiec cbm-burnin-tests upet_ioext upet_supermon816
 
 # downloads all the repos it depends on
 clone: $(REPOS)
@@ -47,7 +47,7 @@ TOOLS=romcheck
 spiimgc: rebuildclean spiimg 
 
 spiimg: zero boot chargen_pet16 chargen_pet1_16 iplldr $(EDITROMS) $(ORIGROMS) $(ROMDIR)/kernal4c $(ROMDIR)/edit80_grfkb_ext_chk.bin $(ROMDIR)/edit80_chk.bin \
-	usbcode dos.bin fieccode cbm-burnin-tests/pet_burnin_rom ioext-core.bin
+	usbcode dos.bin fieccode cbm-burnin-tests/pet_burnin_rom ioext-core.bin smon.bin
 	# ROM images
 	cat iplldr					> $@	# 256b   : IPL loader
 	cat boot					>> $@	# 8k-256 : boot code
@@ -87,6 +87,8 @@ spiimg: zero boot chargen_pet16 chargen_pet1_16 iplldr $(EDITROMS) $(ORIGROMS) $
 	cat cbm-burnin-tests/pet_burnin_rom		>> $@	# 8k
 	#### basic4 ioext
 	cat ioext-core.bin				>> $@	# 4k
+	#### supermon
+	cat smon.bin					>> $@	# 6k
 
 
 zero: 
@@ -207,6 +209,17 @@ $(ROMDIR)/edit80_grfkb_ext_chk.bin: $(ROMDIR)/edit80_grfkb_ext.bin romcheck
 
 $(ROMDIR)/edit80_chk.bin: $(ROMDIR)/edit80g romcheck
 	./romcheck -s 0xe0 -l 0x800 -i 0x7ff -o $@ $<
+
+##########################################################################	
+# file handling for devices like I2C, serial
+
+upet_supermon816: 
+	git clone $(BASE)/upet_supermon816.git
+
+smon.bin: upet_supermon816/*
+	make -C upet_supermon816
+	ln -sf upet_supermon816/tsrmon smon.bin
+
 
 ##########################################################################	
 # file handling for devices like I2C, serial

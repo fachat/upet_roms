@@ -1,0 +1,82 @@
+
+.(
+
+MONBANK	=15
+
+directpage=$1f00
+
+MONPAGE	=$80		; start of driver in Flash ROM
+MONBASE	=$5000
+MONLEN	=$1800
+
+	; start of monitor code in existing ROM
+	; note that d478 is the BRK entry point
+MONCOMP	=$d472
+
+        ; -----------------------                                        
+        ; copy over USB code to RAM                                      
+        ; $1a000-$1bfff in flash img                                     
+        ; copy to DRIVERADDR                                                
+
+	.xl
+&mon_setup_xl                                                                         
+        .(                                                               
+        lda #MONBANK 	; 
+        sta BANK        ; $e802                                           
+
+        lda #MONPAGE    ; page in flash                                  
+        ldx #MONBASE 	; start in current bank                          
+        ldy #MONLEN 	; transfer len                                   
+        jsr flash2direct3_xl
+
+        lda #MAP_BAS
+        sta BANK
+	rts
+	.)
+
+
+	; install the code into ROM
+&mon_install_basic4_xl =\
+	mon_install4_xl
+
+	.xs                                                                         
+
+/*
+DEFAULT_BANK	=MAP_BAS
+BANKREG		=BANK
+IOEXT_FILENAME	=512
+IOEXT_COMP	=$d4c0
+STATUS		=$96
+
+IO_RESET	=DRIVERADDR+0
+IO_IRQ		=DRIVERADDR+3
+IO_OPEN		=DRIVERADDR+6
+IO_CLOSE	=DRIVERADDR+9
+IO_CHKOUT	=DRIVERADDR+12
+IO_CHKIN	=DRIVERADDR+15
+IO_CLRCH_OUT	=DRIVERADDR+18
+IO_CLRCH_IN	=DRIVERADDR+21
+IO_OUT		=DRIVERADDR+24
+IO_IN		=DRIVERADDR+27
+
+BOOT_ENABLE	=DRIVERADDR+30
+BOOT_GET	=DRIVERADDR+33
+BOOT_PUT	=DRIVERADDR+36
+*/
+
+#print *
+
+#include "upet_supermon816/tsrinst4.a65"
+
+#print *
+MOVE	*=MONCOMP
+#print MOVE
+#print MONCOMP
+#print MONBANK
+#include "upet_supermon816/tsrcomp4.a65"
+#print *
+	*=*-MONCOMP+MOVE
+#print *
+MOVEND
+.)
+
