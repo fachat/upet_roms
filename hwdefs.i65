@@ -1,0 +1,20 @@
+
+
+#include "via6522.i65"
+#include "pia6520.i65"
+#include "uart.i65"   
+
+
+PIA1		=$e810
+PIA2		=$e820
+
+DAC		=$e830
+
+VIA1		=$e840
+VIA2		=$e850
+
+VICCY		=$e880
+
+UART1		=$e818
+UART2		=$e828
+

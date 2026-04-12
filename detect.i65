@@ -1,0 +1,20 @@
+	; --------------------------------------------
+	; output from the detect_xs routine that
+	; detects the installed hardware
+
+DETECT1_UART1		=128	; UART at $e818
+DETECT1_UART2		=64	; UART at $e828
+DETECT1_VIA1		=32	; VIA1 at $e840 (the original at $e840)
+DETECT1_VIA2		=16	; VIA2 at $e850 
+DETECT1_PIA1		=8	; PIA1 at $e810
+DETECT1_PIA2		=4	; PIA2 at $e810
+DETECT1_VICCY2		=2	; VICCY II at $e880 (vs. CPLD VICCY I)
+DETECT1_DAC		=1	; DAC audio
+
+;DETECT2_DAC		=4	; reserved for alternative variants
+;DETECT2_USB		=2	; reserved for alternative variants
+
+	; SID type bytes
+DETECT_SID_NONE		=0
+DETECT_SID_UNKNOWN	=1
+

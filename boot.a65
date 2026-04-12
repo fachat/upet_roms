@@ -30,8 +30,10 @@ RUNADDR	=$9000
 	*=RUNADDR
 #include "boot_start.a65"
 
-#include "viccy.i65"
-#include "uart.i65"
+#include "hwdefs.i65"
+
+#include "detect.i65"
+
 #include "tcdefs.i65"
 #include "boot_opts.i65"
 
@@ -43,22 +45,6 @@ SPIPEEK	=$e80a
 SPIOFF	=$07
 
 VICCY_IRQ=0		; set to 1 to use rasterline instead of VDRIVE ints during boot
-
-PIA1	=$e810
-PIA2	=$e820
-PIA_PA	=0
-PIA_CRA	=1
-PIA_PB	=2
-PIA_CRB	=3
-
-VIA	=$e840
-VIA_PCR	=12
-VIA_IER	=14
-
-DAC	=$e830
-DAC_CTRL=15
-
-VICCY	=$e880
 
 
 shift	=$87ff
@@ -123,26 +109,12 @@ jmpboot
 	sta VMAP
 
 	; detect hardware capabilities
+	; and disable interrupts
+	; sets detect_bits values
 	jsr detect_xs
 
 	; init the VICCY emulation (also disables Viccy interrupts)
 	jsr setviccy_xs
-
-	; disable PIA/VIA/DAC interrupt sources
-	lda #0
-	sta PIA1+PIA_CRA
-	sta PIA1+PIA_CRB
-	sta PIA2+PIA_CRA
-	sta PIA2+PIA_CRB
-	lda #127
-	sta VIA+VIA_IER
-
-	lda #0
-	sta DAC+DAC_CTRL
-
-	; uppercase char
-	lda #12
-	sta VIA+VIA_PCR
 
 	; -----------------------
 	; switch Ethernet - if exists - to low power mode
@@ -283,7 +255,8 @@ not_b1	cmp #2
 not_b2	; only basic 4 left
 	;----------------------------------------------------
 
-	jmp setup_basic4_xl
+	jmp setup_basic2_xl
+	;jmp setup_basic4_xl
 
 	; -----------------------
 	; switch back to emulation mode
@@ -515,7 +488,7 @@ sl	sta VICCY
 
 #include "boot_rom1.a65"
 #include "boot_rom2.a65"
-#include "boot_rom4.a65"
+;#include "boot_rom4.a65"
 
 	; this is 4k+6p byte max
 	; 1st 256 byte is ipl

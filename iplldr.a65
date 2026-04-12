@@ -1,14 +1,14 @@
 
 ; The first block of this is loaded by the IPL from the SPI Flash chip into the uppermost
 ; 256 bytes of RAM in bank zero, where the CPU boots from.
-; This boot block then copies the last 4k of this to $9000 on bank0, and jumps
+; This boot block then copies the actual boot code from flash to $9000 on bank0, and jumps
 ; to it to execute it.
 ; 
 ; Note that this relies on the Flash ROM containing the
 ; PET ROM images to copy from in this order:
 ;
 ; $00000  IPL code (256 byte) - this code
-; $00100  Boot code (4k+*256)
+; $00100  Boot code (BOOTLEN = $1f00 bytes)
 
 #include "viccy.i65"
 
@@ -24,6 +24,9 @@ SID1	=$e860
 SID2	=$e8e0
 
 SID_VOL	=$18
+
+VIA	=$e840
+VIA_PCR	=12
 
 RUNADDR	=$9000
 
@@ -76,6 +79,10 @@ bootl	lda $ff00,x
 	lda #0
 	sta SID1+SID_VOL
 	sta SID2+SID_VOL
+
+	; uppercase char
+	lda #12
+	sta VIA+VIA_PCR
 
 	; VICCY init
 	ldy #0

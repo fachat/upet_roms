@@ -1,10 +1,7 @@
 
 ; code to detect hardware and set appropriate detection bits
 ; in 
-;	conf_detect
-
-conf_detect
-	.byt 0
+;	detect_bits
 
 	.xs
 	; ----------------------------
@@ -12,14 +9,17 @@ conf_detect
 detect_xs .(
 
 	lda #0
-	sta conf_detect
+	sta conf_detect1
+	lda #DETECT_SID_NONE
+	sta conf_detect_sid1
+	sta conf_detect_sid2
 
 	;-- detect UART 1 at $e818
 	; to detect a UART 16550 
 
 	; ---------------------
 	.(
-UART	=$e818
+UART	=UART1
         ldy UART+UART_MCR
         lda #$10
         sta UART+UART_MCR
@@ -33,7 +33,12 @@ UART	=$e818
         cmp #$f0
         bne nodev
 
-	lda #DETECT_UART1
+	; disable interrupts
+	lda #0
+	sta UART+UART_LCR
+	sta UART+UART_IER
+
+	lda #DETECT1_UART1
 	jsr add_detect
 
 nodev	sty UART+UART_MCR	; restore potential PIA register
@@ -41,7 +46,7 @@ nodev	sty UART+UART_MCR	; restore potential PIA register
 
 	; ---------------------
 	.(
-UART	=$e828
+UART	=UART2
         ldy UART+UART_MCR
         lda #$10
         sta UART+UART_MCR
@@ -55,16 +60,41 @@ UART	=$e828
         cmp #$f0
         bne nodev
 
-	lda #DETECT_UART2
+	; disable interrupts
+	lda #0
+	sta UART+UART_LCR
+	sta UART+UART_IER
+
+	lda #DETECT1_UART2
 	jsr add_detect
 
 nodev	sty UART+UART_MCR	; restore potential PIA register
 	.)
 
+	; ---------------------
+	; detect 1st VIA
+	.(
+	lda VIA1+VIA_PCR
+	and #%00010001
+	sta VIA1+VIA_PCR
+	cmp VIA1+VIA_PCR
+	bne nodev
+	ora #%01100110
+	sta VIA1+VIA_PCR
+	cmp VIA1+VIA_PCR
+	bne nodev
+
+	; disable interrupts
+	lda #%01111111
+	sta VIA1+VIA_IER
+
+	lda #DETECT1_VIA1
+	jsr add_detect
+nodev	
+	.)
 	; ---------------------
 	; detect 2nd VIA
 	.(
-VIA2	=$e850
 	lda VIA2+VIA_PCR
 	and #%00010001
 	sta VIA2+VIA_PCR
@@ -75,24 +105,49 @@ VIA2	=$e850
 	cmp VIA2+VIA_PCR
 	bne nodev
 
-	lda #DETECT_VIA2
+	; disable interrupts
+	lda #%01111111
+	sta VIA2+VIA_IER
+
+	lda #DETECT1_VIA2
 	jsr add_detect
 nodev	
 	.)
 
 	; ---------------------
 	; TODO
-	; detect SID1
-	; detect SID2
-	lda #DETECT_SID1 + DETECT_SID2
-	jsr add_detect
+	; detect PIA1
+	; detect PIA2
 
+	; disable interrupts
+	lda #0
+	sta PIA1+PIA_CRA
+	sta PIA1+PIA_CRB
+	sta PIA2+PIA_CRA
+	sta PIA2+PIA_CRB
+
+	lda #DETECT1_PIA1 + DETECT1_PIA2
+	jsr add_detect
+	; ---------------------
+
+	.(
+	; TODO: detect DAC
+DAC_CTRL=$15
+
+	; disable
+	lda #0
+	sta DAC+DAC_CTRL
+	
+	lda #DETECT1_DAC
+	jsr add_detect
+	; ---------------------
 	rts
+	.)
 
 	; ---------------------
 add_detect .(
-	ora conf_detect
-	sta conf_detect
+	ora conf_detect1
+	sta conf_detect1
 	rts
 	.)
 

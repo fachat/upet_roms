@@ -64,20 +64,20 @@ loadok
 	rts
 	.)
 
-	; take conf_detect bits and mask unavailable options
+	; take detect_bits bits and mask unavailable options
 mask_unavail_hw .(
 	; check rs232 interfaces
 	; if any of the UARTs is there, enable the option.
-	; the included code will also check conf_detect 
+	; the included code will also check detect_bits 
 	; to see which uarts are available
-	lda conf_detect
-	and #DETECT_UART1 + DETECT_UART2
+	lda conf_detect1
+	and #DETECT1_UART1 + DETECT1_UART2
 	bne ser_ok
 	ldy #255-OPT2_SERA
 	jsr clrmask2
 ser_ok
-	lda conf_detect
-	and #DETECT_VIA2
+	lda conf_detect1
+	and #DETECT1_VIA2
 	bne via_ok
 	ldy #255-OPT1_SIEC
 	jsr clrmask
