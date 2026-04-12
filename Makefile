@@ -113,7 +113,7 @@ boot: boot.a65 boot_menu.a65 boot_kbd.a65 boot_opts.a65 boot_opts.i65 boot_rom1.
 	xa -w -XCA65 -XMASM -Iupet_ioext -Iusb65/platforms/upet -k -P $@.lst -o $@ $<
 
 rom4: rom4.a65 patch4.a65
-	xa -w -XCA65 -XMASM -Iupet_ioext -Iusb65/platforms/upet -k -P $@.lst -o $@ $<
+	xa -E -w -XCA65 -XMASM -Iupet_ioext -Iusb65/platforms/upet -k -P $@.lst -o $@ $<
 
 romtest02: romtest02.a65
 	xa -w -o romtest02 romtest02.a65

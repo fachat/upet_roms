@@ -172,7 +172,7 @@ do_mon	; install the monitor
 	lda opt0
 	and #OPT0_80COL
 	cmp #OPT0_80COL		; sets c=1 on 80 cols
-	jsr mon_install_basic4_xl
+	jsr mon_install4_xl
 
 	; mon done, check/install ser again
 	lda opt2
@@ -681,6 +681,30 @@ usbcomp_start
 #include "usb65/platforms/upet/petrom4_comp.a65"
 	*=usbcomp_start + * - USB_COMPANION
 usbcomp_end
+
+;---------------------------------------------------
+; Monitor install code
+
+        ; start of monitor code in existing ROM
+        ; note that d478 is the BRK entry point
+MONCOMP =$d472
+
+        .xs
+
+#print *
+
+#include "upet_supermon816/tsrinst4.a65"
+
+#print *
+MOVE    *=MONCOMP
+#print MOVE
+#print MONCOMP
+#print MONBANK
+#include "upet_supermon816/tsrcomp4.a65"
+#print *
+        *=*-MONCOMP+MOVE
+#print *
+MOVEND
 
 ;---------------------------------------------------
 	.xl

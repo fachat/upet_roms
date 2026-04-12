@@ -9,16 +9,6 @@
 
 	.xs
 
-	; ------------------------------
-	; store which keyboard has been used
-	; during the boot menu, so it can
-	; be enabled in the further configuration
-	; process.
-	;
-	; definitions are in boot_opts.i65
-conf_bootkbd
-	.byt 0
-
 	; those are called from the interrupt routine
 key_usb	.(
 	cmp #%10000000

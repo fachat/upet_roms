@@ -11,6 +11,21 @@
 BOOT_LENGTH	=256
 
 ;--------------------------------------------------------
+; common definitions
+
+; default I/O
+;VCTRL		=$e800
+;MCTRL		=$e801
+;BANK		=$e802
+
+; default map/bank
+MAP_BAS		=0
+
+; bank and address in bank where the monitor code resides
+MONBANK		=15
+MONBASE		=$5000;
+
+;--------------------------------------------------------
 ; overlay code
 
 	; actual boot code
@@ -33,11 +48,12 @@ conf_detect1		=loadoverlay_xl+3
 conf_detect_sid1	=conf_detect1+1
 conf_detect_sid2	=conf_detect_sid1+1
 	; the keyboard BOOTKBD_* bits
-bootkbd_bits		=conf_detect_sid2+1
+conf_bootkbd		=conf_detect_sid2+1
 	; the keyboard OPT?_* bits
-opt0_bits		=bootkbd_bits+1
-opt1_bits		=opt0_bits+1
-opt2_bits		=opt1_bits+1
+opt0			=conf_bootkbd+1
+opt1			=opt0+1
+opt2			=opt1+1
+optu			=opt2+1
 	; 
 
 	overlay_start=boot+BOOT_LENGTH
@@ -76,12 +92,12 @@ opt2_bits		=opt1_bits+1
 	.byt 0,0
 
 	; the keyboard BOOTKBD_* bits
-	.assert bootkbd_bits = *, "address mismatch"
+	.assert conf_bootkbd = *, "address mismatch"
 	.byt 0
 
 	; the menu OPT?_* bits
-	.assert opt0_bits = *, "address mismatch"
-	.byt 0,0,0
+	.assert opt0 = *, "address mismatch"
+	.byt 0,0,0,0
 
 	; -----------------------------------------------
 	.xl

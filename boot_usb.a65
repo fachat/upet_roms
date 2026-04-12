@@ -9,7 +9,6 @@ USB_DRIVERADDRESS	=$1000
 ;usbtmp	=$0700fd
 
 &MAP_USB	=USBBLK
-&MAP_BAS	=0
 &MAPREG		=BANK
 
 USBBLK  =15             ; bank 7 value for BANK  

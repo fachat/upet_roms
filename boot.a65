@@ -52,11 +52,6 @@ char	=$87fe
 opt	=$87fd
 lastopt	=$87fb
 
-&opt0	=$87f8
-&opt1	=$87f7
-&opt2	=$87f6
-&optu	=$87f5
-
 VCTRL   =$e800
 MCTRL   =$e801
 BANK    =$e802
