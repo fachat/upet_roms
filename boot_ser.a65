@@ -20,10 +20,16 @@ DRIVERADDR      =$7000
         lda #MAP_SER 	; 
         sta BANK        ; $e802                                           
 
-        lda #SERPAGE    ; page in flash                                  
-        ldx #DRIVERADDR ; start in current bank                          
-        ldy #$1000      ; transfer len                                   
-        jsr flash2direct3_xl
+;        lda #SERPAGE    ; page in flash                                  
+;        ldx #DRIVERADDR ; start in current bank                          
+;        ldy #$1000      ; transfer len                                   
+;        jsr flash2direct3_xl
+
+	.assert (DRIVERADDR & $ff) = 0, "page boundary"
+	lda #DRIVERADDR>>8
+	ldx #SERPAGE + $0200
+	ldy #$1000
+	jsr loadfromflash_xl
 
 	sep #$10
 	.xs

@@ -20,10 +20,16 @@ SDCBASE =$4000
         lda #MAP_SDC 	; which RAM bank to use for SDCard support
         sta BANK        ; $e802                                           
 
-        lda #SDCPAGE    ; page in flash
-        ldx #SDCBASE    ; start in current bank                          
-        ldy #$4000      ; transfer len                                   
-        jsr flash2direct2_xl                                             
+;        lda #SDCPAGE    ; page in flash
+;        ldx #SDCBASE    ; start in current bank                          
+;        ldy #$4000      ; transfer len                                   
+;        jsr flash2direct2_xl                                             
+
+	.assert (SDCBASE & $ff) = 0, "page boundary"
+	lda #SDCBASE >> 8
+	ldx #$0100 + SDCPAGE
+	ldy #$4000
+	jsr loadfromflash_xl
 
         lda #MAP_BAS	; switch back to bank 0
         sta BANK                                                         

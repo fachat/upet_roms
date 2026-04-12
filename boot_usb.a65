@@ -29,10 +29,16 @@ USBBLK  =15             ; bank 7 value for BANK
         lda #MAP_USB 	; for the PET default VICCY base address of $1000 
         sta BANK        ; $e802                                           
 
-        lda #USBPAGE    ; page in flash                                  
-        ldx #USB_DRIVERADDRESS ; start in current bank                          
-        ldy #$2000      ; transfer len                                   
-        jsr flash2direct2_xl                                             
+;        lda #USBPAGE    ; page in flash                                  
+;        ldx #USB_DRIVERADDRESS ; start in current bank                          
+;        ldy #$2000      ; transfer len                                   
+;        jsr flash2direct2_xl                                             
+
+	.assert (USB_DRIVERADDRESS & $ff) = 0, "page boundary"
+	lda #USB_DRIVERADDRESS >> 8
+	ldx #USBPAGE + $0100
+	ldy #$2000
+	jsr loadfromflash_xl
 
 	; link companion and driver
 	ldx #t_pause

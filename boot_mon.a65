@@ -24,10 +24,16 @@ MONCOMP	=$d472
         lda #MONBANK 	; 
         sta BANK        ; $e802                                           
 
-        lda #MONPAGE    ; page in flash                                  
-        ldx #MONBASE 	; start in current bank                          
-        ldy #MONLEN 	; transfer len                                   
-        jsr flash2direct3_xl
+;        lda #MONPAGE    ; page in flash                                  
+;        ldx #MONBASE 	; start in current bank                          
+;        ldy #MONLEN 	; transfer len                                   
+;        jsr flash2direct3_xl
+
+	.assert (MONBASE & $ff) = 0, "page boundary"
+	lda #MONBASE >> 8
+	ldx #$0200 + MONPAGE
+	ldy #MONLEN
+	jsr loadfromflash_xl
 
         lda #MAP_BAS
         sta BANK

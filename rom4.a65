@@ -10,21 +10,36 @@ USB_CPAGE	=$1f	;$0f	; where USB companion is in flash
 
 VCOUNT		=$99
 
-;MAP_USB		=15
-;STPFL		=$9b
+	*=$9000
+#define	OVERLAY
+#include boot_start.a65
+#include boot_opts.i65
+
+	.xl
+	.as
 
 	; -----------------------
 	; copy over PET BASIC4 $b000-$dfff
-	lda #$c0
-	ldx #$b000
+;	lda #$c0
+;	ldx #$b000
+;	ldy #$3000
+;	jsr flash2direct_xl
+
+	lda #$b0
+	ldx #$00c0
 	ldy #$3000
-	jsr flash2direct_xl
+	jsr loadfromflash_xl
 
 	; copy over PET KERNEL4 $f000-$ffff
+;	lda #$f0
+;	ldx #$f000
+;	ldy #$1000
+;	jsr flash2direct_xl
+
 	lda #$f0
-	ldx #$f000
+	ldx #$00f0
 	ldy #$1000
-	jsr flash2direct_xl
+	jsr loadfromflash_xl
 
 	; --------------------------------------------
 	; install the editor ROM
@@ -53,7 +68,6 @@ VCOUNT		=$99
 	; 10 = PET-B, 40 col, orig
 	; 11 = PET-B, 80 col, orig
 	.(
-	ldx #$e000
 	ldy #$1000
 
 	lda opt0
@@ -67,7 +81,9 @@ VCOUNT		=$99
 	and #%11000000
 	lsr
 	lsr
-	jsr flash2direct3_xl
+	tax
+	lda #$e0
+	jsr loadfromflash_xl
 	bra edit_done
 
 	; here the upper 3 bits are used
@@ -77,7 +93,14 @@ VCOUNT		=$99
 n_kbd 	lda opt0
 	and #OPT0_EDITMASK
 	lsr
-	jsr flash2direct2_xl
+	rep #$20
+	.al
+	ora #$01
+	tax
+	lda #$e0
+	sep #$20
+	.as
+	jsr loadfromflash_xl
 edit_done
 	.)
 
