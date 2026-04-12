@@ -12,8 +12,6 @@ USB_DRIVERADDRESS	=$1000
 &MAP_BAS	=0
 &MAPREG		=BANK
 
-USBPAGE	=$a0		; start of driver in Flash ROM
-
 USBBLK  =15             ; bank 7 value for BANK  
 
 ;COMPADDR        =$df00
@@ -29,15 +27,10 @@ USBBLK  =15             ; bank 7 value for BANK
         lda #MAP_USB 	; for the PET default VICCY base address of $1000 
         sta BANK        ; $e802                                           
 
-;        lda #USBPAGE    ; page in flash                                  
-;        ldx #USB_DRIVERADDRESS ; start in current bank                          
-;        ldy #$2000      ; transfer len                                   
-;        jsr flash2direct2_xl                                             
-
 	.assert (USB_DRIVERADDRESS & $ff) = 0, "page boundary"
 	lda #USB_DRIVERADDRESS >> 8
-	ldx #USBPAGE + $0100
-	ldy #$2000
+	ldx #FLASH_USB
+	ldy #FLASH_USB_L
 	jsr loadfromflash_xl
 
 	; link companion and driver

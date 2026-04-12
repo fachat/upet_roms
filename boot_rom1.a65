@@ -5,8 +5,8 @@ setup_basic1_xl	.(
 	; $14000-$15fff in flash img
 	
 	lda #$c0
-	ldx #$0080
-	ldy #$2000
+	ldx #FLASH_CHARGEN1
+	ldy #FLASH_CHARGEN1_L
 	jsr loadfromflash_xl
 
 	; now copy from bank 0 to target location
@@ -22,8 +22,8 @@ copy
 	; BASIC 1
 	
 	lda #$c0
-	ldx #$0040
-	ldy #$4000
+	ldx #FLASH_BASIC1
+	ldy #FLASH_BASIC1_L
 	jsr loadfromflash_xl
 	
 	lda opt0

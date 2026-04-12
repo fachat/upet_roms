@@ -1,0 +1,61 @@
+
+;
+; define all addresses in the Flash ROM
+;
+; Addresses are defined as pages + bank
+; i.e. address bits 23-8
+; Lengths are defined as bytes
+
+FLASH_IPLLDR		=$0000
+FLASH_IPPLDR_L		=$0100
+
+FLASH_BOOT		=$0001
+FLASH_BOOT_L		=$1f00
+
+FLASH_CHARGEN		=$0020
+FLASH_CHARGEN_L		=$2000
+
+FLASH_BASIC1		=$0040
+FLASH_BASIC1_L		=$4000
+
+FLASH_BASIC2		=$0080
+FLASH_BASIC2_L		=$4000
+
+FLASH_BASIC4		=$00c0
+FLASH_BASIC4_L		=$3000
+
+FLASH_KERNAL4		=$00f0
+FLASH_KERNAL4_L		=$1000
+
+; base address for 8 edit ROMs with 4k each (32k)
+; for C64 and N-type keyboards
+FLASH_EDIT4NC		=$0100
+
+FLASH_CHARGEN1		=$0180
+FLASH_CHARGEN1_L	=$2000
+
+FLASH_USB		=$01a0
+FLASH_USB_L		=$2000
+
+FLASH_DOS		=$01c0
+FLASH_DOS_L		=$4000
+
+; base address for 4 edit ROMs with 4k each
+; for B-type keyboards
+FLASH_EDIT4B		=$0200
+FLASH_EDIT_L		=$1000
+
+FLASH_FIEC		=$0240
+FLASH_FIEC_L		=$1000
+
+FLASH_BURNIN		=$0250
+FLASH_BURNIN_L		=$2000
+
+FLASH_IOEXT		=$0270
+FLASH_IOEXT_L		=$1000
+
+FLASH_MON		=$0280
+FLASH_MON_L		=$1800
+
+;FLASH_NEXT		=$0298
+

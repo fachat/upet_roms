@@ -7,8 +7,8 @@ setup_basic2_xl	.(
 	; $008000-$00bfff in bootimg to $c000-$ffff in RAM
 
 	lda #$c0
-	ldx #$0080
-	ldy #$4000
+	ldx #FLASH_BASIC2
+	ldy #FLASH_BASIC2_L
 	jsr loadfromflash_xl
 
 	lda opt0

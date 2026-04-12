@@ -19,15 +19,10 @@ FIECBASE 	=$2000
         lda #MAP_SDC 	; which RAM bank to use for SDCard support
         sta BANK        ; $e802                                           
 
-;        lda #FIECPAGE    ; page in flash
-;        ldx #FIECBASE    ; start in current bank                          
-;        ldy #$1000      ; transfer len                                   
-;        jsr flash2direct3_xl                                             
-
 	.assert (FIECBASE & $ff) = 0, "page boundary"
 	lda #FIECBASE >> 8
-	ldx #$0200 + FIECPAGE
-	ldy #$1000
+	ldx #FLASH_FIEC
+	ldy #FLASH_FIEC_L
 	jsr loadfromflash_xl
 
         lda #MAP_BAS	; switch back to bank 0

@@ -3,8 +3,6 @@
 
 &MAP_SER	=USBBLK
 
-SERPAGE	=$70		; start of driver in Flash ROM
-
 USBBLK  =15             ; bank 7 value for BANK  
 
 DRIVERADDR      =$7000
@@ -20,15 +18,10 @@ DRIVERADDR      =$7000
         lda #MAP_SER 	; 
         sta BANK        ; $e802                                           
 
-;        lda #SERPAGE    ; page in flash                                  
-;        ldx #DRIVERADDR ; start in current bank                          
-;        ldy #$1000      ; transfer len                                   
-;        jsr flash2direct3_xl
-
 	.assert (DRIVERADDR & $ff) = 0, "page boundary"
 	lda #DRIVERADDR>>8
-	ldx #SERPAGE + $0200
-	ldy #$1000
+	ldx #FLASH_IOEXT
+	ldy #FLASH_IOEXT_L
 	jsr loadfromflash_xl
 
 	sep #$10

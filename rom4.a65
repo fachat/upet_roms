@@ -12,33 +12,24 @@ VCOUNT		=$99
 
 	*=$9000
 #define	OVERLAY
-#include boot_start.a65
-#include boot_opts.i65
+#include "boot_start.a65"
+#include "boot_opts.i65"
+#include "flash.i65"
 
 	.xl
 	.as
 
 	; -----------------------
 	; copy over PET BASIC4 $b000-$dfff
-;	lda #$c0
-;	ldx #$b000
-;	ldy #$3000
-;	jsr flash2direct_xl
-
 	lda #$b0
-	ldx #$00c0
-	ldy #$3000
+	ldx #FLASH_BASIC4
+	ldy #FLASH_BASIC4_L
 	jsr loadfromflash_xl
 
 	; copy over PET KERNEL4 $f000-$ffff
-;	lda #$f0
-;	ldx #$f000
-;	ldy #$1000
-;	jsr flash2direct_xl
-
 	lda #$f0
-	ldx #$00f0
-	ldy #$1000
+	ldx #FLASH_KERNAL4
+	ldy #FLASH_KERNAL4_L
 	jsr loadfromflash_xl
 
 	; --------------------------------------------
@@ -68,7 +59,7 @@ VCOUNT		=$99
 	; 10 = PET-B, 40 col, orig
 	; 11 = PET-B, 80 col, orig
 	.(
-	ldy #$1000
+	ldy #FLASH_EDIT_L
 
 	lda opt0
 	and #OPT0_BKBD
@@ -81,10 +72,14 @@ VCOUNT		=$99
 	and #%11000000
 	lsr
 	lsr
-	tax
-	lda #$e0
-	jsr loadfromflash_xl
-	bra edit_done
+	rep #$21	; also do clc
+	adc #FLASH_EDIT4B
+	bra do_load
+;	tax
+;	lda #$e0
+;	jsr loadfromflash_xl
+;	bra edit_done
+	.as
 
 	; here the upper 3 bits are used
 	; to select the editor rom, combining the
@@ -93,10 +88,10 @@ VCOUNT		=$99
 n_kbd 	lda opt0
 	and #OPT0_EDITMASK
 	lsr
-	rep #$20
+	rep #$21	; also do clc
 	.al
-	ora #$01
-	tax
+	adc #FLASH_EDIT4NC
+do_load	tax
 	lda #$e0
 	sep #$20
 	.as

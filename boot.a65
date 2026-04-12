@@ -31,8 +31,8 @@ RUNADDR	=$9000
 #include "boot_start.a65"
 
 #include "hwdefs.i65"
-
 #include "detect.i65"
+#include "flash.i65"
 
 #include "tcdefs.i65"
 #include "boot_opts.i65"
@@ -127,8 +127,8 @@ jmpboot
 
 	.(
 	lda #$c0
-	ldx #$0020
-	ldy #$2000
+	ldx #FLASH_CHARGEN
+	ldy #FLASH_CHARGEN_L
 	jsr loadfromflash_xl
 
 	; now copy from bank 0 to target location
@@ -287,8 +287,8 @@ hwcheck_xl
 
 	; kernal4 and editor for interrupt code
 	lda #$f0
-	ldx #$00f0
-	ldy #$1000
+	ldx #FLASH_KERNAL4
+	ldy #FLASH_KERNAL4_L
 	jsr loadfromflash_xl
 
 	lda #$e0
@@ -297,14 +297,14 @@ hwcheck_xl
 	jsr loadfromflash_xl
 
 	lda #$b0
-	ldx #$00c0
-	ldy #$3000
+	ldx #FLASH_BASIC4
+	ldy #FLASH_BASIC4_L
 	jsr loadfromflash_xl
 	
 	; pet_burnin
 	lda #$10
-	ldx #$0250
-	ldy #$2000
+	ldx #FLASH_BURNIN
+	ldy #FLASH_BURNIN_L
 	jsr loadfromflash_xl
 
 	ldx #$e455
