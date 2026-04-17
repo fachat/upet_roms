@@ -241,7 +241,7 @@ With BASIC 4 there are multiple options that need to be considered:
 
         +----+ $07ffff 
         |    |         USB support bank, mapped 
-        |    |          $7000-$8000     serial (rs232) and I2C driver
+        |    |          $7000-$8000     serial (rs232) and I2C driver (IOEXT)
         |    |          $5000-$6800     supermon816 code and direct page
         |    |  	$1000-$3000	8k USB code
         |    |  

@@ -14,16 +14,35 @@ BOOT_LENGTH	=256
 ; common definitions
 
 ; default I/O
-;VCTRL		=$e800
-;MCTRL		=$e801
-;BANK		=$e802
+VCTRL		=$e800
+MCTRL		=$e801
+BANK		=$e802
 
 ; default map/bank
 MAP_BAS		=0
 
+; bank addresses for the various extensions
+; see README.md for details
+
 ; bank and address in bank where the monitor code resides
 MONBANK		=15
 MONBASE		=$5000;
+
+; bank and address in bank where the USB code resides
+USBBANK		=15
+USBBASE		=$1000
+
+; bank and address in bank where the IOEXT code resides
+IOEBANK		=15
+IOEBASE		=$7000
+
+; bank and address in bank where the SD Card driver resides
+SDCBANK		=14
+SDCBASE		=$4000
+
+; bank and adddress where fast IEC and IEC dispatch resides
+IECBANK		=SDCBANK
+IECBASE		=$2000
 
 ;--------------------------------------------------------
 ; overlay code
@@ -43,8 +62,11 @@ loadfromflash_xl 	=boot+3
 	; target address is overlay_start
 loadoverlay_xl		=loadfromflash_xl+3
 
+	; jump to reset vector
+end			=loadoverlay_xl+3
+
 	; the hardware DETECT_* bits
-conf_detect1		=loadoverlay_xl+3
+conf_detect1		=end+3
 conf_detect_sid1	=conf_detect1+1
 conf_detect_sid2	=conf_detect_sid1+1
 	; the keyboard BOOTKBD_* bits
@@ -86,6 +108,9 @@ optu			=opt2+1
 	.assert loadoverlay_xl = *, "address mismatch"
 	jmp jmploadoverlay_xl
 
+	.assert end = *, "address mismatch"
+	jmp jmpend
+
 	; the DETECT_* bits
 	.assert conf_detect1 = *, "address mismatch"
 	.byt 0
@@ -106,6 +131,9 @@ optu			=opt2+1
 jmploadoverlay_xl
 	.assert (overlay_start & $ff) = 0, "overlay_start mismatch"
 	lda #>overlay_start
+	jsr jmploadspi_xl
+	jmp overlay_start
+
 jmploadspi_xl .(
         pha
 	
@@ -146,6 +174,32 @@ nok     inx
         sta SPICTRL     ; deselect Flash
         rts
         .)
+
+        ; -----------------------
+        ; switch back to emulation mode
+jmpend
+        sta MCTRL
+
+        ; set X/Y registers to 8 bit ...
+        sep #%00010000
+        ; ... and tell the assembler about it
+        .xs
+
+        lda optu
+        lsr
+        lsr
+        lsr
+        lsr
+        lsr
+        lsr
+        sta SPEED
+
+        ; switch to native mode
+        sec
+        xce
+
+        jmp ($fffc)     ; RESET vector
+
 	.)
 	 
 	; fill rest of page

@@ -1,19 +1,12 @@
 
-USB_DRIVERADDRESS	=$1000
+USB_DRIVERADDRESS	=USBBASE
+
 #include "usb65/platforms/upet/usbrom.i65"
 
+lock		=(USBBANK<<15) + $00ff
+BOOT_VCOUNT	=(USBBANK<<15) + $00fe
+
 .(
-
-;&lock	=$0700ff	; last byte in zeropage in bank 7/block 14
-;&VCOUNT=$0700fe
-;usbtmp	=$0700fd
-
-&MAP_USB	=USBBLK
-&MAPREG		=BANK
-
-USBBLK  =15             ; bank 7 value for BANK  
-
-;COMPADDR        =$df00
 
         ; -----------------------                                        
         ; copy over USB code to RAM                                      
@@ -23,7 +16,7 @@ USBBLK  =15             ; bank 7 value for BANK
 	.xl
 &setup_usb_xl                                                                         
         .(                                                               
-        lda #MAP_USB 	; for the PET default VICCY base address of $1000 
+        lda #USBBANK 	; for the PET default VICCY base address of $1000 
         sta BANK        ; $e802                                           
 
 	.assert (USB_DRIVERADDRESS & $ff) = 0, "page boundary"
@@ -71,13 +64,13 @@ nohw
 	.xs                                                                         
 
 &usb_poll .(
-        lda #MAP_USB    
-        sta MAPREG      
+        lda #USBBANK    
+        sta BANK      
                        
         jsr usb_drv_polldev 
 
         lda #MAP_BAS     
-        sta MAPREG      
+        sta BANK      
 	rts
 	.)
 
@@ -90,7 +83,7 @@ t_install .(
 	rts
 	.)
 
-	; is entered in MAP_USB, .xs, .as
+	; is entered in USBBANK, .xs, .as
 t_init    .(
 	php                         
 	sei                         
@@ -126,7 +119,7 @@ t_uninstall .(
 t_pause .(                              
 	php
 	lda #MAP_BAS
-	sta MAPREG
+	sta BANK
 	cli
 	
 	tax                             
@@ -137,8 +130,8 @@ p1	cmp BOOT_VCOUNT
 	dex                             
 	bne p0                          
 	
-	lda #MAP_USB
-	sta MAPREG
+	lda #USBBANK
+	sta BANK
 	plp
 	rts                             
 	.)                              
@@ -154,13 +147,13 @@ t_printc2 .(
 	;inc $8027
 	
 	lda #MAP_BAS
-	sta MAPREG
+	sta BANK
 	
 	txa
 	jsr key_usb
 stop
-	lda #MAP_USB
-	sta MAPREG
+	lda #USBBANK
+	sta BANK
 	
 	plp
 	rts

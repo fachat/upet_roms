@@ -6,21 +6,19 @@
 
 FIECPAGE	=$40	; in SPI image, 3rd bank
 
-FIECBASE 	=$2000                                   
-
         ; -----------------------                                        
         ; copy over code to RAM                                      
         ; $24000-$24fff in flash img                                     
-        ; copy to FIECBASE                                                
+        ; copy to IECBASE                                                
 
 	.xl
 &setup_fiec_xl
         .(
-        lda #MAP_SDC 	; which RAM bank to use for SDCard support
+        lda #IECBANK 	; which RAM bank to use for SDCard support
         sta BANK        ; $e802                                           
 
-	.assert (FIECBASE & $ff) = 0, "page boundary"
-	lda #FIECBASE >> 8
+	.assert (IECBASE & $ff) = 0, "page boundary"
+	lda #IECBASE >> 8
 	ldx #FLASH_FIEC
 	ldy #FLASH_FIEC_L
 	jsr loadfromflash_xl

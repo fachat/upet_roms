@@ -1,0 +1,61 @@
+
+.(
+
+
+DRIVERADDR      =IOEBASE
+
+#include "boot_ser.i65"
+
+&ser_install_basic4_xl .(
+	; install the code into ROM
+	jsr ioext_install4_xl
+	; patch it in
+	jsr ioext_patch4_xl
+
+	lda conf_bootkbd
+	and #BOOTKBD_SER1+BOOTKBD_SER2
+	beq no_serkbd
+
+	jsr enable_xl
+	jsr ioext_patch4_serkbd_xl
+no_serkbd
+	rts
+        .)                                                               
+
+        ; tear it down
+&tear_ser_xl .(
+        clc
+        .byt $24
+&enable_xl
+        sec
+        sei
+        php
+        lda #IOEBANK    ; 
+        sta BANK        ; $e802                                           
+        sep #$10
+        .xs
+        jsr BOOT_ENABLE ; start / stop receiving
+        rep #$10
+        .xl
+        lda #MAP_BAS
+        sta BANK
+        plp
+        rts
+        .)
+
+	.xs                                                                         
+
+
+IOEXT_FILENAME	=512
+IOEXT_COMP	=$d560
+STATUS		=$96
+
+#include "upet_ioext/ioext-install4.a65"
+
+MOVE	*=IOEXT_COMP
+#include "upet_ioext/ioext-comp4.a65"
+	*=*-IOEXT_COMP+MOVE
+dosrom
+#endif
+.)
+

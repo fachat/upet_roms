@@ -1,10 +1,7 @@
 
 .(
 
-;MONBANK	=15
-;MONBASE	=$5000
-
-directpage=$1f00
+;directpage=$1f00
 
 
         ; -----------------------                                        

@@ -1,21 +1,20 @@
 
 .(
 
-&MAP_SER	=USBBLK
 
-USBBLK  =15             ; bank 7 value for BANK  
+DRIVERADDR      =IOEBASE
 
-DRIVERADDR      =$7000
+#include "boot_ser.i65"
 
         ; -----------------------                                        
-        ; copy over USB code to RAM                                      
+        ; copy over IOExt code to RAM                                      
         ; $1a000-$1bfff in flash img                                     
         ; copy to DRIVERADDR                                                
 
 	.xl
 &setup_ser_xl                                                                         
         .(                                                               
-        lda #MAP_SER 	; 
+        lda #IOEBANK 	; 
         sta BANK        ; $e802                                           
 
 	.assert (DRIVERADDR & $ff) = 0, "page boundary"
@@ -45,7 +44,7 @@ DRIVERADDR      =$7000
 	sec
 	sei
 	php
-        lda #MAP_SER 	; 
+        lda #IOEBANK 	; 
         sta BANK        ; $e802                                           
 	sep #$10
 	.xs
@@ -58,27 +57,11 @@ DRIVERADDR      =$7000
 	rts
 	.)
 
-&ser_install_basic4_xl .(
-	; install the code into ROM
-	jsr ioext_install4_xl
-	; patch it in
-	jsr ioext_patch4_xl
-
-	lda conf_bootkbd
-	and #BOOTKBD_SER1+BOOTKBD_SER2
-	beq no_serkbd
-
-	jsr enable_xl
-	jsr ioext_patch4_serkbd_xl
-no_serkbd
-	rts
-        .)                                                               
-
 	.xs
 	;-----------------------------
 	; interrupt during boot code
 &key_ser .(
-	lda #MAP_SER
+	lda #IOEBANK
 	sta BANK
 	jsr IO_IRQ
 
@@ -114,33 +97,5 @@ msg	.asc 13, "ULTI-PET BOOT (4,6,8)",13,10,0
 
 	.xs                                                                         
 
-IOEXT_BANK	=MAP_SER
-DEFAULT_BANK	=MAP_BAS
-BANKREG		=BANK
-IOEXT_FILENAME	=512
-IOEXT_COMP	=$d560
-STATUS		=$96
-
-IO_RESET	=DRIVERADDR+0
-IO_IRQ		=DRIVERADDR+3
-IO_OPEN		=DRIVERADDR+6
-IO_CLOSE	=DRIVERADDR+9
-IO_CHKOUT	=DRIVERADDR+12
-IO_CHKIN	=DRIVERADDR+15
-IO_CLRCH_OUT	=DRIVERADDR+18
-IO_CLRCH_IN	=DRIVERADDR+21
-IO_OUT		=DRIVERADDR+24
-IO_IN		=DRIVERADDR+27
-
-BOOT_ENABLE	=DRIVERADDR+30
-BOOT_GET	=DRIVERADDR+33
-BOOT_PUT	=DRIVERADDR+36
-
-#include "upet_ioext/ioext-install4.a65"
-
-MOVE	*=IOEXT_COMP
-#include "upet_ioext/ioext-comp4.a65"
-	*=*-IOEXT_COMP+MOVE
-dosrom
 .)
 

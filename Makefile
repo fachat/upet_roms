@@ -46,8 +46,11 @@ TOOLS=romcheck
 
 spiimgc: rebuildclean spiimg 
 
-spiimg: zero boot chargen_pet16 chargen_pet1_16 iplldr $(EDITROMS) $(ORIGROMS) $(ROMDIR)/kernal4c $(ROMDIR)/edit80_grfkb_ext_chk.bin $(ROMDIR)/edit80_chk.bin \
-	usbcode dos.bin fieccode cbm-burnin-tests/pet_burnin_rom ioext-core.bin smon.bin
+spiimg: zero boot chargen_pet16 chargen_pet1_16 iplldr \
+	$(EDITROMS) $(ORIGROMS) $(ROMDIR)/kernal4c \
+	$(ROMDIR)/edit80_grfkb_ext_chk.bin $(ROMDIR)/edit80_chk.bin \
+	usbcode dos.bin fieccode cbm-burnin-tests/pet_burnin_rom \
+	ioext-core.bin smon.bin rom4
 	# ROM images
 	cat iplldr					> $@	# 256b   : IPL loader
 	cat boot					>> $@	# 8k-256 : boot code
@@ -89,6 +92,8 @@ spiimg: zero boot chargen_pet16 chargen_pet1_16 iplldr $(EDITROMS) $(ORIGROMS) $
 	cat ioext-core.bin				>> $@	# 4k
 	#### supermon
 	cat smon.bin					>> $@	# 6k
+	#### BASIC4 boot overlay
+	cat rom4					>> $@	# 4k
 
 
 zero: 

@@ -1,5 +1,4 @@
 
-	;.asc "BASIC4"
 
 setup_basic4_xl	.(
 	; where do we store the extra patch code
@@ -15,6 +14,11 @@ VCOUNT		=$99
 #include "boot_start.a65"
 #include "boot_opts.i65"
 #include "flash.i65"
+
+USB_DRIVERADDRESS=USBBASE
+#include "usb65/platforms/upet/usbrom.i65"
+
+START	=*
 
 	.xl
 	.as
@@ -73,6 +77,7 @@ VCOUNT		=$99
 	lsr
 	lsr
 	rep #$21	; also do clc
+	.al
 	adc #FLASH_EDIT4B
 	bra do_load
 ;	tax
@@ -674,6 +679,9 @@ rompatch_end:
 ;---------------------------------------------------
 ; USB install and companion for BASIC4
 
+	; lock for USB
+lock	=(USBBANK << 15) + $00ff
+
 #include "usb65/platforms/upet/petrom4_install.a65"
 
 usbcomp_start
@@ -688,10 +696,17 @@ usbcomp_end
         ; start of monitor code in existing ROM
         ; note that d478 is the BRK entry point
 MONCOMP =$d472
+	; directpage for monitor
+directpage=$1f00
+
+MAPREG	=BANK
+MAP_USB	=USBBANK
 
         .xs
 
 #print *
+
+#include "boot_ser4.a65"
 
 #include "upet_supermon816/tsrinst4.a65"
 
@@ -708,6 +723,8 @@ MOVEND
 
 ;---------------------------------------------------
 	.xl
+
+	.dsb $1000-(*-START),$aa
+	;.dsb 256
+
 	.)		; end setup_basic4_xl
-
-

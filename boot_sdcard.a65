@@ -3,9 +3,6 @@
 
 tmp	=$0780ff	; last byte in stack on BLK 15
 
-&MAP_SDC	=14	; bank 7, lower half
-
-SDCBASE =$4000                                   
 
         ; -----------------------                                        
         ; copy over SD Card code to RAM                                      
@@ -15,7 +12,7 @@ SDCBASE =$4000
 	.xl
 &setup_sdcard_xl
         .(
-        lda #MAP_SDC 	; which RAM bank to use for SDCard support
+        lda #SDCBANK 	; which RAM bank to use for SDCard support
         sta BANK        ; $e802                                           
 
 	.assert (SDCBASE & $ff) = 0, "page boundary"

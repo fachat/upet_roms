@@ -52,9 +52,9 @@ char	=$87fe
 opt	=$87fd
 lastopt	=$87fb
 
-VCTRL   =$e800
-MCTRL   =$e801
-BANK    =$e802
+;VCTRL   =$e800
+;MCTRL   =$e801
+;BANK    =$e802
 SPEED   =$e803
 BUSWIN	=$e804
 VMAP    =$e805
@@ -68,12 +68,6 @@ VIDBLK	=2		; video block address for BANK
 BOOTCOL	=$05	; black background with light green text
 
 BRDCOL	=0	; border colour = black
-
-		; temporary fix for a (potential) issue in xa2.4.1 when a
-		; 24 bit value is used before it is defined
-lock 	  	=$0700ff        ; last byte in zeropage in bank 7/block 14
-BOOT_VCOUNT   	=$0700fe
-;tmp		=$0700fd
 
 	; ------------------------
 	; this is the actual boot code, 
@@ -240,33 +234,17 @@ not_b1	cmp #2
 not_b2	; only basic 4 left
 	;----------------------------------------------------
 
-	jmp setup_basic2_xl
+	;jmp setup_basic2_xl
 	;jmp setup_basic4_xl
+	
+	; load rom4 overlay as the BASIC4 boot code itself
+	; is too big to be included in the main (boot menu)
+	; image.
+	
+	ldx #FLASH_ROM4
+	ldy #FLASH_ROM4_L
+	jmp loadoverlay_xl
 
-	; -----------------------
-	; switch back to emulation mode
-end
-	sta MCTRL
-
-	; set X/Y registers to 8 bit ...
-	sep #%00010000
-	; ... and tell the assembler about it
-	.xs
-
-	lda optu
-	lsr
-	lsr
-	lsr
-	lsr
-	lsr
-	lsr
-	sta SPEED
-
-	; switch to native mode
-	sec
-	xce
-
-	jmp ($fffc)	; RESET vector
 
 	.xl
 
