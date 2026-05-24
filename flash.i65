@@ -30,6 +30,8 @@ FLASH_KERNAL4_L		=$1000
 ; base address for 8 edit ROMs with 4k each (32k)
 ; for C64 and N-type keyboards
 FLASH_EDIT4NC		=$0100
+FLASH_EDIT4_CHK		=$0160
+FLASH_EDIT4_L		=$1000
 
 FLASH_CHARGEN1		=$0180
 FLASH_CHARGEN1_L	=$2000

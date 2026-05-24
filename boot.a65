@@ -5,26 +5,8 @@
 ; to it to execute it.
 ; 
 ; Note that this relies on the Flash ROM containing the
-; PET ROM images to copy from in this order:
-;
-; $00000  IPL code (256 byte)
-; $00100  Boot code (6k+7*256) - this code
-; $02000  charrom (8k)
-; $04000  BASIC1 + EDIT1 + KERNEL1 (16k)
-; $08000  BASIC2 + EDIT2 + KERNEL2 (16k)
-; $0c000  BASIC4 (12k)
-; $0f000  KERNEL4 (12k)
-; $10000  EDIT4 (extended, PET kbd)
-; $11000  EDIT4 (extended, C64 kbd)
-; $12000  EDIT8 (extended, PET kbd)
-; $13000  EDIT8 (extended, C64 kbd)
-; $14000  EDIT4 (orig, PET kbd)
-; $15000  EDIT4 (sjg base, C64 kbd, experimental)
-; $16000  EDIT8 (orig)
-; $17000  EDIT8 (sjg base, C64 kbd, experimental)
-; $18000  charrom for BASIC1 (8k)
-; $1a000  USB code (8k) to be run in bank 7 (usbcode)
-; $1c000  SD-Card DOS (16k) to be run in bank 7
+; PET ROM images in the order as defined with the constants
+; in flash.i65
 
 RUNADDR	=$9000
 	*=RUNADDR
@@ -162,20 +144,15 @@ mloop
 	jsr do_menu_xl
 
 	cmp #"s"
-	bne checkhw
+	bne doreal
 
 	jsr do_options_xl
 	
 	cmp #"x"
-	bne checkhw
+	bne doreal
 
 	jmp mloop
 
-checkhw
-	cmp #"h"
-	bne doreal
-
-	jmp hwcheck_xl
 doreal
 	; save config char ("1", "2", ..)
 	pha
@@ -187,6 +164,12 @@ doreal
 	jsr irq_uninstall
 
 	pla
+
+	cmp #"h"
+	bne nohwcheck
+
+	jmp hwcheck_xl
+nohwcheck
 	; convert selected boot option to config bits (opt0-2,u)
 	jsr conv_char2opt_xl
 
@@ -265,8 +248,8 @@ hwcheck_xl
 	jsr loadfromflash_xl
 
 	lda #$e0
-	ldx #$0070
-	ldy #$1000
+	ldx #FLASH_EDIT4_CHK
+	ldy #FLASH_EDIT4_L
 	jsr loadfromflash_xl
 
 	lda #$b0

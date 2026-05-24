@@ -4,7 +4,7 @@
 ;	detect_bits
 
 	.xs
-	; ----------------------------
+; ----------------------------
 	; detect logic
 detect_xs .(
 
@@ -17,7 +17,7 @@ detect_xs .(
 	;-- detect UART 1 at $e818
 	; to detect a UART 16550 
 
-	; ---------------------
+; ---------------------
 	.(
 UART	=UART1
         ldy UART+UART_MCR
@@ -44,7 +44,7 @@ UART	=UART1
 nodev	sty UART+UART_MCR	; restore potential PIA register
 	.)
 
-	; ---------------------
+; ---------------------
 	.(
 UART	=UART2
         ldy UART+UART_MCR
@@ -71,7 +71,7 @@ UART	=UART2
 nodev	sty UART+UART_MCR	; restore potential PIA register
 	.)
 
-	; ---------------------
+; ---------------------
 	; detect 1st VIA
 	.(
 	lda VIA1+VIA_PCR
@@ -118,7 +118,7 @@ nodev
 nodev	
 	.)
 
-	; ---------------------
+; ---------------------
 	; TODO
 	; detect PIA1
 	; detect PIA2
@@ -134,7 +134,7 @@ nodev
 	lda #DETECT1_PIA1 + DETECT1_PIA2
 	jsr add_detect
 	.)
-	; ---------------------
+; ---------------------
 
 	.(
 	; TODO: detect DAC
@@ -147,7 +147,7 @@ DAC_CTRL=$15
 	lda #DETECT1_DAC
 	jsr add_detect
 	.)
-	; ---------------------
+; ---------------------
 
 	.(
 	; TODO: detect ethernet
@@ -161,7 +161,7 @@ DAC_CTRL=$15
         lda #SPIOFF
         sta SPICTRL
 	.)
-	; ---------------------
+; ---------------------
 	; VICCY
 
         ; set Viccy registers                                              
@@ -173,7 +173,7 @@ DAC_CTRL=$15
         sty VICCY         ; register number                               
 l0      lda vdctab,y                                                      
         sty VICCY                                                          
-        sta VICCY+1       ; register value w/ auto-inc of register number 
+        sta VICCY+1       ; register value w/o auto-inc of register number 
 lx      dey                                                               
         bpl l0                                                            
                                                                           
