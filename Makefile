@@ -261,7 +261,7 @@ cbm-fastiec:
 	(cd cbm-fastiec; git checkout)
 
 fieccode.o65: fieccode.a65 iecdispatch.a65 cbm-fastiec 
-	xa -R -c -XMASM -bz 48 -bt 8192 -bd 12032 -o $@ $<
+	xa -R -c -XMASM -bz 48 -bt 8192 -bd 12032 -P $@.lst -o $@ $<
 
 fieccode: fieccode.o65
 	reloc65 -X -v -o $@ $<
