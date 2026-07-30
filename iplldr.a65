@@ -68,6 +68,11 @@ bootl	lda $ff00,x
 	sta $08ff00,x
 	inx
 	bne bootl
+
+	; enable UPET register bank
+	lda #$ff
+	sta $e800
+
 	; enable fast RAM
 	lda #0
 	sta $e801
