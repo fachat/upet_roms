@@ -14,9 +14,14 @@ BOOT_LENGTH	=256
 ; common definitions
 
 ; default I/O
-VCTRL		=$e800
+VCTRL		=$e807
 MCTRL		=$e801
 BANK		=$e802
+SPEED		=$e803
+BUSWIN		=$e804
+VMAP		=$e805
+
+R8296		=$fff0
 
 ; default map/bank
 MAP_BAS		=0

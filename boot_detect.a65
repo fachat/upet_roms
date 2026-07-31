@@ -176,11 +176,16 @@ l0      lda vdctab,y
         sta VICCY+1       ; register value w/o auto-inc of register number 
 lx      dey                                                               
         bpl l0                                                            
-                                                                          
+
+	lda #63
+	sta VICCY
+	lda #4
+	sta VICCY+1
+
         ; disable sprites                                                  
         ldx #8                                                             
         ldy #0                                                             
-        lda #51                                                            
+        lda #64+3                                                            
 sl      sta VICCY                                                          
         sty VICCY+1                                                        
         clc                                                                

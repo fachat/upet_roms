@@ -34,15 +34,6 @@ char	=$87fe
 opt	=$87fd
 lastopt	=$87fb
 
-;VCTRL   =$e800
-;MCTRL   =$e801
-;BANK    =$e802
-SPEED   =$e803
-BUSWIN	=$e804
-VMAP    =$e805
-
-R8296   =$fff0
-
 VIDBLK	=2		; video block address for BANK
 
 ;BOOTCOL	=$15	; dark grey background, light green text

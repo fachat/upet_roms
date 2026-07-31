@@ -61,13 +61,18 @@ vreset	.(
 	; prime high byte of AC with zero
 	lda #0
 	xba
-
+#if 0
 	; copy over boot code to fast RAM (2nd 512k)
 	ldx #0
 bootl	lda $ff00,x
 	sta $08ff00,x
 	inx
 	bne bootl
+#endif
+	; enable UPET register bank
+	lda #$ff
+	sta $e800
+
 	; enable fast RAM
 	lda #0
 	sta $e801
@@ -90,35 +95,29 @@ bootl	lda $ff00,x
 vi1	lda vdctab,y
 	sta VICCY + 3
 	iny
-	cpy #40
+	cpy #palette-vdctab
 	bcc vi1
 
-	; viccy palette (2nd half)
+	ldy #VCCY_REGWIN_SEL
+	sty VICCY
+	lda #VCCY_REGWIN_PALETTE
+	sta VICCY+1
+
+	; viccy palette 
 	; is set by vdctab
 	ldy #VCCY_PAL_BASE
 	sty VICCY + 2
 	ldy #0
-vinit	lda palette+8,y
+vinit	lda palette,y
 	sta VICCY + 3
 	iny
-	cpy #8
+	cpy #16
 	bcc vinit
 
-	; viccy palette (1st half)
-	ldy #VCCY_CTRL
+	ldy #VCCY_REGWIN_SEL
 	sty VICCY
-	lda VICCY+1
-	and #$ff-VCCY_CTRL_PALSEL
+	lda #VCCY_REGWIN_SPRITES
 	sta VICCY+1
-
-	ldy #VCCY_PAL_BASE
-	sty VICCY + 2
-	ldy #0
-vinit2	lda palette,y
-	sta VICCY + 3
-	iny
-	cpy #8
-	bcc vinit2
 
 	; ---------------
 
@@ -209,6 +208,9 @@ FGCOL	=5
         .byt 0          ; r37: v/h sync status (VDC)
         .byt 21         ; r38 (was r44): horizontal position (chars)
         .byt 81		; r39 (was r45): vertical position (rasterlines)
+	.byt 0		; r40 alt match
+	.byt 0		; r41 alt raster row
+	.byt $80	; r42 sprite base address
 
 palette
 	;-- with a 6 bit colour palette the relevant bits 
@@ -238,7 +240,7 @@ palette
 	.byt %10010010	;     -- "1110" - "10/10/10" light grey
 	.byt %11111111	;     -- "1111" - "11/11/11" white            
 
-        .dsb $fff4-*,$f0
+        .dsb $fff4-*,$ff
 
         .word vcop
         .word vbrk
