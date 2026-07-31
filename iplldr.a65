@@ -61,14 +61,14 @@ vreset	.(
 	; prime high byte of AC with zero
 	lda #0
 	xba
-
+#if 0
 	; copy over boot code to fast RAM (2nd 512k)
 	ldx #0
 bootl	lda $ff00,x
 	sta $08ff00,x
 	inx
 	bne bootl
-
+#endif
 	; enable UPET register bank
 	lda #$ff
 	sta $e800
