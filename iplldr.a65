@@ -61,8 +61,11 @@ vreset	.(
 	; prime high byte of AC with zero
 	lda #0
 	xba
-#if 0
+#if 1
 	; copy over boot code to fast RAM (2nd 512k)
+	; note: if already enabled it's a no-op
+	; but if on ultracpu 1.4 where it isn't
+	; it enables switching to fast RAM
 	ldx #0
 bootl	lda $ff00,x
 	sta $08ff00,x
